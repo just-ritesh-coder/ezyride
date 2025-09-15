@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
+const dashboardRoutes = require("./routes/dashboard");  // Import dashboard routes
 
 dotenv.config();
 
@@ -18,12 +19,18 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Routes
+// Base route
 app.get("/", (req, res) => {
   res.send("Ride Sharing API is running");
 });
 
+// API routes
 app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/rides", require('./routes/rides'));  // Existing rides route
+
+const bookingsRouter = require('./routes/bookings');  // Add this line
+app.use('/api/bookings', bookingsRouter);            // Add this line
 
 // Start server
 const PORT = process.env.PORT || 5000;

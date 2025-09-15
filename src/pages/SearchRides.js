@@ -1,99 +1,102 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import GooglePlacesAutocomplete from "react-google-places-autocomplete";
-
-const dummyRides = [
-  {
-    id: 1,
-    origin: "Mumbai",
-    destination: "Pune",
-    date: "2025-09-10",
-    time: "08:00 AM",
-    seatsAvailable: 3,
-    price: 150,
-    driver: "Ritesh",
-  },
-  {
-    id: 2,
-    origin: "Thane",
-    destination: "Mumbai",
-    date: "2025-09-11",
-    time: "06:30 PM",
-    seatsAvailable: 2,
-    price: 100,
-    driver: "Priya",
-  },
-];
+import AutocompleteInput from "../components/AutocompleteInput";
 
 const SearchRides = () => {
-  const [origin, setOrigin] = useState(null);
-  const [destination, setDestination] = useState(null);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-
+    setError(null);
     if (!origin || !destination) {
-      alert("Please select both origin and destination.");
+      setError("Please enter both origin and destination.");
       return;
     }
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({ origin, destination });
+      const response = await fetch(`/api/rides/search?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch rides");
+      const data = await response.json();
+      setResults(data.rides || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const filtered = dummyRides.filter(
-      (ride) =>
-        ride.origin.toLowerCase().includes(origin.label.toLowerCase()) &&
-        ride.destination.toLowerCase().includes(destination.label.toLowerCase())
-    );
-    setResults(filtered);
+  const bookRide = async (rideId) => {
+    setBookingLoading(true);
+    setError(null);
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("Please log in to book a ride.");
+      setBookingLoading(false);
+      return;
+    }
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ rideId, seats: 1 }), // booking 1 seat as example
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Booking failed");
+      }
+      alert("Ride booked successfully!");
+      // Optionally refresh rides to update seats
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   return (
     <Container>
       <Title>Search Rides</Title>
       <SearchForm onSubmit={handleSearch}>
-        <PlacesAutocompleteWrapper>
-          <GooglePlacesAutocomplete
-            apiKey="YOUR_GOOGLE_API_KEY"
-            selectProps={{
-              origin,
-              onChange: setOrigin,
-              placeholder: "Enter origin",
-            }}
-          />
-        </PlacesAutocompleteWrapper>
-
-        <PlacesAutocompleteWrapper>
-          <GooglePlacesAutocomplete
-            apiKey="YOUR_GOOGLE_API_KEY"
-            selectProps={{
-              destination,
-              onChange: setDestination,
-              placeholder: "Enter destination",
-            }}
-          />
-        </PlacesAutocompleteWrapper>
-
-        <Button type="submit">Search</Button>
+        <AutocompleteInput value={origin} onChange={setOrigin} placeholder="Enter origin" />
+        <AutocompleteInput value={destination} onChange={setDestination} placeholder="Enter destination" />
+        <Button type="submit" disabled={loading}>
+          {loading ? "Searching..." : "Search"}
+        </Button>
       </SearchForm>
 
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {!error && !loading && results.length === 0 && <NoResults>No rides found.</NoResults>}
+
       <Results>
-        {results.length === 0 && <NoResults>No rides found.</NoResults>}
         {results.map((ride) => (
-          <RideCard key={ride.id}>
+          <RideCard key={ride._id}>
             <RideInfo>
-              <strong>{ride.origin}</strong> to <strong>{ride.destination}</strong>
+              <strong>{ride.from}</strong> to <strong>{ride.to}</strong>
             </RideInfo>
             <RideDetails>
               <div>
-                <b>Date:</b> {ride.date} &nbsp; <b>Time:</b> {ride.time}
+                <b>Date:</b> {new Date(ride.date).toLocaleDateString()} &nbsp; <b>Time:</b>{" "}
+                {new Date(ride.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </div>
               <div>
-                <b>Seats Available:</b> {ride.seatsAvailable} &nbsp; <b>Price:</b> ₹{ride.price}
+                <b>Seats Available:</b> {ride.seatsAvailable} &nbsp; <b>Price:</b> ₹{ride.pricePerSeat}
               </div>
               <div>
-                <b>Driver:</b> {ride.driver}
+                <b>Driver:</b> {ride.postedBy?.name || "Unknown"}
               </div>
             </RideDetails>
-            <BookButton>Book Now</BookButton>
+            <BookButton onClick={() => bookRide(ride._id)} disabled={bookingLoading}>
+              {bookingLoading ? "Booking..." : "Book Now"}
+            </BookButton>
           </RideCard>
         ))}
       </Results>
@@ -105,9 +108,8 @@ const Container = styled.div`
   max-width: 750px;
   margin: 40px auto;
   padding: 0 20px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 `;
-
 const Title = styled.h1`
   color: #1e90ff;
   font-weight: 800;
@@ -115,7 +117,6 @@ const Title = styled.h1`
   margin-bottom: 35px;
   text-align: center;
 `;
-
 const SearchForm = styled.form`
   display: flex;
   gap: 16px;
@@ -125,38 +126,6 @@ const SearchForm = styled.form`
     flex-direction: column;
   }
 `;
-
-const PlacesAutocompleteWrapper = styled.div`
-  flex: 1;
-
-  .react-google-places-autocomplete__input {
-    font-size: 16px;
-    padding: 14px 15px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .react-google-places-autocomplete__suggestions-container {
-    border-radius: 0 0 10px 10px;
-    box-shadow: 0 9px 20px rgba(32, 35, 42, 0.2);
-    margin-top: -8px;
-    z-index: 1000;
-  }
-
-  .react-google-places-autocomplete__suggestion {
-    padding: 14px 15px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #f0f4ff;
-    }
-  }
-`;
-
 const Button = styled.button`
   padding: 0 32px;
   background-color: #1e90ff;
@@ -172,25 +141,27 @@ const Button = styled.button`
     background-color: #005bbb;
   }
 
+  &:disabled {
+    background-color: #a0c4ff;
+    cursor: not-allowed;
+  }
+
   @media (max-width: 600px) {
     width: 100%;
     padding: 14px 0;
   }
 `;
-
 const Results = styled.div`
   display: flex;
   flex-direction: column;
   gap: 22px;
 `;
-
 const NoResults = styled.p`
   text-align: center;
   font-weight: 600;
   font-size: 1.2rem;
   color: #777;
 `;
-
 const RideCard = styled.div`
   background: white;
   border-radius: 12px;
@@ -200,13 +171,11 @@ const RideCard = styled.div`
   flex-direction: column;
   gap: 12px;
 `;
-
 const RideInfo = styled.div`
   font-size: 1.4rem;
   font-weight: 700;
   color: #222;
 `;
-
 const RideDetails = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -214,7 +183,6 @@ const RideDetails = styled.div`
   font-size: 1rem;
   color: #555;
 `;
-
 const BookButton = styled.button`
   align-self: flex-start;
   margin-top: 15px;
@@ -231,6 +199,17 @@ const BookButton = styled.button`
   &:hover {
     background-color: #005bbb;
   }
+
+  &:disabled {
+    background-color: #a0c4ff;
+    cursor: not-allowed;
+  }
+`;
+const ErrorMessage = styled.p`
+  text-align: center;
+  color: #d9534f;
+  font-weight: 700;
+  margin-bottom: 20px;
 `;
 
 export default SearchRides;

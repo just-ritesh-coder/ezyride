@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import { AuthContext } from "./context/AuthContext";
 import AuthPage from "./pages/AuthPage";
@@ -17,10 +12,17 @@ import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// Protected Route component
+// ProtectedRoute guards access to private routes by checking auth token
 const ProtectedRoute = ({ children }) => {
   const { token } = React.useContext(AuthContext);
-  return token ? children : <Navigate to="/" replace />;
+
+  if (!token) {
+    // Not logged in, redirect to login page
+    return <Navigate to="/" replace />;
+  }
+
+  // Logged in, render child routes/components
+  return children;
 };
 
 function App() {
@@ -32,7 +34,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected /home routes */}
+        {/* Protected routes wrapped in Layout */}
         <Route
           path="/home"
           element={
@@ -41,6 +43,7 @@ function App() {
             </ProtectedRoute>
           }
         >
+          {/* Nested routes rendered inside Layout via <Outlet /> */}
           <Route index element={<Home />} />
           <Route path="post-ride" element={<PostRide />} />
           <Route path="search-rides" element={<SearchRides />} />
@@ -48,7 +51,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Redirect all unknown routes to login */}
+        {/* Redirect unknown routes to login */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
