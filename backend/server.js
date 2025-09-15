@@ -3,8 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
-const dashboardRoutes = require("./routes/dashboard");  // Import dashboard routes
-
+const dashboardRoutes = require("./routes/dashboard");
+const rideStatusRoutes = require('./routes/rideStatus');
 dotenv.config();
 
 const app = express();
@@ -27,10 +27,11 @@ app.get("/", (req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/rides", require('./routes/rides'));  // Existing rides route
-
-const bookingsRouter = require('./routes/bookings');  // Add this line
-app.use('/api/bookings', bookingsRouter);            // Add this line
+app.use("/api/rides", require("./routes/rides"));
+app.use("/api/bookings", require("./routes/bookings"));
+app.use('/api/profile', require('./routes/profile'));
+app.use('/api/rides', rideStatusRoutes);
+ // <-- Add this line
 
 // Start server
 const PORT = process.env.PORT || 5000;
