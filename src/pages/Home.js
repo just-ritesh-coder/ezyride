@@ -2,41 +2,58 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
-const statsData = [
-  { id: 1, title: "Rides Posted", count: 12 },
-  { id: 2, title: "Upcoming Bookings", count: 5 },
-  { id: 3, title: "Reviews Received", count: 8 },
-];
-
-const recentActivities = [
-  {
-    id: 1,
-    type: "ride_posted",
-    description: "You posted a ride from Mumbai to Pune",
-    time: "2 hours ago",
-  },
-  {
-    id: 2,
-    type: "booking_confirmed",
-    description: "Booking confirmed for ride Mumbai to Thane",
-    time: "1 day ago",
-  },
-  {
-    id: 3,
-    type: "review_received",
-    description: "You received a new review from Priya",
-    time: "3 days ago",
-  },
-];
-
 const Home = () => {
   const navigate = useNavigate();
+
+  const [statsData, setStatsData] = React.useState([]);
+  const [recentActivities, setRecentActivities] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem("authToken");
+        const response = await fetch("http://localhost:5000/api/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard data");
+        }
+
+        const data = await response.json();
+        setStatsData(data.stats);
+        setRecentActivities(data.activities);
+      } catch (err) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return <Container>Loading your dashboard...</Container>;
+  }
+
+  if (error) {
+    return <Container>Error: {error}</Container>;
+  }
 
   return (
     <Container>
       <WelcomeMessage>Welcome back to EzyRide!</WelcomeMessage>
       <Intro>
-        Ready to start your journey? Post a ride, search available rides, and manage your bookings—all in one place.
+        Ready to start your journey? Post a ride, search available rides, and
+        manage your bookings—all in one place.
       </Intro>
 
       <StatsSection>
@@ -90,6 +107,8 @@ const Home = () => {
     </Container>
   );
 };
+
+// Styled components
 
 const Container = styled.div`
   max-width: 900px;

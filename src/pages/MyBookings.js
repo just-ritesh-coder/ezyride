@@ -1,52 +1,82 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const myBookings = [
-  {
-    id: 1,
-    origin: "Mumbai",
-    destination: "Pune",
-    date: "2025-09-10",
-    time: "08:00 AM",
-    seatsBooked: 2,
-    status: "Confirmed",
-    driver: "Ritesh",
-  },
-  {
-    id: 2,
-    origin: "Thane",
-    destination: "Mumbai",
-    date: "2025-09-15",
-    time: "06:00 PM",
-    seatsBooked: 1,
-    status: "Pending",
-    driver: "Priya",
-  },
-];
-
 const MyBookings = () => {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setError("Please log in to view your bookings.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/bookings/mybookings", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.message || "Failed to fetch bookings");
+        }
+
+        const data = await response.json();
+        setBookings(data.bookings);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  if (loading) return <LoadingMessage>Loading your bookings...</LoadingMessage>;
+  if (error) return <ErrorMessage>{error}</ErrorMessage>;
+
   return (
     <Container>
       <Title>My Bookings</Title>
 
-      {myBookings.length === 0 ? (
+      {bookings.length === 0 ? (
         <EmptyMessage>No bookings found.</EmptyMessage>
       ) : (
         <List>
-          {myBookings.map((booking) => (
-            <BookingCard key={booking.id}>
-              <RouteInfo>
-                {booking.origin} &rarr; {booking.destination}
-              </RouteInfo>
-              <BookingDetails>
-                <Detail><b>Date:</b> {booking.date}</Detail>
-                <Detail><b>Time:</b> {booking.time}</Detail>
-                <Detail><b>Seats Booked:</b> {booking.seatsBooked}</Detail>
-                <Detail><b>Status:</b> <Status status={booking.status}>{booking.status}</Status></Detail>
-                <Detail><b>Driver:</b> {booking.driver}</Detail>
-              </BookingDetails>
-            </BookingCard>
-          ))}
+          {bookings.map((booking) => {
+            const ride = booking.ride || {};
+            const dateObj = new Date(ride.date);
+            return (
+              <BookingCard key={booking._id}>
+                <RouteInfo>
+                  {ride.from} &rarr; {ride.to}
+                </RouteInfo>
+                <BookingDetails>
+                  <Detail>
+                    <b>Date:</b> {dateObj.toLocaleDateString()}
+                  </Detail>
+                  <Detail>
+                    <b>Time:</b>{" "}
+                    {dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </Detail>
+                  <Detail>
+                    <b>Seats Booked:</b> {booking.seatsBooked}
+                  </Detail>
+                  <Detail>
+                    <b>Booking Date:</b>{" "}
+                    {new Date(booking.bookingDate || booking.createdAt).toLocaleDateString()}
+                  </Detail>
+                </BookingDetails>
+              </BookingCard>
+            );
+          })}
         </List>
       )}
     </Container>
@@ -110,10 +140,19 @@ const Detail = styled.div`
   min-width: 140px;
 `;
 
-const Status = styled.span`
-  font-weight: 700;
-  color: ${(props) =>
-    props.status === "Confirmed" ? "#2d7a2d" : props.status === "Pending" ? "#b47b00" : "#777"};
+const LoadingMessage = styled.p`
+  text-align: center;
+  font-size: 1.3rem;
+  color: #555;
+  font-weight: 600;
+`;
+
+const ErrorMessage = styled.p`
+  text-align: center;
+  font-weight: 600;
+  color: #d9534f;
+  font-size: 1.2rem;
+  margin-top: 30px;
 `;
 
 export default MyBookings;

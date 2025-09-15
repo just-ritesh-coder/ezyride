@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import GooglePlacesAutocomplete from "react-google-places-autocomplete";
+import AutocompleteInput from "../components/AutocompleteInput";
 
 const PostRide = () => {
-  const [origin, setOrigin] = useState(null);
-  const [destination, setDestination] = useState(null);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
   const [formData, setFormData] = useState({
     date: "",
     time: "",
@@ -13,6 +13,8 @@ const PostRide = () => {
     notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,61 +24,81 @@ const PostRide = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     if (!origin || !destination) {
-      alert("Please select both origin and destination addresses.");
+      setError("Please select both origin and destination addresses.");
       return;
     }
 
-    // Combine all form data
     const rideData = {
-      origin: origin.label,
-      destination: destination.label,
+      origin,
+      destination,
       ...formData,
     };
-    console.log("Ride posted:", rideData);
-    setSubmitted(true);
 
-    setOrigin(null);
-    setDestination(null);
-    setFormData({
-      date: "",
-      time: "",
-      seats: 1,
-      price: "",
-      notes: "",
-    });
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+
+      const response = await fetch("http://localhost:5000/api/rides", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(rideData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to post ride");
+      }
+
+      setSubmitted(true);
+      setOrigin("");
+      setDestination("");
+      setFormData({
+        date: "",
+        time: "",
+        seats: 1,
+        price: "",
+        notes: "",
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Container>
       <Title>Post a New Ride</Title>
-      {submitted && <SuccessMessage>Ride posted successfully!</SuccessMessage>}
+
+      {submitted && (
+        <SuccessMessage>
+          Ride posted successfully! You can post another or go to dashboard.
+        </SuccessMessage>
+      )}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+
       <Form onSubmit={handleSubmit}>
         <Label>Origin</Label>
-        <PlacesAutocompleteWrapper>
-          <GooglePlacesAutocomplete
-            apiKey="YOUR_GOOGLE_API_KEY"
-            selectProps={{
-              origin,
-              onChange: setOrigin,
-              placeholder: "Enter starting point",
-            }}
-          />
-        </PlacesAutocompleteWrapper>
+        <AutocompleteInput
+          value={origin}
+          onChange={setOrigin}
+          placeholder="Enter starting point"
+        />
 
         <Label>Destination</Label>
-        <PlacesAutocompleteWrapper>
-          <GooglePlacesAutocomplete
-            apiKey="YOUR_GOOGLE_API_KEY"
-            selectProps={{
-              destination,
-              onChange: setDestination,
-              placeholder: "Enter destination",
-            }}
-          />
-        </PlacesAutocompleteWrapper>
+        <AutocompleteInput
+          value={destination}
+          onChange={setDestination}
+          placeholder="Enter destination"
+        />
 
         <Label>Date</Label>
         <Input
@@ -130,7 +152,9 @@ const PostRide = () => {
           rows="4"
         />
 
-        <SubmitButton type="submit">Post Ride</SubmitButton>
+        <SubmitButton type="submit" disabled={loading}>
+          {loading ? "Posting..." : "Post Ride"}
+        </SubmitButton>
       </Form>
     </Container>
   );
@@ -143,7 +167,7 @@ const Container = styled.div`
   padding: 40px 35px;
   border-radius: 14px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 `;
 
 const Title = styled.h1`
@@ -165,6 +189,17 @@ const SuccessMessage = styled.p`
   font-size: 1.1rem;
 `;
 
+const ErrorMessage = styled.p`
+  background-color: #f8d7da;
+  color: #842029;
+  padding: 14px 22px;
+  border-radius: 8px;
+  margin-bottom: 28px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 1.1rem;
+`;
+
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -176,35 +211,6 @@ const Label = styled.label`
   font-weight: 700;
   color: #222;
   font-size: 1.1rem;
-`;
-
-const PlacesAutocompleteWrapper = styled.div`
-  .react-google-places-autocomplete__input {
-    font-size: 16px;
-    padding: 12px 15px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .react-google-places-autocomplete__suggestions-container {
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 9px 20px rgba(32, 35, 42, 0.2);
-    margin-top: -8px;
-    z-index: 1000;
-  }
-
-  .react-google-places-autocomplete__suggestion {
-    padding: 14px 15px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #f0f4ff;
-    }
-  }
 `;
 
 const Input = styled.input`
@@ -263,6 +269,11 @@ const SubmitButton = styled.button`
 
   &:hover {
     background-color: #005bbb;
+  }
+
+  &:disabled {
+    background-color: #a0c4ff;
+    cursor: not-allowed;
   }
 `;
 
