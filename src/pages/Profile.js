@@ -1,46 +1,83 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-
-const initialProfile = {
-  name: "Ritesh Kumar",
-  email: "ritesh@example.com",
-  phone: "+91 9876543210",
-};
-
-const sampleReviews = [
-  {
-    id: 1,
-    reviewer: "Priya",
-    rating: 5,
-    comment: "Great driver! Very punctual and friendly.",
-  },
-  {
-    id: 2,
-    reviewer: "Amit",
-    rating: 4,
-    comment: "Comfortable ride but started a bit late.",
-  },
-];
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 
 const Profile = () => {
-  const [profile, setProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState(null);
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', vehicle: '', preferences: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState(profile);
 
-  const toggleEdit = () => {
-    if (editing) {
-      setProfile(formData); // save changes on toggle off
-    }
-    setEditing(!editing);
-  };
+  // Fetch user profile data from backend on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch('/api/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Failed to load profile.');
+        const data = await res.json();
+        setProfile(data);
+        setFormData({
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          vehicle: data.vehicle || '',
+          preferences: data.preferences || '',
+        });
+      } catch (err) {
+        setError(err.message || 'Error fetching profile.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Save updated profile to backend
+  const saveProfile = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error('Failed to update profile.');
+      const updated = await res.json();
+      setProfile(updated);
+      setFormData({
+        name: updated.name || '',
+        email: updated.email || '',
+        phone: updated.phone || '',
+        vehicle: updated.vehicle || '',
+        preferences: updated.preferences || '',
+      });
+      setEditing(false);
+    } catch (err) {
+      setError(err.message || 'Error updating profile.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <Container><Title>My Profile</Title><Loading>Loading your profile...</Loading></Container>;
+  if (error) return <Container><Title>My Profile</Title><ErrorMsg>{error}</ErrorMsg></Container>;
+  if (!profile) return <Container><Title>My Profile</Title><NoProfile>Profile data unavailable</NoProfile></Container>;
 
   return (
     <Container>
@@ -52,67 +89,57 @@ const Profile = () => {
         <FieldGroup>
           <FieldLabel>Name:</FieldLabel>
           {editing ? (
-            <FieldInput
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
+            <FieldInput type="text" name="name" value={formData.name} onChange={handleChange} />
           ) : (
-            <FieldText>{profile.name}</FieldText>
+            <FieldText>{profile.name || '-'}</FieldText>
           )}
         </FieldGroup>
 
         <FieldGroup>
           <FieldLabel>Email:</FieldLabel>
           {editing ? (
-            <FieldInput
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+            <FieldInput type="email" name="email" value={formData.email} onChange={handleChange} />
           ) : (
-            <FieldText>{profile.email}</FieldText>
+            <FieldText>{profile.email || '-'}</FieldText>
           )}
         </FieldGroup>
 
         <FieldGroup>
           <FieldLabel>Phone:</FieldLabel>
           {editing ? (
-            <FieldInput
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+            <FieldInput type="tel" name="phone" value={formData.phone} onChange={handleChange} />
           ) : (
-            <FieldText>{profile.phone}</FieldText>
+            <FieldText>{profile.phone || '-'}</FieldText>
           )}
         </FieldGroup>
 
-        <EditButton onClick={toggleEdit}>{editing ? "Save" : "Edit"}</EditButton>
-      </ProfileSection>
+        <FieldGroup>
+          <FieldLabel>Vehicle:</FieldLabel>
+          {editing ? (
+            <FieldInput type="text" name="vehicle" value={formData.vehicle} onChange={handleChange} />
+          ) : (
+            <FieldText>{profile.vehicle || '-'}</FieldText>
+          )}
+        </FieldGroup>
 
-      <ReviewsSection>
-        <SectionTitle>Reviews Received</SectionTitle>
-        {sampleReviews.length === 0 ? (
-          <NoReviews>No reviews received yet.</NoReviews>
-        ) : (
-          <ReviewsList>
-            {sampleReviews.map((review) => (
-              <ReviewCard key={review.id}>
-                <Reviewer>{review.reviewer}</Reviewer>
-                <Rating>Rating: {review.rating} / 5</Rating>
-                <Comment>{review.comment}</Comment>
-              </ReviewCard>
-            ))}
-          </ReviewsList>
-        )}
-      </ReviewsSection>
+        <FieldGroup>
+          <FieldLabel>Preferences:</FieldLabel>
+          {editing ? (
+            <FieldInput type="text" name="preferences" value={formData.preferences} onChange={handleChange} />
+          ) : (
+            <FieldText>{profile.preferences || '-'}</FieldText>
+          )}
+        </FieldGroup>
+
+        <EditButton onClick={editing ? saveProfile : () => setEditing(true)}>
+          {editing ? 'Save' : 'Edit'}
+        </EditButton>
+      </ProfileSection>
     </Container>
   );
 };
+
+// Styled Components
 
 const Container = styled.div`
   max-width: 650px;
@@ -132,7 +159,32 @@ const Title = styled.h1`
   text-align: center;
 `;
 
-const ProfileSection = styled.section``;
+const Loading = styled.p`
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #777;
+  margin-top: 40px;
+`;
+
+const ErrorMsg = styled.p`
+  text-align: center;
+  font-weight: 600;
+  color: #d9534f;
+  margin-top: 40px;
+`;
+
+const NoProfile = styled.p`
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #777;
+  margin-top: 40px;
+`;
+
+const ProfileSection = styled.section`
+  margin-bottom: 40px;
+`;
 
 const SectionTitle = styled.h2`
   font-weight: 700;
@@ -192,50 +244,6 @@ const EditButton = styled.button`
   &:hover {
     background-color: #005bbb;
   }
-`;
-
-const ReviewsSection = styled.section`
-  margin-top: 55px;
-`;
-
-const NoReviews = styled.p`
-  text-align: center;
-  font-weight: 600;
-  font-size: 1.2rem;
-  color: #777;
-`;
-
-const ReviewsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-`;
-
-const ReviewCard = styled.div`
-  padding: 22px 25px;
-  border-radius: 12px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
-  background-color: #f3f9ff;
-`;
-
-const Reviewer = styled.div`
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #005bbb;
-  margin-bottom: 6px;
-`;
-
-const Rating = styled.div`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #444;
-  margin-bottom: 6px;
-`;
-
-const Comment = styled.div`
-  font-size: 1.05rem;
-  color: #333;
-  line-height: 1.5;
 `;
 
 export default Profile;
