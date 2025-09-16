@@ -2,8 +2,10 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import { AuthContext } from "./context/AuthContext";
+
 import AuthPage from "./pages/AuthPage";
 import Layout from "./components/Layout";
+
 import Home from "./pages/Home";
 import PostRide from "./pages/PostRide";
 import SearchRides from "./pages/SearchRides";
@@ -12,16 +14,15 @@ import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// ProtectedRoute guards access to private routes by checking auth token
+// NEW: import MyPostedRides to show driver status controls
+import MyPostedRides from "./pages/MyPostedRides";
+
+// Protect routes by auth token from context/localStorage
 const ProtectedRoute = ({ children }) => {
   const { token } = React.useContext(AuthContext);
-
   if (!token) {
-    // Not logged in, redirect to login page
     return <Navigate to="/" replace />;
   }
-
-  // Logged in, render child routes/components
   return children;
 };
 
@@ -34,7 +35,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected routes wrapped in Layout */}
+        {/* Protected routes wrapped in Layout, children rendered via <Outlet /> in Layout */}
         <Route
           path="/home"
           element={
@@ -43,15 +44,15 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* Nested routes rendered inside Layout via <Outlet /> */}
           <Route index element={<Home />} />
           <Route path="post-ride" element={<PostRide />} />
           <Route path="search-rides" element={<SearchRides />} />
           <Route path="my-bookings" element={<MyBookings />} />
+          <Route path="my-posted-rides" element={<MyPostedRides />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Redirect unknown routes to login */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

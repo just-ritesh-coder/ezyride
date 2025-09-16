@@ -8,35 +8,32 @@ const Home = () => {
   const [statsData, setStatsData] = React.useState([]);
   const [recentActivities, setRecentActivities] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
+  const [error, setError] = React.useState("");
 
   React.useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        setError(null);
-
+        setError("");
         const token = localStorage.getItem("authToken");
         const response = await fetch("http://localhost:5000/api/dashboard", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
         if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.message || "Failed to fetch dashboard data");
         }
-
         const data = await response.json();
-        setStatsData(data.stats);
-        setRecentActivities(data.activities);
+        setStatsData(data.stats || []);
+        setRecentActivities(data.activities || []);
       } catch (err) {
         setError(err.message || "Something went wrong");
       } finally {
         setLoading(false);
       }
     };
-
     fetchDashboardData();
   }, []);
 
@@ -53,7 +50,7 @@ const Home = () => {
       <WelcomeMessage>Welcome back to EzyRide!</WelcomeMessage>
       <Intro>
         Ready to start your journey? Post a ride, search available rides, and
-        manage your bookings—all in one place.
+        manage bookings — all in one place.
       </Intro>
 
       <StatsSection>
@@ -82,10 +79,15 @@ const Home = () => {
         </ActionCard>
 
         <ActionCard onClick={() => navigate("/home/profile")}>
-          <ActionTitle>Profile & Reviews</ActionTitle>
+          <ActionTitle>Profile &amp; Reviews</ActionTitle>
           <ActionDesc>Update your profile and read reviews.</ActionDesc>
         </ActionCard>
       </Actions>
+      
+        <ActionCard onClick={() => navigate("/home/my-posted-rides")}>
+          <ActionTitle>My Posted Ride</ActionTitle>
+          <ActionDesc>View and manage your ride bookings.</ActionDesc>
+        </ActionCard>
 
       <RecentActivitiesSection>
         <SectionTitle>Recent Activity</SectionTitle>
@@ -103,13 +105,14 @@ const Home = () => {
         )}
       </RecentActivitiesSection>
 
-      <FooterNote>© 2025 Share Your Ride. Connect and travel smarter.</FooterNote>
+      <FooterNote>
+        © {new Date().getFullYear()} Share Your Ride. Connect and travel smarter.
+      </FooterNote>
     </Container>
   );
 };
 
 // Styled components
-
 const Container = styled.div`
   max-width: 900px;
   margin: 50px auto 80px;
@@ -137,7 +140,6 @@ const StatsSection = styled.div`
   justify-content: center;
   gap: 40px;
   margin-bottom: 55px;
-
   @media (max-width: 600px) {
     flex-wrap: wrap;
   }
@@ -183,7 +185,6 @@ const ActionCard = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   user-select: none;
-
   &:hover {
     background-color: #e2f0ff;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
