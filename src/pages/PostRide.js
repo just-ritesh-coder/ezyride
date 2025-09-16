@@ -53,20 +53,17 @@ const PostRide = () => {
     }
 
     // Combine date + time into ISO string for backend
-    const rideISODate = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+   const rideISODate = new Date(`${formData.date}T${formData.time}:00`).toISOString();
 
-    // Prepare backend payload that matches your rides.js route
-    const rideData = {
-      origin,                 // your backend expects origin (maps to Ride.from)
-      destination,            // your backend expects destination (maps to Ride.to)
-      date: formData.date,    // yyyy-mm-dd (kept to be close to your route)
-      time: formData.time,    // HH:mm
-      seats: Number(formData.seats),
-      price: Number(formData.price),
-      notes: formData.notes || "",
-      // If you later change the backend to accept a single date field:
-      // dateISO: rideISODate,
-    };
+const rideData = {
+  origin,
+  destination,
+  seats: Number(formData.seats),
+  price: Number(formData.price),
+  notes: formData.notes || "",
+  dateISO: rideISODate,  // ✅ now used
+};
+
 
     try {
       setLoading(true);
