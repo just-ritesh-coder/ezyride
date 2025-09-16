@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const dashboardRoutes = require("./routes/dashboard");
 const rideStatusRoutes = require('./routes/rideStatus');
+const meRoutes = require('./routes/me');
 dotenv.config();
 
 const app = express();
@@ -31,6 +32,8 @@ app.use("/api/rides", require("./routes/rides"));
 app.use("/api/bookings", require("./routes/bookings"));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/rides', rideStatusRoutes);
+app.use('/api', meRoutes);
+
  // <-- Add this line
 
 // Start server

@@ -1,13 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function AutocompleteInput({ value, onChange, placeholder = "Search place" }) {
+export default function AutocompleteInput({
+  value,
+  onChange,
+  placeholder = "Search place",
+  minChars = 3,
+  limit = 5,
+  disabled = false,
+}) {
   const [query, setQuery] = useState(value || "");
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1); // for keyboard nav
+
   const abortRef = useRef(null);
   const timerRef = useRef(null);
+  const inputRef = useRef(null);
+  const listRef = useRef(null);
 
+  // Sync internal query with controlled value from parent
   useEffect(() => {
     setQuery(value || "");
   }, [value]);
@@ -16,106 +28,172 @@ export default function AutocompleteInput({ value, onChange, placeholder = "Sear
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+
     setLoading(true);
     try {
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`;
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=${limit}`;
       const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error("Photon error");
       const data = await res.json();
+
       const items = (data.features || []).map((f) => {
         const p = f.properties || {};
         const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
-        return { id: `${p.osm_id || ""}-${p.name || ""}`, label: parts.join(", ") };
+        return {
+          id: `${p.osm_id || ""}-${p.name || ""}-${p.postcode || ""}`,
+          label: parts.join(", "),
+        };
       });
+
       setSuggestions(items);
+      setActiveIndex(items.length ? 0 : -1);
     } catch (e) {
-      if (e.name !== "AbortError") setSuggestions([]);
+      if (e.name !== "AbortError") {
+        setSuggestions([]);
+        setActiveIndex(-1);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const onInput = (e) => {
+  const handleInput = (e) => {
     const v = e.target.value;
     setQuery(v);
-    onChange(v);
+    onChange?.(v);
+
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (v.trim().length < 3) {
+
+    if (v.trim().length < minChars) {
       setSuggestions([]);
       setOpen(false);
+      setActiveIndex(-1);
       return;
     }
+
     setOpen(true);
     timerRef.current = setTimeout(() => fetchSuggestions(v.trim()), 300);
   };
 
-  const select = (item) => {
-    onChange(item.label);
+  const handleSelect = (item) => {
+    onChange?.(item.label);
     setQuery(item.label);
     setOpen(false);
+    setActiveIndex(-1);
   };
 
-  const onBlur = () => {
-    setTimeout(() => setOpen(false), 150); // allow click
+  const handleBlur = () => {
+    // Delay closing so click on suggestion still registers
+    setTimeout(() => setOpen(false), 150);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!open || !suggestions.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((idx) => (idx + 1) % suggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((idx) => (idx - 1 + suggestions.length) % suggestions.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIndex >= 0 && activeIndex < suggestions.length) {
+        handleSelect(suggestions[activeIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
   };
 
   return (
     <div style={{ position: "relative" }}>
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={query}
-        onChange={onInput}
-        autoComplete="off"
-        onBlur={onBlur}
-        onFocus={() => {
-          if (suggestions.length > 0 && query.trim().length >= 3) setOpen(true);
-        }}
+        onChange={handleInput}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        disabled={disabled}
+        aria-autocomplete="list"
+        aria-expanded={open}
+        aria-controls="ac-listbox"
+        aria-activedescendant={
+          open && activeIndex >= 0 ? `ac-option-${suggestions[activeIndex]?.id}` : undefined
+        }
         style={{
           width: "100%",
-          padding: "12px 15px",
-          borderRadius: "8px",
+          padding: "12px 14px",
           border: "1px solid #ccc",
-          outline: "none",
+          borderRadius: "10px",
           fontSize: "16px",
-          boxSizing: "border-box",
+          outline: "none",
+          transition: "border-color 0.2s",
+        }}
+        onFocus={() => {
+          if (query.trim().length >= minChars && suggestions.length) setOpen(true);
         }}
       />
+
       {open && (
-        <ul
+        <div
+          ref={listRef}
+          id="ac-listbox"
+          role="listbox"
           style={{
             position: "absolute",
             top: "100%",
+            left: 0,
+            right: 0,
+            background: "#fff",
+            border: "1px solid #e6e6e6",
+            borderTop: "none",
+            borderRadius: "0 0 10px 10px",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
             zIndex: 1000,
-            background: "white",
-            listStyle: "none",
-            padding: 0,
-            margin: 0,
-            width: "100%",
-            border: "1px solid #ccc",
-            maxHeight: "180px",
+            maxHeight: "240px",
             overflowY: "auto",
-            cursor: "pointer",
-            borderRadius: "0 0 8px 8px",
-            boxShadow: "0 9px 20px rgba(32, 35, 42, 0.2)",
           }}
         >
-          {loading && <li style={{ padding: "8px 10px", color: "#666" }}>Searching...</li>}
-          {!loading &&
-            suggestions.map((s, i) => (
-              <li
-                key={s.id || i}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => select(s)}
-                style={{ padding: "8px 10px", borderTop: "1px solid #f1f5f9" }}
-              >
-                {s.label}
-              </li>
-            ))}
-          {!loading && suggestions.length === 0 && query.trim().length >= 3 && (
-            <li style={{ padding: "8px 10px", color: "#64748b" }}>No results</li>
+          {loading && (
+            <div style={{ padding: "10px 12px", color: "#666", fontSize: "14px" }}>
+              Searching...
+            </div>
           )}
-        </ul>
+
+          {!loading && suggestions.length === 0 && (
+            <div style={{ padding: "10px 12px", color: "#999", fontSize: "14px" }}>
+              No suggestions
+            </div>
+          )}
+
+          {!loading &&
+            suggestions.map((item, idx) => {
+              const isActive = idx === activeIndex;
+              return (
+                <div
+                  key={item.id}
+                  id={`ac-option-${item.id}`}
+                  role="option"
+                  aria-selected={isActive}
+                  onMouseDown={(e) => e.preventDefault()} // prevent input blur before click
+                  onClick={() => handleSelect(item)}
+                  style={{
+                    padding: "10px 12px",
+                    cursor: "pointer",
+                    background: isActive ? "#f0f7ff" : "#fff",
+                    borderBottom: "1px solid #f5f5f5",
+                    color: "#333",
+                    fontSize: "15px",
+                  }}
+                >
+                  {item.label}
+                </div>
+              );
+            })}
+        </div>
       )}
     </div>
   );

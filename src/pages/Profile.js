@@ -1,249 +1,221 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+
+const TABS = ["Account Details", "Ride History", "SOS", "Features"];
 
 const Profile = () => {
-  const [profile, setProfile] = useState(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', vehicle: '', preferences: '' });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [editing, setEditing] = useState(false);
+  // FIX: track a single tab string, not the entire array
+  const [active, setActive] = useState("Account Details");
+  const [user, setUser] = useState(null);
+  const [completed, setCompleted] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
 
-  // Fetch user profile data from backend on mount
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const token = localStorage.getItem('authToken');
-        const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error('Failed to load profile.');
-        const data = await res.json();
-        setProfile(data);
-        setFormData({
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          vehicle: data.vehicle || '',
-          preferences: data.preferences || '',
-        });
-      } catch (err) {
-        setError(err.message || 'Error fetching profile.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const fetchUser = async () => {
+    try {
+      setErr("");
+      const token = localStorage.getItem("authToken");
+      const res = await fetch("/api/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to load profile");
+      setUser(data.user || null);
+    } catch (e) {
+      setErr(e.message);
+      setUser(null);
+    }
   };
 
-  // Save updated profile to backend
-  const saveProfile = async () => {
-    setLoading(true);
-    setError('');
+  const fetchCompleted = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const res = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
+      setLoading(true);
+      setErr("");
+      const token = localStorage.getItem("authToken");
+      const res = await fetch("/api/users/me/rides/completed", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Failed to update profile.');
-      const updated = await res.json();
-      setProfile(updated);
-      setFormData({
-        name: updated.name || '',
-        email: updated.email || '',
-        phone: updated.phone || '',
-        vehicle: updated.vehicle || '',
-        preferences: updated.preferences || '',
-      });
-      setEditing(false);
-    } catch (err) {
-      setError(err.message || 'Error updating profile.');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to load ride history");
+      setCompleted(data.rides || []);
+    } catch (e) {
+      setErr(e.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <Container><Title>My Profile</Title><Loading>Loading your profile...</Loading></Container>;
-  if (error) return <Container><Title>My Profile</Title><ErrorMsg>{error}</ErrorMsg></Container>;
-  if (!profile) return <Container><Title>My Profile</Title><NoProfile>Profile data unavailable</NoProfile></Container>;
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (active === "Ride History") fetchCompleted();
+  }, [active]);
 
   return (
-    <Container>
-      <Title>My Profile</Title>
+    <Wrap>
+      <Header>
+        <Title>Profile</Title>
+        <Sub>Manage account, view history, SOS, and essential features.</Sub>
+      </Header>
 
-      <ProfileSection>
-        <SectionTitle>Personal Information</SectionTitle>
+      <Tabs>
+        {TABS.map((t) => (
+          <Tab key={t} active={active === t} onClick={() => setActive(t)}>
+            {t}
+          </Tab>
+        ))}
+      </Tabs>
 
-        <FieldGroup>
-          <FieldLabel>Name:</FieldLabel>
-          {editing ? (
-            <FieldInput type="text" name="name" value={formData.name} onChange={handleChange} />
-          ) : (
-            <FieldText>{profile.name || '-'}</FieldText>
-          )}
-        </FieldGroup>
+      {err && <Err>{err}</Err>}
 
-        <FieldGroup>
-          <FieldLabel>Email:</FieldLabel>
-          {editing ? (
-            <FieldInput type="email" name="email" value={formData.email} onChange={handleChange} />
-          ) : (
-            <FieldText>{profile.email || '-'}</FieldText>
-          )}
-        </FieldGroup>
+      <Body>
+        {active === "Account Details" && (
+          <Section>
+            <Card>
+              <H3>Account Details</H3>
+              {!user ? (
+                <Muted>Loading...</Muted>
+              ) : (
+                <Grid>
+                  <Item>
+                    <Label>Full Name</Label>
+                    <Value>{user.fullName || "—"}</Value>
+                  </Item>
+                  <Item>
+                    <Label>Email</Label>
+                    <Value>{user.email || "—"}</Value>
+                  </Item>
+                  <Item>
+                    <Label>Phone</Label>
+                    <Value>{user.phone || "—"}</Value>
+                  </Item>
+                  <Item>
+                    <Label>Vehicle</Label>
+                    <Value>{user.vehicle || "—"}</Value>
+                  </Item>
+                  <Item>
+                    <Label>Preferences</Label>
+                    <Value>{user.preferences || "—"}</Value>
+                  </Item>
+                  <Item>
+                    <Label>Member Since</Label>
+                    <Value>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</Value>
+                  </Item>
+                </Grid>
+              )}
+            </Card>
+          </Section>
+        )}
 
-        <FieldGroup>
-          <FieldLabel>Phone:</FieldLabel>
-          {editing ? (
-            <FieldInput type="tel" name="phone" value={formData.phone} onChange={handleChange} />
-          ) : (
-            <FieldText>{profile.phone || '-'}</FieldText>
-          )}
-        </FieldGroup>
+        {active === "Ride History" && (
+          <Section>
+            <Card>
+              <H3>Ride History</H3>
+              {loading ? (
+                <Muted>Loading completed rides...</Muted>
+              ) : completed.length === 0 ? (
+                <Muted>No completed rides yet.</Muted>
+              ) : (
+                <HistoryGrid>
+                  {completed.map((ride) => {
+                    const dt = new Date(ride.date);
+                    return (
+                      <HistoryCard key={ride._id}>
+                        <RouteTxt>
+                          <b>{ride.from}</b> → <b>{ride.to}</b>
+                        </RouteTxt>
+                        <Meta>
+                          <span>{dt.toLocaleDateString()}</span>
+                          <span>
+                            {dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span>₹{ride.pricePerSeat}</span>
+                        </Meta>
+                        <Done>completed</Done>
+                      </HistoryCard>
+                    );
+                  })}
+                </HistoryGrid>
+              )}
+            </Card>
+          </Section>
+        )}
 
-        <FieldGroup>
-          <FieldLabel>Vehicle:</FieldLabel>
-          {editing ? (
-            <FieldInput type="text" name="vehicle" value={formData.vehicle} onChange={handleChange} />
-          ) : (
-            <FieldText>{profile.vehicle || '-'}</FieldText>
-          )}
-        </FieldGroup>
+        {active === "SOS" && (
+          <Section>
+            <Card>
+              <H3>SOS</H3>
+              <Muted>
+                Configure emergency contacts and quick actions. Coming soon:
+                one-tap SOS, live location sharing, and automatic alerts.
+              </Muted>
+              <Actions>
+                <Primary disabled>Setup SOS (soon)</Primary>
+                <Secondary disabled>Test Alert (soon)</Secondary>
+              </Actions>
+            </Card>
+          </Section>
+        )}
 
-        <FieldGroup>
-          <FieldLabel>Preferences:</FieldLabel>
-          {editing ? (
-            <FieldInput type="text" name="preferences" value={formData.preferences} onChange={handleChange} />
-          ) : (
-            <FieldText>{profile.preferences || '-'}</FieldText>
-          )}
-        </FieldGroup>
-
-        <EditButton onClick={editing ? saveProfile : () => setEditing(true)}>
-          {editing ? 'Save' : 'Edit'}
-        </EditButton>
-      </ProfileSection>
-    </Container>
+        {active === "Features" && (
+          <Section>
+            <Card>
+              <H3>Essential Features</H3>
+              <FeatureList>
+                <li>Live ride status updates</li>
+                <li>In-app chat (driver ↔ passenger)</li>
+                <li>Price and seat filters</li>
+                <li>Real-time location sharing</li>
+                <li>Payment integration</li>
+                <li>Ratings and reviews</li>
+              </FeatureList>
+            </Card>
+          </Section>
+        )}
+      </Body>
+    </Wrap>
   );
 };
 
-// Styled Components
+export default Profile;
 
-const Container = styled.div`
-  max-width: 650px;
-  margin: 40px auto;
-  background: white;
-  padding: 40px 35px;
-  border-radius: 12px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
+/* ========== styles ========== */
+
+const Wrap = styled.div`
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 20px 60px;
   font-family: "Poppins", sans-serif;
 `;
-
-const Title = styled.h1`
-  font-weight: 900;
-  font-size: 3rem;
-  color: #1e90ff;
-  margin-bottom: 45px;
-  text-align: center;
+const Header = styled.div`text-align: center;margin: 6px 0 18px;`;
+const Title = styled.h1`color: #1e90ff;font-weight: 900;font-size: 2.2rem;margin: 0;`;
+const Sub = styled.p`color: #666;font-weight: 500;margin: 6px 0 0;`;
+const Tabs = styled.div`display: flex;gap: 10px;border-bottom: 1px solid #e9eef5;padding-bottom: 6px;overflow-x: auto;`;
+const Tab = styled.button`
+  padding: 10px 14px;border: none;border-radius: 999px;font-weight: 800;
+  color: ${({ active }) => (active ? "#fff" : "#1e90ff")};
+  background: ${({ active }) => (active ? "#1e90ff" : "#e7f0ff")};
+  cursor: pointer;white-space: nowrap;
+  &:hover { background: ${({ active }) => (active ? "#0b74ff" : "#dbe9ff")}; }
 `;
-
-const Loading = styled.p`
-  text-align: center;
-  font-weight: 600;
-  font-size: 1.2rem;
-  color: #777;
-  margin-top: 40px;
-`;
-
-const ErrorMsg = styled.p`
-  text-align: center;
-  font-weight: 600;
-  color: #d9534f;
-  margin-top: 40px;
-`;
-
-const NoProfile = styled.p`
-  text-align: center;
-  font-weight: 600;
-  font-size: 1.2rem;
-  color: #777;
-  margin-top: 40px;
-`;
-
-const ProfileSection = styled.section`
-  margin-bottom: 40px;
-`;
-
-const SectionTitle = styled.h2`
-  font-weight: 700;
-  font-size: 1.8rem;
-  color: #005bbb;
-  margin-bottom: 25px;
-`;
-
-const FieldGroup = styled.div`
-  margin-bottom: 22px;
-`;
-
-const FieldLabel = styled.label`
-  display: block;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 6px;
-  font-size: 1.1rem;
-`;
-
-const FieldText = styled.p`
-  font-size: 1.2rem;
-  color: #444;
-  margin: 0;
-  padding: 8px 12px;
-  background-color: #f6faff;
-  border-radius: 8px;
-`;
-
-const FieldInput = styled.input`
-  width: 100%;
-  font-size: 1.2rem;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #bbb;
-  outline: none;
-  transition: border-color 0.3s;
-
-  &:focus {
-    border-color: #1e90ff;
-    box-shadow: 0 0 8px #a2c5ffaa;
-  }
-`;
-
-const EditButton = styled.button`
-  background-color: #1e90ff;
-  color: white;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: 1.15rem;
-  padding: 14px 30px;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #005bbb;
-  }
-`;
-
-export default Profile;
+const Body = styled.div`margin-top: 16px;`;
+const Section = styled.section`margin-bottom: 18px;`;
+const Card = styled.div`background: #fff;border-radius: 14px;box-shadow: 0 12px 28px rgba(0,0,0,0.08);padding: 18px;`;
+const H3 = styled.h3`color: #005bbb;font-weight: 900;margin: 0 0 12px;`;
+const Err = styled.p`text-align: center;color: #d9534f;font-weight: 700;margin-top: 8px;`;
+const Muted = styled.p`color: #666;font-weight: 600;margin: 6px 0 0;`;
+const Grid = styled.div`display: grid;grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));gap: 12px;`;
+const Item = styled.div`background: #f7f9fc;border-radius: 10px;padding: 12px 14px;`;
+const Label = styled.div`color: #6b7a90;font-weight: 700;font-size: 0.8rem;margin-bottom: 4px;`;
+const Value = styled.div`color: #2a2a2a;font-weight: 800;`;
+const HistoryGrid = styled.div`display: grid;grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));gap: 14px;`;
+const HistoryCard = styled.div`background: #fff;border-radius: 12px;box-shadow: 0 10px 24px rgba(0,0,0,0.08);padding: 16px;display: flex;flex-direction: column;gap: 8px;`;
+const RouteTxt = styled.div`color: #222;font-weight: 800;`;
+const Meta = styled.div`display: flex;gap: 12px;flex-wrap: wrap;color: #555;font-weight: 600;font-size: 0.95rem;`;
+const Done = styled.span`align-self: flex-start;background: #e6f4ea;color: #18794e;border: 1px solid #bfe3cf;border-radius: 999px;padding: 4px 8px;font-weight: 800;font-size: 0.8rem;`;
+const Actions = styled.div`display: flex;gap: 10px;margin-top: 10px;`;
+const Primary = styled.button`flex: 1;padding: 10px 14px;background: #1e90ff;color: #fff;border: none;border-radius: 12px;font-weight: 800;cursor: pointer;&:hover { background: #0b74ff; }`;
+const Secondary = styled(Primary)`background: #f0f7ff;color: #005bbb;border: 1px solid #cfe1ff;&:hover { background: #e6f0ff; }`;
+const FeatureList = styled.ul`margin: 6px 0 0 18px;color: #333;font-weight: 600;`;

@@ -5,45 +5,74 @@ import AutocompleteInput from "../components/AutocompleteInput";
 const PostRide = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
+
   const [formData, setFormData] = useState({
-    date: "",
-    time: "",
+    date: "",     // yyyy-mm-dd
+    time: "",     // HH:mm
     seats: 1,
     price: "",
     notes: "",
   });
+
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    // Normalize numeric inputs to positive values where needed
+    if (name === "seats") {
+      const n = Math.max(1, Number(value || 1));
+      setFormData((prev) => ({ ...prev, seats: n }));
+      return;
+    }
+    if (name === "price") {
+      const p = Math.max(0, Number(value || 0));
+      setFormData((prev) => ({ ...prev, price: p }));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    setError("");
+    setSubmitted(false);
 
     if (!origin || !destination) {
       setError("Please select both origin and destination addresses.");
       return;
     }
+    if (!formData.date || !formData.time) {
+      setError("Please select both date and time.");
+      return;
+    }
+    if (!formData.seats || !formData.price) {
+      setError("Please fill seats and price.");
+      return;
+    }
 
+    // Combine date + time into ISO string for backend
+    const rideISODate = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+
+    // Prepare backend payload that matches your rides.js route
     const rideData = {
-      origin,
-      destination,
-      ...formData,
+      origin,                 // your backend expects origin (maps to Ride.from)
+      destination,            // your backend expects destination (maps to Ride.to)
+      date: formData.date,    // yyyy-mm-dd (kept to be close to your route)
+      time: formData.time,    // HH:mm
+      seats: Number(formData.seats),
+      price: Number(formData.price),
+      notes: formData.notes || "",
+      // If you later change the backend to accept a single date field:
+      // dateISO: rideISODate,
     };
 
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
 
-      const response = await fetch("http://localhost:5000/api/rides", {
+      const response = await fetch("/api/rides", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,10 +82,11 @@ const PostRide = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to post ride");
       }
 
+      // Success
       setSubmitted(true);
       setOrigin("");
       setDestination("");
@@ -68,7 +98,7 @@ const PostRide = () => {
         notes: "",
       });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -83,6 +113,7 @@ const PostRide = () => {
           Ride posted successfully! You can post another or go to dashboard.
         </SuccessMessage>
       )}
+
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
       <Form onSubmit={handleSubmit}>
@@ -90,7 +121,7 @@ const PostRide = () => {
         <AutocompleteInput
           value={origin}
           onChange={setOrigin}
-          placeholder="Enter starting point"
+          placeholder="Enter origin"
         />
 
         <Label>Destination</Label>
@@ -125,9 +156,9 @@ const PostRide = () => {
           onChange={handleChange}
           required
         >
-          {[...Array(10)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {i + 1}
+          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+            <option key={n} value={n}>
+              {n}
             </option>
           ))}
         </Select>
@@ -136,20 +167,21 @@ const PostRide = () => {
         <Input
           type="number"
           name="price"
+          min="0"
+          step="1"
           value={formData.price}
           onChange={handleChange}
-          placeholder="e.g., 150"
-          min="0"
+          placeholder="Enter price per seat"
           required
         />
 
         <Label>Additional Notes (Optional)</Label>
         <TextArea
           name="notes"
+          rows={3}
           value={formData.notes}
           onChange={handleChange}
-          placeholder="Any special instructions or details"
-          rows="4"
+          placeholder="Any notes for passengers (luggage, pickup point, etc.)"
         />
 
         <SubmitButton type="submit" disabled={loading}>
@@ -174,7 +206,7 @@ const Title = styled.h1`
   margin-bottom: 35px;
   color: #1e90ff;
   font-weight: 800;
-  font-size: 2.8rem;
+  font-size: 2.2rem;
   text-align: center;
 `;
 
@@ -183,10 +215,10 @@ const SuccessMessage = styled.p`
   color: #155724;
   padding: 14px 22px;
   border-radius: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   font-weight: 600;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
 `;
 
 const ErrorMessage = styled.p`
@@ -194,10 +226,10 @@ const ErrorMessage = styled.p`
   color: #842029;
   padding: 14px 22px;
   border-radius: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   font-weight: 600;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
 `;
 
 const Form = styled.form`
@@ -210,17 +242,16 @@ const Label = styled.label`
   margin-top: 20px;
   font-weight: 700;
   color: #222;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 `;
 
 const Input = styled.input`
   padding: 14px 16px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  font-size: 17px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.3s;
-
   &:focus {
     border-color: #1e90ff;
     box-shadow: 0 0 10px #a3c6ff88;
@@ -231,9 +262,8 @@ const Select = styled.select`
   padding: 14px 16px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  font-size: 17px;
+  font-size: 16px;
   outline: none;
-
   &:focus {
     border-color: #1e90ff;
     box-shadow: 0 0 10px #a3c6ff88;
@@ -244,11 +274,10 @@ const TextArea = styled.textarea`
   padding: 14px 16px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  font-size: 17px;
+  font-size: 16px;
   resize: vertical;
   outline: none;
   transition: border-color 0.3s;
-
   &:focus {
     border-color: #1e90ff;
     box-shadow: 0 0 10px #a3c6ff88;
@@ -256,21 +285,19 @@ const TextArea = styled.textarea`
 `;
 
 const SubmitButton = styled.button`
-  margin-top: 40px;
-  padding: 16px;
+  margin-top: 28px;
+  padding: 14px 16px;
   background-color: #1e90ff;
   color: white;
   font-weight: 800;
-  font-size: 20px;
-  border-radius: 14px;
+  font-size: 18px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   transition: background-color 0.35s ease;
-
   &:hover {
     background-color: #005bbb;
   }
-
   &:disabled {
     background-color: #a0c4ff;
     cursor: not-allowed;
