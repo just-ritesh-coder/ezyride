@@ -2,32 +2,37 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const protect = async (req, res, next) => {
-  let token;
-
-  // Check if authorization header exists and starts with 'Bearer '
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      // Extract token from header
-      token = req.headers.authorization.split(" ")[1];
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Attach user to request, excluding password
-      req.user = await User.findById(decoded.id).select("-password");
-
-      next();
-    } catch (error) {
-      console.error("Auth middleware error:", error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+  try {
+    const auth = req.headers.authorization || "";
+    const hasBearer = auth.startsWith("Bearer ");
+    if (!hasBearer) {
+      return res.status(401).json({ message: "Not authorized, no token" });
     }
-  }
 
-  if (!token) {
-    return res.status(401).json({ message: "Not authorized, no token" });
+    const token = auth.split(" ")[1];
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (e) {
+      console.error("JWT verify error:", e.message);
+      return res.status(401).json({ message: "Not authorized, token failed" });
+    }
+
+    // Prefer to attach both for compatibility
+    req.userId = decoded.id;
+
+    const user = await User.findById(decoded.id).select(
+      "_id fullName email phone vehicle preferences createdAt"
+    );
+    if (!user) {
+      return res.status(401).json({ message: "Not authorized, user not found" });
+    }
+
+    req.user = user;
+    return next();
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    return res.status(401).json({ message: "Not authorized" });
   }
 };
 

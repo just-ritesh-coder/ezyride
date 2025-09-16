@@ -12,14 +12,13 @@ export default function AutocompleteInput({
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1); // for keyboard nav
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   const abortRef = useRef(null);
   const timerRef = useRef(null);
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
-  // Sync internal query with controlled value from parent
   useEffect(() => {
     setQuery(value || "");
   }, [value]);
@@ -83,7 +82,6 @@ export default function AutocompleteInput({
   };
 
   const handleBlur = () => {
-    // Delay closing so click on suggestion still registers
     setTimeout(() => setOpen(false), 150);
   };
 
@@ -117,9 +115,9 @@ export default function AutocompleteInput({
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         disabled={disabled}
+        // ARIA: textbox + listbox pattern (no aria-expanded on textbox)
         aria-autocomplete="list"
-        aria-expanded={open}
-        aria-controls="ac-listbox"
+        aria-controls={open && suggestions.length ? "ac-listbox" : undefined}
         aria-activedescendant={
           open && activeIndex >= 0 ? `ac-option-${suggestions[activeIndex]?.id}` : undefined
         }
@@ -178,7 +176,7 @@ export default function AutocompleteInput({
                   id={`ac-option-${item.id}`}
                   role="option"
                   aria-selected={isActive}
-                  onMouseDown={(e) => e.preventDefault()} // prevent input blur before click
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => handleSelect(item)}
                   style={{
                     padding: "10px 12px",

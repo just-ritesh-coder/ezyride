@@ -4,29 +4,46 @@ import styled from "styled-components";
 const TABS = ["Account Details", "Ride History", "SOS", "Features"];
 
 const Profile = () => {
-  // FIX: track a single tab string, not the entire array
   const [active, setActive] = useState("Account Details");
   const [user, setUser] = useState(null);
   const [completed, setCompleted] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState({
+    fullName: "",
+    phone: "",
+    vehicle: "",
+    preferences: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Fetch user profile
   const fetchUser = async () => {
     try {
       setErr("");
       const token = localStorage.getItem("authToken");
       const res = await fetch("/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, "Cache-Control": "no-store" },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to load profile");
-      setUser(data.user || null);
+      setUser(data.user || data);
+      setEditData({
+        fullName: data.fullName || data.name || "",
+        phone: data.phone || "",
+        vehicle: data.vehicle || "",
+        preferences: data.preferences || "",
+      });
     } catch (e) {
       setErr(e.message);
       setUser(null);
     }
   };
 
+  // Fetch completed rides
   const fetchCompleted = async () => {
     try {
       setLoading(true);
@@ -53,6 +70,39 @@ const Profile = () => {
     if (active === "Ride History") fetchCompleted();
   }, [active]);
 
+  // Handle edit field changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Save edited profile
+  const handleSave = async () => {
+    setSaving(true);
+    setErr("");
+    setSuccessMsg("");
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await fetch("/api/users/me", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to update profile");
+      setUser(data);
+      setSuccessMsg("Profile updated successfully!");
+      setEditMode(false);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <Wrap>
       <Header>
@@ -69,19 +119,68 @@ const Profile = () => {
       </Tabs>
 
       {err && <Err>{err}</Err>}
+      {successMsg && <Success>{successMsg}</Success>}
 
       <Body>
+        {/* Account Details */}
         {active === "Account Details" && (
           <Section>
             <Card>
               <H3>Account Details</H3>
               {!user ? (
                 <Muted>Loading...</Muted>
+              ) : editMode ? (
+                <Grid>
+                  <Item>
+                    <Label>Full Name</Label>
+                    <Input
+                      type="text"
+                      name="fullName"
+                      value={editData.fullName}
+                      onChange={handleChange}
+                    />
+                  </Item>
+                  <Item>
+                    <Label>Phone</Label>
+                    <Input
+                      type="text"
+                      name="phone"
+                      value={editData.phone}
+                      onChange={handleChange}
+                    />
+                  </Item>
+                  <Item>
+                    <Label>Vehicle</Label>
+                    <Input
+                      type="text"
+                      name="vehicle"
+                      value={editData.vehicle}
+                      onChange={handleChange}
+                    />
+                  </Item>
+                  <Item>
+                    <Label>Preferences</Label>
+                    <Input
+                      type="text"
+                      name="preferences"
+                      value={editData.preferences}
+                      onChange={handleChange}
+                    />
+                  </Item>
+                  <Item>
+                    <SaveButton onClick={handleSave} disabled={saving}>
+                      {saving ? "Saving..." : "Save Changes"}
+                    </SaveButton>
+                  </Item>
+                  <Item>
+                    <CancelButton onClick={() => setEditMode(false)}>Cancel</CancelButton>
+                  </Item>
+                </Grid>
               ) : (
                 <Grid>
                   <Item>
                     <Label>Full Name</Label>
-                    <Value>{user.fullName || "—"}</Value>
+                    <Value>{user.fullName || user.name || "—"}</Value>
                   </Item>
                   <Item>
                     <Label>Email</Label>
@@ -101,7 +200,14 @@ const Profile = () => {
                   </Item>
                   <Item>
                     <Label>Member Since</Label>
-                    <Value>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</Value>
+                    <Value>
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "—"}
+                    </Value>
+                  </Item>
+                  <Item>
+                    <EditButton onClick={() => setEditMode(true)}>Edit Profile</EditButton>
                   </Item>
                 </Grid>
               )}
@@ -109,6 +215,7 @@ const Profile = () => {
           </Section>
         )}
 
+        {/* Ride History */}
         {active === "Ride History" && (
           <Section>
             <Card>
@@ -143,6 +250,7 @@ const Profile = () => {
           </Section>
         )}
 
+        {/* SOS */}
         {active === "SOS" && (
           <Section>
             <Card>
@@ -159,6 +267,7 @@ const Profile = () => {
           </Section>
         )}
 
+        {/* Features */}
         {active === "Features" && (
           <Section>
             <Card>
@@ -182,7 +291,6 @@ const Profile = () => {
 export default Profile;
 
 /* ========== styles ========== */
-
 const Wrap = styled.div`
   max-width: 1000px;
   margin: 0 auto;
@@ -205,11 +313,51 @@ const Section = styled.section`margin-bottom: 18px;`;
 const Card = styled.div`background: #fff;border-radius: 14px;box-shadow: 0 12px 28px rgba(0,0,0,0.08);padding: 18px;`;
 const H3 = styled.h3`color: #005bbb;font-weight: 900;margin: 0 0 12px;`;
 const Err = styled.p`text-align: center;color: #d9534f;font-weight: 700;margin-top: 8px;`;
+const Success = styled.p`text-align: center;color: #18794e;font-weight: 700;margin-top: 8px;`;
 const Muted = styled.p`color: #666;font-weight: 600;margin: 6px 0 0;`;
 const Grid = styled.div`display: grid;grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));gap: 12px;`;
 const Item = styled.div`background: #f7f9fc;border-radius: 10px;padding: 12px 14px;`;
 const Label = styled.div`color: #6b7a90;font-weight: 700;font-size: 0.8rem;margin-bottom: 4px;`;
 const Value = styled.div`color: #2a2a2a;font-weight: 800;`;
+const Input = styled.input`
+  padding: 10px 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  &:focus { border-color: #1e90ff; box-shadow: 0 0 8px #a3c6ff88; }
+`;
+const EditButton = styled.button`
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #1e90ff;
+  border-radius: 8px;
+  border: 1px solid #1e90ff;
+  cursor: pointer;
+  background: #fff;
+  &:hover { background: #e7f0ff; }
+`;
+const SaveButton = styled.button`
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+  background: #1e90ff;
+  cursor: pointer;
+  &:hover { background: #0b74ff; }
+  &:disabled { background: #a0c4ff; cursor: not-allowed; }
+`;
+const CancelButton = styled.button`
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #d9534f;
+  border-radius: 8px;
+  border: 1px solid #d9534f;
+  cursor: pointer;
+  background: #fff;
+  &:hover { background: #f8d7da; }
+`;
 const HistoryGrid = styled.div`display: grid;grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));gap: 14px;`;
 const HistoryCard = styled.div`background: #fff;border-radius: 12px;box-shadow: 0 10px 24px rgba(0,0,0,0.08);padding: 16px;display: flex;flex-direction: column;gap: 8px;`;
 const RouteTxt = styled.div`color: #222;font-weight: 800;`;
