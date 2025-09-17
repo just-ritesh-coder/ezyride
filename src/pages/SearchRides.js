@@ -24,11 +24,17 @@ const SearchRides = () => {
 
     try {
       setLoading(true);
-      const params = new URLSearchParams({ origin, destination });
+      const params = new URLSearchParams({
+        from: origin,        // FIXED: match backend
+        to: destination,     // FIXED: match backend
+      });
       if (date) params.set("date", date);
 
       const res = await fetch(`/api/rides/search?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch rides");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to fetch rides");
+      }
 
       const data = await res.json();
       setResults(data.rides || []);
@@ -62,7 +68,7 @@ const SearchRides = () => {
       if (!res.ok) throw new Error(data.message || "Booking failed");
 
       alert("Ride booked successfully!");
-      // Optionally refresh search results to update seats
+      // Refresh search results to update available seats
       await handleSearch(new Event("submit"));
     } catch (err) {
       setError(err.message || "Booking failed");
@@ -143,6 +149,7 @@ const SearchRides = () => {
   );
 };
 
+// Styled components
 const Container = styled.div`
   max-width: 750px;
   margin: 40px auto;

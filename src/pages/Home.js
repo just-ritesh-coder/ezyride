@@ -73,8 +73,9 @@ const Home = () => {
           <ActionDesc>Find rides going your way.</ActionDesc>
         </ActionCard>
 
-        <ActionCard onClick={() => navigate("/home/my-bookings")}>
-          <ActionTitle>My Bookings</ActionTitle>
+        {/* ✅ Replaced My Bookings with Passenger Center */}
+        <ActionCard onClick={() => navigate("/home/passenger-center")}>
+          <ActionTitle>Passenger Center</ActionTitle>
           <ActionDesc>View and manage your ride bookings.</ActionDesc>
         </ActionCard>
 
@@ -82,12 +83,12 @@ const Home = () => {
           <ActionTitle>Profile &amp; Reviews</ActionTitle>
           <ActionDesc>Update your profile and read reviews.</ActionDesc>
         </ActionCard>
-      </Actions>
-      
+
         <ActionCard onClick={() => navigate("/home/my-posted-rides")}>
-          <ActionTitle>My Posted Ride</ActionTitle>
-          <ActionDesc>View and manage your ride bookings.</ActionDesc>
+          <ActionTitle>My Posted Rides</ActionTitle>
+          <ActionDesc>View and manage the rides you shared.</ActionDesc>
         </ActionCard>
+      </Actions>
 
       <RecentActivitiesSection>
         <SectionTitle>Recent Activity</SectionTitle>
@@ -112,7 +113,7 @@ const Home = () => {
   );
 };
 
-// Styled components
+// Styled components (same as your code)
 const Container = styled.div`
   max-width: 900px;
   margin: 50px auto 80px;

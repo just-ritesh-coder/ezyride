@@ -5,22 +5,19 @@ import AutocompleteInput from "../components/AutocompleteInput";
 const PostRide = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
-
   const [formData, setFormData] = useState({
-    date: "",     // yyyy-mm-dd
-    time: "",     // HH:mm
+    date: "", // yyyy-mm-dd
+    time: "", // HH:mm
     seats: 1,
     price: "",
     notes: "",
   });
-
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Normalize numeric inputs to positive values where needed
     if (name === "seats") {
       const n = Math.max(1, Number(value || 1));
       setFormData((prev) => ({ ...prev, seats: n }));
@@ -40,7 +37,7 @@ const PostRide = () => {
     setSubmitted(false);
 
     if (!origin || !destination) {
-      setError("Please select both origin and destination addresses.");
+      setError("Please select both origin and destination.");
       return;
     }
     if (!formData.date || !formData.time) {
@@ -52,18 +49,17 @@ const PostRide = () => {
       return;
     }
 
-    // Combine date + time into ISO string for backend
-   const rideISODate = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+    const rideISODate = new Date(`${formData.date}T${formData.time}:00`).toISOString();
 
-const rideData = {
-  origin,
-  destination,
-  seats: Number(formData.seats),
-  price: Number(formData.price),
-  notes: formData.notes || "",
-  dateISO: rideISODate,  // ✅ now used
-};
-
+    // Updated field names to match backend Ride model
+    const rideData = {
+      from: origin,
+      to: destination,
+      seatsAvailable: Number(formData.seats),
+      pricePerSeat: Number(formData.price),
+      notes: formData.notes || "",
+      date: rideISODate,
+    };
 
     try {
       setLoading(true);
@@ -83,7 +79,6 @@ const rideData = {
         throw new Error(errorData.message || "Failed to post ride");
       }
 
-      // Success
       setSubmitted(true);
       setOrigin("");
       setDestination("");
@@ -105,54 +100,24 @@ const rideData = {
     <Container>
       <Title>Post a New Ride</Title>
 
-      {submitted && (
-        <SuccessMessage>
-          Ride posted successfully! You can post another or go to dashboard.
-        </SuccessMessage>
-      )}
-
+      {submitted && <SuccessMessage>Ride posted successfully!</SuccessMessage>}
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
       <Form onSubmit={handleSubmit}>
         <Label>Origin</Label>
-        <AutocompleteInput
-          value={origin}
-          onChange={setOrigin}
-          placeholder="Enter origin"
-        />
+        <AutocompleteInput value={origin} onChange={setOrigin} placeholder="Enter origin" />
 
         <Label>Destination</Label>
-        <AutocompleteInput
-          value={destination}
-          onChange={setDestination}
-          placeholder="Enter destination"
-        />
+        <AutocompleteInput value={destination} onChange={setDestination} placeholder="Enter destination" />
 
         <Label>Date</Label>
-        <Input
-          type="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-          required
-        />
+        <Input type="date" name="date" value={formData.date} onChange={handleChange} required />
 
         <Label>Time</Label>
-        <Input
-          type="time"
-          name="time"
-          value={formData.time}
-          onChange={handleChange}
-          required
-        />
+        <Input type="time" name="time" value={formData.time} onChange={handleChange} required />
 
         <Label>Available Seats</Label>
-        <Select
-          name="seats"
-          value={formData.seats}
-          onChange={handleChange}
-          required
-        >
+        <Select name="seats" value={formData.seats} onChange={handleChange}>
           {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
               {n}
@@ -161,25 +126,10 @@ const rideData = {
         </Select>
 
         <Label>Price per Seat (₹)</Label>
-        <Input
-          type="number"
-          name="price"
-          min="0"
-          step="1"
-          value={formData.price}
-          onChange={handleChange}
-          placeholder="Enter price per seat"
-          required
-        />
+        <Input type="number" name="price" min="0" step="1" value={formData.price} onChange={handleChange} required />
 
         <Label>Additional Notes (Optional)</Label>
-        <TextArea
-          name="notes"
-          rows={3}
-          value={formData.notes}
-          onChange={handleChange}
-          placeholder="Any notes for passengers (luggage, pickup point, etc.)"
-        />
+        <TextArea name="notes" rows={3} value={formData.notes} onChange={handleChange} placeholder="Any notes for passengers" />
 
         <SubmitButton type="submit" disabled={loading}>
           {loading ? "Posting..." : "Post Ride"}
@@ -189,6 +139,9 @@ const rideData = {
   );
 };
 
+export default PostRide;
+
+/* Styled components */
 const Container = styled.div`
   max-width: 650px;
   margin: 40px auto;
@@ -213,9 +166,8 @@ const SuccessMessage = styled.p`
   padding: 14px 22px;
   border-radius: 8px;
   margin-bottom: 20px;
-  font-weight: 600;
   text-align: center;
-  font-size: 1rem;
+  font-weight: 600;
 `;
 
 const ErrorMessage = styled.p`
@@ -224,81 +176,27 @@ const ErrorMessage = styled.p`
   padding: 14px 22px;
   border-radius: 8px;
   margin-bottom: 20px;
-  font-weight: 600;
   text-align: center;
-  font-size: 1rem;
+  font-weight: 600;
 `;
 
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  margin-bottom: 10px;
-  margin-top: 20px;
-  font-weight: 700;
-  color: #222;
-  font-size: 1.05rem;
-`;
-
+const Form = styled.form`display: flex; flex-direction: column;`;
+const Label = styled.label`margin-top: 20px; font-weight: 700; color: #222;`;
 const Input = styled.input`
-  padding: 14px 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.3s;
-  &:focus {
-    border-color: #1e90ff;
-    box-shadow: 0 0 10px #a3c6ff88;
-  }
+  padding: 14px 16px; border: 1px solid #ccc; border-radius: 10px; outline: none;
+  &:focus { border-color: #1e90ff; box-shadow: 0 0 10px #a3c6ff88; }
 `;
-
 const Select = styled.select`
-  padding: 14px 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 16px;
-  outline: none;
-  &:focus {
-    border-color: #1e90ff;
-    box-shadow: 0 0 10px #a3c6ff88;
-  }
+  padding: 14px 16px; border: 1px solid #ccc; border-radius: 10px; outline: none;
+  &:focus { border-color: #1e90ff; box-shadow: 0 0 10px #a3c6ff88; }
 `;
-
 const TextArea = styled.textarea`
-  padding: 14px 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 16px;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.3s;
-  &:focus {
-    border-color: #1e90ff;
-    box-shadow: 0 0 10px #a3c6ff88;
-  }
+  padding: 14px 16px; border: 1px solid #ccc; border-radius: 10px; outline: none; resize: vertical;
+  &:focus { border-color: #1e90ff; box-shadow: 0 0 10px #a3c6ff88; }
 `;
-
 const SubmitButton = styled.button`
-  margin-top: 28px;
-  padding: 14px 16px;
-  background-color: #1e90ff;
-  color: white;
-  font-weight: 800;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.35s ease;
-  &:hover {
-    background-color: #005bbb;
-  }
-  &:disabled {
-    background-color: #a0c4ff;
-    cursor: not-allowed;
-  }
+  margin-top: 28px; padding: 14px 16px; background-color: #1e90ff; color: white;
+  font-weight: 800; border-radius: 12px; border: none; cursor: pointer;
+  &:hover { background-color: #005bbb; }
+  &:disabled { background-color: #a0c4ff; cursor: not-allowed; }
 `;
-
-export default PostRide;

@@ -20,9 +20,11 @@ const Layout = () => {
           </StyledNavLink>
           <StyledNavLink to="post-ride">Post Ride</StyledNavLink>
           <StyledNavLink to="search-rides">Search Ride</StyledNavLink>
-          <StyledNavLink to="my-bookings">My Bookings</StyledNavLink>
+         
+
           <StyledNavLink to="profile">Profile</StyledNavLink>
           <StyledNavLink to="my-posted-rides">My Posted Rides</StyledNavLink> 
+           <StyledNavLink to="/home/passenger">Passenger Center</StyledNavLink>
           <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
         </NavLinks>
       </NavBar>
