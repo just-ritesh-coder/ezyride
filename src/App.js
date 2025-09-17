@@ -9,12 +9,10 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import PostRide from "./pages/PostRide";
 import SearchRides from "./pages/SearchRides";
-import PassengerCenter from "./pages/PassengerCenter"; // Passenger management for booked rides
+import PassengerCenter from "./pages/PassengerCenter";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-
-// Driver rides management
 import MyPostedRides from "./pages/MyPostedRides";
 
 // Protected route wrapper
@@ -47,12 +45,12 @@ function App() {
           <Route index element={<Home />} />
           <Route path="post-ride" element={<PostRide />} />
           <Route path="search-rides" element={<SearchRides />} />
-          <Route path="passenger" element={<PassengerCenter />} /> {/* Passenger management */}
-          <Route path="my-posted-rides" element={<MyPostedRides />} /> {/* Driver management */}
+          <Route path="passenger-center" element={<PassengerCenter />} /> {/* FIXED PATH */}
+          <Route path="my-posted-rides" element={<MyPostedRides />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Fallback route */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
