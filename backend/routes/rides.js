@@ -1,3 +1,4 @@
+// backend/routes/rides.js
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
@@ -5,38 +6,18 @@ const Ride = require('../models/Ride');
 
 /**
  * POST /api/rides
- * Create a new ride (driver posts a ride)
- * Expected body:
- * {
- *   from: string,
- *   to: string,
- *   seatsAvailable: number (>=1),
- *   pricePerSeat: number (>=0),
- *   notes?: string,
- *   date: ISO string
- * }
+ * Create a new ride
  */
 router.post('/', protect, async (req, res) => {
   try {
     const userId = req.user?._id?.toString() || req.userId;
     if (!userId) return res.status(401).json({ message: 'Not authorized' });
 
-    const {
-      from,
-      to,
-      seatsAvailable,
-      pricePerSeat,
-      notes = '',
-      date,
-    } = req.body;
+    const { from, to, seatsAvailable, pricePerSeat, notes = '', date } = req.body;
 
-    // Basic validations
-    if (!from || !to) {
-      return res.status(400).json({ message: 'from and to are required' });
-    }
-    if (!date) {
-      return res.status(400).json({ message: 'date is required' });
-    }
+    // validations
+    if (!from || !to) return res.status(400).json({ message: 'from and to are required' });
+    if (!date) return res.status(400).json({ message: 'date is required' });
 
     const seats = Number(seatsAvailable);
     const price = Number(pricePerSeat);
@@ -53,14 +34,9 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'date must be a valid ISO datetime' });
     }
 
-    // Optional: block past postings (allow a small grace period if you want)
-    // if (when.getTime() < Date.now() - 10 * 60 * 1000) {
-    //   return res.status(400).json({ message: 'date must be in the future' });
-    // }
-
     const ride = await Ride.create({
-      from: from.trim(),
-      to: to.trim(),
+      from: String(from).trim(),
+      to: String(to).trim(),
       date: when,
       seatsAvailable: seats,
       pricePerSeat: price,
@@ -79,18 +55,14 @@ router.post('/', protect, async (req, res) => {
 });
 
 /**
- * GET /api/rides/search?from=...&to=...&date=YYYY-MM-DD (optional)
- * Search available rides by origin/destination and optional same-day date window.
+ * GET /api/rides/search
+ * Search available rides
  */
 router.get('/search', async (req, res) => {
   try {
     const { from, to, date } = req.query;
+    if (!from || !to) return res.status(400).json({ message: 'from and to are required' });
 
-    if (!from || !to) {
-      return res.status(400).json({ message: 'from and to are required' });
-    }
-
-    // Normalize and build regex for case-insensitive contains search
     const normFrom = String(from).trim().replace(/\s+/g, ' ');
     const normTo = String(to).trim().replace(/\s+/g, ' ');
     const fromRegex = new RegExp(normFrom, 'i');
@@ -104,7 +76,6 @@ router.get('/search', async (req, res) => {
     };
 
     if (date) {
-      // Same-day window in UTC; adjust if your dates are saved in local time
       const start = new Date(`${date}T00:00:00.000Z`);
       const end = new Date(`${date}T23:59:59.999Z`);
       if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
@@ -112,13 +83,65 @@ router.get('/search', async (req, res) => {
       }
     }
 
-    const rides = await Ride.find(filter)
-      .sort({ date: 1 })
-      .populate('postedBy', 'fullName email');
-
+    const rides = await Ride.find(filter).sort({ date: 1 }).populate('postedBy', 'fullName email');
     return res.json({ rides });
   } catch (e) {
     console.error('Search rides error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/rides/:rideId/start
+ * Start a ride (driver only)
+ */
+router.post('/:rideId/start', protect, async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const userId = req.user?._id?.toString() || req.userId;
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+
+    if (ride.postedBy.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to start this ride' });
+    }
+    if (ride.status === 'completed') {
+      return res.status(400).json({ message: 'Ride already completed' });
+    }
+
+    ride.status = 'ongoing';
+    await ride.save();
+
+    return res.json({ message: 'Ride started', ride });
+  } catch (e) {
+    console.error('Start ride error:', e);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/rides/:rideId/complete
+ * Complete a ride (driver only)
+ */
+router.post('/:rideId/complete', protect, async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const userId = req.user?._id?.toString() || req.userId;
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+
+    if (ride.postedBy.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to complete this ride' });
+    }
+
+    ride.status = 'completed';
+    await ride.save();
+
+    return res.json({ message: 'Ride completed', ride });
+  } catch (e) {
+    console.error('Complete ride error:', e);
     return res.status(500).json({ message: 'Server error' });
   }
 });

@@ -17,9 +17,7 @@ const Home = () => {
         setError("");
         const token = localStorage.getItem("authToken");
         const response = await fetch("http://localhost:5000/api/dashboard", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
@@ -37,20 +35,14 @@ const Home = () => {
     fetchDashboardData();
   }, []);
 
-  if (loading) {
-    return <Container>Loading your dashboard...</Container>;
-  }
-
-  if (error) {
-    return <Container>Error: {error}</Container>;
-  }
+  if (loading) return <Container>Loading your dashboard...</Container>;
+  if (error) return <Container>Error: {error}</Container>;
 
   return (
     <Container>
       <WelcomeMessage>Welcome back to EzyRide!</WelcomeMessage>
       <Intro>
-        Ready to start your journey? Post a ride, search available rides, and
-        manage bookings — all in one place.
+        Ready to start your journey? Post a ride, search available rides, and manage bookings — all in one place.
       </Intro>
 
       <StatsSection>
@@ -73,8 +65,13 @@ const Home = () => {
           <ActionDesc>Find rides going your way.</ActionDesc>
         </ActionCard>
 
-        {/* ✅ Replaced My Bookings with Passenger Center */}
-        <ActionCard onClick={() => navigate("/home/passenger-center")}>
+        {/* Passenger Center */}
+        <ActionCard
+          onClick={() => {
+            console.log("Go Passenger Center");
+            navigate("/home/passenger-center"); // matches App.js
+          }}
+        >
           <ActionTitle>Passenger Center</ActionTitle>
           <ActionDesc>View and manage your ride bookings.</ActionDesc>
         </ActionCard>
@@ -113,7 +110,9 @@ const Home = () => {
   );
 };
 
-// Styled components (same as your code)
+export default Home;
+
+/* Styled components */
 const Container = styled.div`
   max-width: 900px;
   margin: 50px auto 80px;
@@ -258,5 +257,3 @@ const FooterNote = styled.footer`
   margin-top: 60px;
   text-align: center;
 `;
-
-export default Home;
