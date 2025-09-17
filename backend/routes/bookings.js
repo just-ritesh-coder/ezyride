@@ -1,69 +1,192 @@
-const express = require('express');
+const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
-const Ride = require('../models/Ride');
-const Booking = require('../models/Booking');
-const jwt = require('jsonwebtoken');
+const { protect } = require("../middleware/authMiddleware");
+const Booking = require("../models/Booking");
+const Ride = require("../models/Ride");
 
-// Middleware to verify JWT token
-function verifyToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Token missing' });
-
+// CREATE booking
+router.post("/", protect, async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
-}
+    const userId = req.user?._id?.toString() || req.userId;
+    const { rideId, seats = 1 } = req.body;
 
-// POST /api/bookings - Book a ride
-router.post('/', verifyToken, async (req, res) => {
-  const { rideId, seats } = req.body;
+    console.log("POST /api/bookings", { userId, body: req.body });
 
-  if (!rideId || !seats || seats < 1) {
-    return res.status(400).json({ message: 'Invalid booking data' });
-  }
-
-  try {
-    const ride = await Ride.findById(rideId);
-    if (!ride) return res.status(404).json({ message: 'Ride not found' });
-
-    if (ride.seatsAvailable < seats) {
-      return res.status(400).json({ message: 'Not enough available seats' });
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized" });
     }
 
-    // Deduct booked seats
-    ride.seatsAvailable -= seats;
-    await ride.save();
+    if (
+      !rideId ||
+      !mongoose.Types.ObjectId.isValid(rideId) ||
+      !Number.isInteger(seats) ||
+      seats < 1
+    ) {
+      return res.status(400).json({ message: "Invalid rideId or seats" });
+    }
 
-    // Create booking record
-    const booking = new Booking({
-      ride: rideId,
-      user: req.userId,
+    const ride = await Ride.findById(rideId);
+    console.log("Ride lookup:", !!ride, ride?._id?.toString());
+
+    if (!ride) return res.status(404).json({ message: "Ride not found" });
+
+    if (ride.status === "completed") {
+      return res.status(400).json({ message: "Cannot book a completed ride" });
+    }
+
+    const available = ride.seatsAvailable ?? 0;
+    if (available < seats) {
+      return res.status(400).json({ message: "Not enough seats available" });
+    }
+
+    if (ride.postedBy?.toString && ride.postedBy.toString() === userId) {
+      return res.status(400).json({ message: "Cannot book your own ride" });
+    }
+
+    const booking = await Booking.create({
+      ride: ride._id,
+      user: userId,
       seatsBooked: seats,
-      bookedAt: new Date(),
+      bookingDate: new Date(),
     });
 
-    await booking.save();
+    // Deduct seats only; DO NOT change status here
+    ride.seatsAvailable = available - seats;
+    await ride.save();
 
-    res.status(201).json({ message: 'Ride booked successfully', booking });
-  } catch (err) {
-    console.error('Error booking ride:', err);
-    res.status(500).json({ message: 'Server error' });
+    const populated = await Booking.findById(booking._id)
+      .populate("ride")
+      .populate("user", "fullName email");
+
+    return res.status(201).json({ message: "Booked", booking: populated });
+  } catch (e) {
+    console.error("Create booking error:", e.message, e.stack);
+    if (e.name === "ValidationError") {
+      return res.status(400).json({ message: "Validation failed", errors: e.errors });
+    }
+    return res.status(500).json({ message: e.message || "Server error" });
   }
 });
 
-// GET /api/bookings/mybookings - Get user's bookings
-router.get('/mybookings', verifyToken, async (req, res) => {
+// LIST my bookings
+router.get("/mybookings", protect, async (req, res) => {
   try {
-    const bookings = await Booking.find({ user: req.userId }).populate('ride').exec();
-    res.json({ bookings });
-  } catch (err) {
-    console.error('Error fetching bookings:', err);
-    res.status(500).json({ message: 'Server error' });
+    // Optional: disable caching for fresh lists
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    res.set("Surrogate-Control", "no-store");
+
+    const userId = req.user?._id?.toString() || req.userId;
+    if (!userId) return res.status(401).json({ message: "Not authorized" });
+
+    const bookings = await Booking.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .populate("ride")
+      .populate("user", "fullName email");
+
+    return res.json({ bookings });
+  } catch (e) {
+    console.error("Fetch my bookings error:", e.message, e.stack);
+    return res.status(500).json({ message: e.message || "Server error" });
+  }
+});
+
+// UPDATE seats in a booking
+router.patch("/:bookingId", protect, async (req, res) => {
+  const { bookingId } = req.params;
+  const { seats } = req.body;
+
+  if (!seats || !Number.isInteger(seats) || seats < 1) {
+    return res.status(400).json({ message: "Invalid seats" });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    return res.status(400).json({ message: "Invalid bookingId format" });
+  }
+
+  try {
+    const booking = await Booking.findById(bookingId).populate("ride");
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    if (
+      booking.user.toString() !==
+      (req.user?._id?.toString() || req.userId)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to modify this booking" });
+    }
+
+    const ride = booking.ride;
+    if (!ride) return res.status(404).json({ message: "Ride not found" });
+
+    if (ride.status === "completed") {
+      return res.status(400).json({ message: "Cannot modify a completed ride" });
+    }
+
+    const prev = booking.seatsBooked ?? 0;
+    const delta = seats - prev;
+    const available = ride.seatsAvailable ?? 0;
+
+    if (delta > 0 && available < delta) {
+      return res.status(400).json({ message: "Not enough seats available" });
+    }
+
+    // Adjust seats only; leave status to driver actions
+    ride.seatsAvailable = available - delta;
+    booking.seatsBooked = seats;
+
+    await ride.save();
+    await booking.save();
+
+    const populated = await Booking.findById(booking._id)
+      .populate("ride")
+      .populate("user", "fullName email");
+
+    return res.json({ message: "Booking updated", booking: populated });
+  } catch (e) {
+    console.error("Modify booking error:", e.message, e.stack);
+    return res.status(500).json({ message: e.message || "Server error" });
+  }
+});
+
+// CANCEL booking
+router.delete("/:bookingId", protect, async (req, res) => {
+  const { bookingId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    return res.status(400).json({ message: "Invalid bookingId format" });
+  }
+
+  try {
+    const booking = await Booking.findById(bookingId).populate("ride");
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    if (
+      booking.user.toString() !==
+      (req.user?._id?.toString() || req.userId)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to cancel this booking" });
+    }
+
+    const ride = booking.ride;
+    if (!ride) return res.status(404).json({ message: "Ride not found" });
+
+    const seats = booking.seatsBooked ?? 0;
+    ride.seatsAvailable = (ride.seatsAvailable ?? 0) + seats;
+
+    // DO NOT change status here; driver controls lifecycle
+    await ride.save();
+    await booking.deleteOne();
+
+    return res.json({ message: "Booking cancelled" });
+  } catch (e) {
+    console.error("Cancel booking error:", e.message, e.stack);
+    return res.status(500).json({ message: e.message || "Server error" });
   }
 });
 

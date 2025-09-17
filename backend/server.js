@@ -7,6 +7,7 @@ const dashboardRoutes = require("./routes/dashboard");
 const rideStatusRoutes = require('./routes/rideStatus');
 const meRoutes = require('./routes/me');
 const usersRoutes = require("./routes/users");
+
 dotenv.config();
 
 const app = express();
@@ -35,6 +36,8 @@ app.use('/api/profile', require('./routes/profile'));
 app.use('/api/rides', rideStatusRoutes);
 app.use('/api', meRoutes);
 app.use("/api/users", usersRoutes);  // ✅ added
+
+
 
  // <-- Add this line
 

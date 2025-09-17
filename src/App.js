@@ -9,15 +9,15 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import PostRide from "./pages/PostRide";
 import SearchRides from "./pages/SearchRides";
-import MyBookings from "./pages/MyBookings";
+import PassengerCenter from "./pages/PassengerCenter"; // Passenger management for booked rides
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// NEW: import MyPostedRides to show driver status controls
+// Driver rides management
 import MyPostedRides from "./pages/MyPostedRides";
 
-// Protect routes by auth token from context/localStorage
+// Protected route wrapper
 const ProtectedRoute = ({ children }) => {
   const { token } = React.useContext(AuthContext);
   if (!token) {
@@ -35,7 +35,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected routes wrapped in Layout, children rendered via <Outlet /> in Layout */}
+        {/* Protected routes */}
         <Route
           path="/home"
           element={
@@ -47,12 +47,12 @@ function App() {
           <Route index element={<Home />} />
           <Route path="post-ride" element={<PostRide />} />
           <Route path="search-rides" element={<SearchRides />} />
-          <Route path="my-bookings" element={<MyBookings />} />
-          <Route path="my-posted-rides" element={<MyPostedRides />} />
+          <Route path="passenger" element={<PassengerCenter />} /> {/* Passenger management */}
+          <Route path="my-posted-rides" element={<MyPostedRides />} /> {/* Driver management */}
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Fallback */}
+        {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
