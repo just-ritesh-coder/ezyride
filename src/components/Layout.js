@@ -24,7 +24,7 @@ const Layout = () => {
 
           <StyledNavLink to="profile">Profile</StyledNavLink>
           <StyledNavLink to="my-posted-rides">My Posted Rides</StyledNavLink> 
-           <StyledNavLink to="/home/passenger">Passenger Center</StyledNavLink>
+           <StyledNavLink to="/home/passenger-center">Passenger Center</StyledNavLink>
           <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
         </NavLinks>
       </NavBar>
