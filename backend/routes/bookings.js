@@ -8,7 +8,7 @@ const Ride = require("../models/Ride");
 
 /**
  * POST /api/bookings
- * Create a booking
+ * Create a booking (with OTP)
  */
 router.post("/", protect, async (req, res) => {
   try {
@@ -30,13 +30,19 @@ router.post("/", protect, async (req, res) => {
       return res.status(400).json({ message: "Cannot book your own ride" });
     }
 
+    // Generate 6-digit OTP
+    const startCode = (Math.floor(100000 + Math.random() * 900000)).toString();
+
     const booking = await Booking.create({
       ride: ride._id,
       user: userId,
       seatsBooked: seats,
       bookingDate: new Date(),
+      ride_start_code: startCode,
+      ride_start_code_used: false
     });
 
+    // Deduct seats
     ride.seatsAvailable = available - seats;
     await ride.save();
 
@@ -44,7 +50,17 @@ router.post("/", protect, async (req, res) => {
       .populate("ride")
       .populate("user", "fullName email");
 
-    return res.status(201).json({ message: "Booked", booking: populated });
+    return res.status(201).json({
+      message: "Ride booked successfully",
+      booking: {
+        _id: populated._id,
+        ride: populated.ride,
+        seatsBooked: populated.seatsBooked,
+        user: populated.user,
+        bookingDate: populated.bookingDate
+        // Do NOT return OTP here for security
+      }
+    });
   } catch (e) {
     console.error("Create booking error:", e);
     return res.status(500).json({ message: "Server error" });
@@ -53,7 +69,7 @@ router.post("/", protect, async (req, res) => {
 
 /**
  * GET /api/bookings/mybookings
- * List my bookings
+ * List my bookings with OTP for rider view
  */
 router.get("/mybookings", protect, async (req, res) => {
   try {
@@ -70,7 +86,20 @@ router.get("/mybookings", protect, async (req, res) => {
       .populate("ride")
       .populate("user", "fullName email");
 
-    return res.json({ bookings });
+    // Explicit shape so frontend can read b.ride_start_code
+    const data = bookings.map(b => ({
+      _id: b._id,
+      ride: b.ride,
+      user: b.user,
+      seatsBooked: b.seatsBooked,
+      status: b.status,
+      bookingDate: b.bookingDate,
+      createdAt: b.createdAt,
+      ride_start_code: b.ride_start_code,
+      ride_start_code_used: b.ride_start_code_used,
+    }));
+
+    return res.json({ bookings: data });
   } catch (e) {
     console.error("Fetch my bookings error:", e);
     return res.status(500).json({ message: "Server error" });

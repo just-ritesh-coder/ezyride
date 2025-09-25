@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const Ride = require('../models/Ride');
+const Booking = require('../models/Booking'); // ✅ Missing import fixed
 
 /**
  * POST /api/rides
@@ -46,11 +47,11 @@ router.post('/', protect, async (req, res) => {
       createdAt: new Date(),
     });
 
-    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName email');
+    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName');
     return res.status(201).json({ message: 'Ride created', ride: populated });
   } catch (e) {
     console.error('Create ride error:', e);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error', error: e.message });
   }
 });
 
@@ -83,21 +84,25 @@ router.get('/search', async (req, res) => {
       }
     }
 
-    const rides = await Ride.find(filter).sort({ date: 1 }).populate('postedBy', 'fullName email');
+    const rides = await Ride.find(filter)
+      .sort({ date: 1 })
+      .populate('postedBy', 'fullName');
+
     return res.json({ rides });
   } catch (e) {
     console.error('Search rides error:', e);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error', error: e.message });
   }
 });
 
 /**
  * POST /api/rides/:rideId/start
- * Start a ride (driver only)
+ * Start a ride (driver only, with optional code verification)
  */
 router.post('/:rideId/start', protect, async (req, res) => {
   try {
     const { rideId } = req.params;
+    const { code } = req.body || {};
     const userId = req.user?._id?.toString() || req.userId;
 
     const ride = await Ride.findById(rideId);
@@ -106,17 +111,36 @@ router.post('/:rideId/start', protect, async (req, res) => {
     if (ride.postedBy.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to start this ride' });
     }
-    if (ride.status === 'completed') {
-      return res.status(400).json({ message: 'Ride already completed' });
+    if (ride.status !== 'posted') {
+      return res.status(400).json({ message: 'Ride already started or completed' });
     }
 
+    // If code provided → validate with Booking
+    if (code) {
+      const booking = await Booking.findOne({
+        ride: rideId,
+        status: 'confirmed',
+        ride_start_code: code,
+        ride_start_code_used: { $ne: true }
+      }).select('_id ride_start_code_used');
+
+      if (!booking) {
+        return res.status(400).json({ message: 'Invalid or already used code' });
+      }
+
+      booking.ride_start_code_used = true;
+      await booking.save();
+    }
+
+    // Start ride
     ride.status = 'ongoing';
+    ride.startedAt = new Date();
     await ride.save();
 
     return res.json({ message: 'Ride started', ride });
   } catch (e) {
     console.error('Start ride error:', e);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error', error: e.message });
   }
 });
 
@@ -136,13 +160,18 @@ router.post('/:rideId/complete', protect, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to complete this ride' });
     }
 
+    if (ride.status === 'completed') {
+      return res.status(400).json({ message: 'Ride already completed' });
+    }
+
     ride.status = 'completed';
+    ride.completedAt = new Date();
     await ride.save();
 
     return res.json({ message: 'Ride completed', ride });
   } catch (e) {
     console.error('Complete ride error:', e);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error', error: e.message });
   }
 });
 

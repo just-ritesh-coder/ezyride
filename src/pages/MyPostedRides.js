@@ -1,3 +1,4 @@
+// src/pages/MyPostedRides.jsx
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import ChatPanel from "../components/ChatPanel";
@@ -7,6 +8,8 @@ const MyPostedRides = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [openChat, setOpenChat] = useState(null); // rideId
+  const [openFor, setOpenFor] = useState(null);   // rideId for OTP modal
+  const [code, setCode] = useState("");
 
   const fetchActive = async () => {
     setErr("");
@@ -27,55 +30,50 @@ const MyPostedRides = () => {
     }
   };
 
-  const startRide = async (rideId) => {
-    await updateStatus(rideId, "ongoing");
+  useEffect(() => {
+    fetchActive();
+  }, []);
+
+  // NEW: verify rider OTP and start ride
+  const verifyAndStart = async (rideId) => {
+    setErr("");
+    try {
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`/api/rides/${rideId}/start/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Invalid code");
+      setRides((prev) => prev.map((r) => (r._id === rideId ? { ...r, status: "ongoing" } : r)));
+      setOpenFor(null);
+      setCode("");
+    } catch (e) {
+      setErr(e.message);
+    }
   };
 
+  // Keep complete via status endpoint
   const completeRide = async (rideId) => {
-    // Optimistic remove
+    // Optimistic remove from active list
     setRides((prev) => prev.filter((r) => r._id !== rideId));
     try {
       const token = localStorage.getItem("authToken");
       const res = await fetch(`/api/rides/${rideId}/status`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status: "completed" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to complete ride");
-      // No re-add; active page only
+      // No re-add; this page shows active only
     } catch (e) {
       setErr(e.message);
+      // Re-sync if failed
       await fetchActive();
     }
   };
-
-  const updateStatus = async (rideId, status) => {
-    setErr("");
-    try {
-      const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/rides/${rideId}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update status");
-      setRides((prev) => prev.map((r) => (r._id === rideId ? data.ride : r)));
-    } catch (e) {
-      setErr(e.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchActive();
-  }, []);
 
   return (
     <Container>
@@ -112,7 +110,7 @@ const MyPostedRides = () => {
               </Meta>
 
               <Actions>
-                <Primary disabled={!canStart} onClick={() => startRide(ride._id)}>
+                <Primary disabled={!canStart} onClick={() => setOpenFor(ride._id)}>
                   Start Ride
                 </Primary>
                 <Secondary disabled={!canComplete} onClick={() => completeRide(ride._id)}>
@@ -123,6 +121,27 @@ const MyPostedRides = () => {
 
               {openChat === ride._id && (
                 <ChatPanel rideId={ride._id} onClose={() => setOpenChat(null)} />
+              )}
+
+              {/* OTP Modal */}
+              {openFor === ride._id && (
+                <Modal>
+                  <ModalCard>
+                    <h3>Enter Rider Start Code</h3>
+                    <Input
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={6}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="6-digit code"
+                    />
+                    <ActionsRow>
+                      <Btn onClick={() => { setOpenFor(null); setCode(""); }}>Cancel</Btn>
+                      <Primary onClick={() => verifyAndStart(ride._id)}>Verify & Start</Primary>
+                    </ActionsRow>
+                  </ModalCard>
+                </Modal>
               )}
             </Card>
           );
@@ -203,9 +222,13 @@ const Chip = styled.span`
   font-size: 0.85rem;
   padding: 6px 10px;
   border-radius: 999px;
-  color: ${({ status }) => (status === "posted" ? "#0b74ff" : status === "ongoing" ? "#b76e00" : "#18794e")};
-  background: ${({ status }) => (status === "posted" ? "#e7f0ff" : status === "ongoing" ? "#fff3cd" : "#e6f4ea")};
-  border: 1px solid ${({ status }) => (status === "posted" ? "#cfe1ff" : status === "ongoing" ? "#ffe69c" : "#bfe3cf")};
+  color: ${({ status }) =>
+    status === "posted" ? "#0b74ff" : status === "ongoing" ? "#b76e00" : "#18794e"};
+  background: ${({ status }) =>
+    status === "posted" ? "#e7f0ff" : status === "ongoing" ? "#fff3cd" : "#e6f4ea"};
+  border: 1px solid
+    ${({ status }) =>
+      status === "posted" ? "#cfe1ff" : status === "ongoing" ? "#ffe69c" : "#bfe3cf"};
 `;
 const Meta = styled.div`
   display: flex;
@@ -246,4 +269,37 @@ const Secondary = styled(Btn)`
   &:hover:not(:disabled) {
     background-color: #e6f0ff;
   }
+`;
+
+/* Modal */
+const Modal = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+`;
+const ModalCard = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 300px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.18);
+`;
+const ActionsRow = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+`;
+const Input = styled.input`
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #cfe1ff;
+  width: 100%;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-top: 8px;
 `;

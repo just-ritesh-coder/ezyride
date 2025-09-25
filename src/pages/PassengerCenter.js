@@ -1,3 +1,4 @@
+// src/pages/PassengerCenter.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
 import ChatPanel from "../components/ChatPanel"; // NEW: create this shared component
@@ -84,6 +85,19 @@ const PassengerCenter = () => {
                       <span>₹{ride.pricePerSeat}</span>
                       <span>Seats: {b.seatsBooked}</span>
                     </Meta>
+
+                    {/* Rider Start Code (OTP) */}
+                    <OTPRow>
+                      <span>Start Code:</span>
+                      <Code>{b.ride_start_code || "—"}</Code>
+                      {b.ride_start_code && (
+                        <CopyBtn onClick={() => navigator.clipboard.writeText(b.ride_start_code)}>
+                          Copy
+                        </CopyBtn>
+                      )}
+                      {b.ride_start_code_used && <Used>Used</Used>}
+                    </OTPRow>
+
                     <Actions>
                       <Button onClick={() => setOpenChat(ride._id)}>Chat</Button>
                       <Button
@@ -161,7 +175,7 @@ const PassengerCenter = () => {
 
 export default PassengerCenter;
 
-/* existing styled components below, with transient props ($active, $done) */
+/* styled components */
 const Wrap = styled.div`max-width:950px;margin:0 auto;padding:10px 20px 60px;font-family:"Poppins",sans-serif;`;
 const Header = styled.div`text-align:center;margin:6px 0 18px;`;
 const Title = styled.h1`color:#1e90ff;font-weight:900;font-size:2.2rem;margin:0;`;
@@ -183,6 +197,13 @@ const Chip = styled.span.withConfig({ shouldForwardProp: (p) => p !== '$done' })
 `;
 const Meta = styled.div`display:flex;gap:12px;flex-wrap:wrap;color:#555;font-weight:600;font-size:.95rem;`;
 const Actions = styled.div`display:flex;gap:10px;flex-wrap:wrap;`;
-const Button = styled.button`padding:10px 14px;border:none;border-radius:12px;font-weight:800;font-size:.95rem;cursor:pointer;background:#f0f7ff;color:#005bbb;border:1px solid #cfe1ff;&:hover{background:#e6f0ff;}`;
+const Button = styled.button`
+  padding:10px 14px;border:none;border-radius:12px;font-weight:800;font-size:.95rem;cursor:pointer;
+  background:#f0f7ff;color:#005bbb;border:1px solid #cfe1ff;&:hover{background:#e6f0ff;}
+`;
 const Err = styled.div`color:#b01212;background:#ffe5e5;padding:10px 14px;border-radius:10px;margin:10px 0;font-weight:600;`;
 const Muted = styled.div`color:#666;font-style:italic;font-weight:500;`;
+const OTPRow = styled.div`display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;`;
+const Code = styled.span`font-family:monospace;font-weight:900;background:#f7f9fc;border:1px dashed #cfe1ff;border-radius:8px;padding:4px 8px;`;
+const CopyBtn = styled.button`padding:6px 10px;border:none;border-radius:8px;background:#f0f7ff;color:#005bbb;border:1px solid #cfe1ff;font-weight:800;cursor:pointer;`;
+const Used = styled.span`color:#18794e;background:#e6f4ea;border:1px solid #bfe3cf;font-weight:800;padding:4px 8px;border-radius:999px;`;
