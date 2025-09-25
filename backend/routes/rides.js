@@ -55,7 +55,6 @@ router.post('/', protect, async (req, res) => {
 
 /**
  * GET /api/rides/search
- * Search available rides
  */
 router.get('/search', async (req, res) => {
   try {
@@ -82,10 +81,7 @@ router.get('/search', async (req, res) => {
       }
     }
 
-    const rides = await Ride.find(filter)
-      .sort({ date: 1 })
-      .populate('postedBy', 'fullName');
-
+    const rides = await Ride.find(filter).sort({ date: 1 }).populate('postedBy', 'fullName');
     return res.json({ rides });
   } catch (e) {
     console.error('Search rides error:', e);
@@ -93,9 +89,7 @@ router.get('/search', async (req, res) => {
   }
 });
 
-/**
- * Internal helper: verify OTP and return booking or null
- */
+// Helper to verify OTP (shared by start endpoints)
 async function verifyOtpForRide(rideId, code) {
   if (!code) return null;
   const booking = await Booking.findOne({
@@ -109,7 +103,7 @@ async function verifyOtpForRide(rideId, code) {
 
 /**
  * POST /api/rides/:rideId/start
- * Start a ride (driver only). If code provided, verify it first.
+ * Driver starts ride; if code provided, verify first
  */
 router.post('/:rideId/start', protect, async (req, res) => {
   try {
@@ -119,7 +113,6 @@ router.post('/:rideId/start', protect, async (req, res) => {
 
     const ride = await Ride.findById(rideId);
     if (!ride) return res.status(404).json({ message: 'Ride not found' });
-
     if (ride.postedBy.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to start this ride' });
     }
@@ -129,9 +122,7 @@ router.post('/:rideId/start', protect, async (req, res) => {
 
     if (code) {
       const booking = await verifyOtpForRide(rideId, code);
-      if (!booking) {
-        return res.status(400).json({ message: 'Invalid or already used code' });
-      }
+      if (!booking) return res.status(400).json({ message: 'Invalid or already used code' });
       booking.ride_start_code_used = true;
       await booking.save();
     }
@@ -149,7 +140,7 @@ router.post('/:rideId/start', protect, async (req, res) => {
 
 /**
  * POST /api/rides/:rideId/start/verify
- * Optional alias that requires code (to match previous frontend calls)
+ * Alias that requires code (for older frontend call)
  */
 router.post('/:rideId/start/verify', protect, async (req, res) => {
   try {
@@ -161,7 +152,6 @@ router.post('/:rideId/start/verify', protect, async (req, res) => {
 
     const ride = await Ride.findById(rideId);
     if (!ride) return res.status(404).json({ message: 'Ride not found' });
-
     if (ride.postedBy.toString() !== userId) {
       return res.status(403).json({ message: 'Only the driver can start the ride' });
     }
@@ -170,10 +160,7 @@ router.post('/:rideId/start/verify', protect, async (req, res) => {
     }
 
     const booking = await verifyOtpForRide(rideId, code);
-    if (!booking) {
-      return res.status(400).json({ message: 'Invalid or already used code' });
-    }
-
+    if (!booking) return res.status(400).json({ message: 'Invalid or already used code' });
     booking.ride_start_code_used = true;
     await booking.save();
 
@@ -189,8 +176,103 @@ router.post('/:rideId/start/verify', protect, async (req, res) => {
 });
 
 /**
+ * PATCH /api/rides/:rideId
+ * Driver modifies a posted ride (capacity, price, route, time, notes)
+ */
+router.patch('/:rideId', protect, async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const userId = req.user?._id?.toString() || req.userId;
+    const { from, to, date, seatsAvailable, pricePerSeat, notes } = req.body || {};
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+    if (ride.postedBy.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to modify this ride' });
+    }
+    if (ride.status !== 'posted') {
+      return res.status(400).json({ message: 'Only posted rides can be modified' });
+    }
+
+    if (seatsAvailable !== undefined) {
+      const newCapacity = Number(seatsAvailable);
+      if (!Number.isInteger(newCapacity) || newCapacity < 1) {
+        return res.status(400).json({ message: 'seatsAvailable must be a positive integer' });
+      }
+      const confirmed = await Booking.aggregate([
+        { $match: { ride: ride._id, status: 'confirmed' } },
+        { $group: { _id: '$ride', total: { $sum: '$seatsBooked' } } }
+      ]);
+      const booked = confirmed.length ? confirmed[0].total : 0;
+      if (newCapacity < booked) {
+        return res.status(400).json({ message: `seatsAvailable cannot be less than seats already booked (${booked})` });
+      }
+      ride.seatsAvailable = newCapacity - booked;
+    }
+
+    if (pricePerSeat !== undefined) {
+      const p = Number(pricePerSeat);
+      if (!Number.isFinite(p) || p < 0) {
+        return res.status(400).json({ message: 'pricePerSeat must be >= 0' });
+      }
+      ride.pricePerSeat = p;
+    }
+
+    if (from !== undefined) ride.from = String(from).trim();
+    if (to !== undefined) ride.to = String(to).trim();
+
+    if (date !== undefined) {
+      const when = new Date(date);
+      if (isNaN(when.getTime())) {
+        return res.status(400).json({ message: 'date must be a valid ISO datetime' });
+      }
+      ride.date = when;
+    }
+
+    if (notes !== undefined) ride.notes = String(notes);
+
+    await ride.save();
+    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName');
+    return res.json({ message: 'Ride updated', ride: populated });
+  } catch (e) {
+    console.error('Modify ride error:', e);
+    return res.status(500).json({ message: 'Server error', error: e.message });
+  }
+});
+
+/**
+ * DELETE /api/rides/:rideId
+ * Driver cancels a posted ride
+ */
+router.delete('/:rideId', protect, async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const userId = req.user?._id?.toString() || req.userId;
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+    if (ride.postedBy.toString() !== userId) {
+      return res.status(403).json({ message: 'Not authorized to cancel this ride' });
+    }
+    if (ride.status !== 'posted') {
+      return res.status(400).json({ message: 'Only posted rides can be cancelled' });
+    }
+
+    ride.status = 'cancelled';
+    ride.cancelledAt = new Date();
+    await ride.save();
+
+    // TODO: notify confirmed riders and process refunds if applicable
+    return res.json({ message: 'Ride cancelled', ride });
+  } catch (e) {
+    console.error('Cancel ride error:', e);
+    return res.status(500).json({ message: 'Server error', error: e.message });
+  }
+});
+
+/**
  * POST /api/rides/:rideId/complete
- * Complete a ride (driver only)
+ * Driver completes a ride
  */
 router.post('/:rideId/complete', protect, async (req, res) => {
   try {
@@ -199,7 +281,6 @@ router.post('/:rideId/complete', protect, async (req, res) => {
 
     const ride = await Ride.findById(rideId);
     if (!ride) return res.status(404).json({ message: 'Ride not found' });
-
     if (ride.postedBy.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to complete this ride' });
     }

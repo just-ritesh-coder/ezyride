@@ -1,7 +1,7 @@
 // src/pages/PassengerCenter.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
-import ChatPanel from "../components/ChatPanel"; // NEW: create this shared component
+import ChatPanel from "../components/ChatPanel";
 
 const TABS = ["Active Bookings", "Past Rides", "Saved Searches", "Safety & Payments"];
 
@@ -11,6 +11,10 @@ const PassengerCenter = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [openChat, setOpenChat] = useState(null); // rideId currently chatting
+
+  // Edit seats modal
+  const [editFor, setEditFor] = useState(null);   // booking object
+  const [newSeats, setNewSeats] = useState("");
 
   const token = localStorage.getItem("authToken");
 
@@ -36,8 +40,52 @@ const PassengerCenter = () => {
     fetchBookings();
   }, [fetchBookings]);
 
-  const active = bookings.filter((b) => b.ride?.status !== "completed");
-  const past = bookings.filter((b) => b.ride?.status === "completed");
+  const active = bookings.filter((b) => b.ride?.status !== "completed" && b.ride?.status !== "cancelled");
+  const past = bookings.filter((b) => b.ride?.status === "completed" || b.ride?.status === "cancelled");
+
+  // Open seats edit
+  const openSeats = (booking) => {
+    setEditFor(booking);
+    setNewSeats(String(booking.seatsBooked ?? 1));
+  };
+
+  // Save seats PATCH /api/bookings/:bookingId
+  const saveSeats = async () => {
+    try {
+      const seatsNum = Number(newSeats);
+      if (!Number.isInteger(seatsNum) || seatsNum < 1) {
+        throw new Error("Seats must be a positive integer");
+      }
+      const res = await fetch(`/api/bookings/${editFor._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ seats: seatsNum }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to update seats");
+      setBookings((prev) => prev.map(b => b._id === editFor._id ? data.booking : b));
+      setEditFor(null);
+      setNewSeats("");
+    } catch (e) {
+      setErr(e.message);
+    }
+  };
+
+  // Cancel booking DELETE /api/bookings/:bookingId
+  const cancelBooking = async (bookingId) => {
+    if (!window.confirm("Cancel this booking?")) return;
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to cancel booking");
+      setBookings(prev => prev.filter(b => b._id !== bookingId));
+    } catch (e) {
+      setErr(e.message);
+    }
+  };
 
   return (
     <Wrap>
@@ -67,6 +115,7 @@ const PassengerCenter = () => {
               {active.map((b) => {
                 const ride = b.ride || {};
                 const dt = ride.date ? new Date(ride.date) : null;
+                const canEdit = ride.status === "posted";
                 return (
                   <Card key={b._id}>
                     <Top>
@@ -75,13 +124,10 @@ const PassengerCenter = () => {
                       </RouteTxt>
                       <Chip>{ride.status || "posted"}</Chip>
                     </Top>
+
                     <Meta>
                       <span>{dt ? dt.toLocaleDateString() : ""}</span>
-                      <span>
-                        {dt
-                          ? dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                          : ""}
-                      </span>
+                      <span>{dt ? dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>
                       <span>₹{ride.pricePerSeat}</span>
                       <span>Seats: {b.seatsBooked}</span>
                     </Meta>
@@ -91,9 +137,7 @@ const PassengerCenter = () => {
                       <span>Start Code:</span>
                       <Code>{b.ride_start_code || "—"}</Code>
                       {b.ride_start_code && (
-                        <CopyBtn onClick={() => navigator.clipboard.writeText(b.ride_start_code)}>
-                          Copy
-                        </CopyBtn>
+                        <CopyBtn onClick={() => navigator.clipboard.writeText(b.ride_start_code)}>Copy</CopyBtn>
                       )}
                       {b.ride_start_code_used && <Used>Used</Used>}
                     </OTPRow>
@@ -102,19 +146,41 @@ const PassengerCenter = () => {
                       <Button onClick={() => setOpenChat(ride._id)}>Chat</Button>
                       <Button
                         as="a"
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                          ride.to || ""
-                        )}`}
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(ride.to || "")}`}
                         target="_blank"
                         rel="noreferrer"
                       >
                         Directions
                       </Button>
-                      {/* other actions like Modify/Cancel can stay here */}
+                    </Actions>
+
+                    <Actions>
+                      <Button disabled={!canEdit} onClick={() => openSeats(b)}>Modify Seats</Button>
+                      <Button disabled={!canEdit} onClick={() => cancelBooking(b._id)}>Cancel Booking</Button>
                     </Actions>
 
                     {openChat === ride._id && (
                       <ChatPanel rideId={ride._id} onClose={() => setOpenChat(null)} />
+                    )}
+
+                    {/* Edit seats modal */}
+                    {editFor && editFor._id === b._id && (
+                      <Modal>
+                        <ModalCard>
+                          <h3>Modify Seats</h3>
+                          <Input
+                            inputMode="numeric"
+                            pattern="\d*"
+                            value={newSeats}
+                            onChange={(e) => setNewSeats(e.target.value.replace(/\D/g, ""))}
+                            placeholder="Seats"
+                          />
+                          <ActionsRow>
+                            <Btn onClick={() => { setEditFor(null); setNewSeats(""); }}>Close</Btn>
+                            <Primary onClick={saveSeats}>Save</Primary>
+                          </ActionsRow>
+                        </ModalCard>
+                      </Modal>
                     )}
                   </Card>
                 );
@@ -152,10 +218,7 @@ const PassengerCenter = () => {
                       <Button disabled>Rate & Review</Button>
                       <Button
                         onClick={() => {
-                          localStorage.setItem(
-                            "lastSearch",
-                            JSON.stringify({ origin: ride.from, destination: ride.to })
-                          );
+                          localStorage.setItem("lastSearch", JSON.stringify({ origin: ride.from, destination: ride.to }));
                           window.location.href = "/home/search-rides";
                         }}
                       >
@@ -175,7 +238,7 @@ const PassengerCenter = () => {
 
 export default PassengerCenter;
 
-/* styled components */
+/* styles */
 const Wrap = styled.div`max-width:950px;margin:0 auto;padding:10px 20px 60px;font-family:"Poppins",sans-serif;`;
 const Header = styled.div`text-align:center;margin:6px 0 18px;`;
 const Title = styled.h1`color:#1e90ff;font-weight:900;font-size:2.2rem;margin:0;`;
@@ -207,3 +270,9 @@ const OTPRow = styled.div`display:flex;align-items:center;gap:10px;flex-wrap:wra
 const Code = styled.span`font-family:monospace;font-weight:900;background:#f7f9fc;border:1px dashed #cfe1ff;border-radius:8px;padding:4px 8px;`;
 const CopyBtn = styled.button`padding:6px 10px;border:none;border-radius:8px;background:#f0f7ff;color:#005bbb;border:1px solid #cfe1ff;font-weight:800;cursor:pointer;`;
 const Used = styled.span`color:#18794e;background:#e6f4ea;border:1px solid #bfe3cf;font-weight:800;padding:4px 8px;border-radius:999px;`;
+const Modal = styled.div`position:fixed;inset:0;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;z-index:1200;`;
+const ModalCard = styled.div`background:#fff;border-radius:12px;padding:16px;min-width:300px;box-shadow:0 12px 28px rgba(0,0,0,.18);`;
+const ActionsRow = styled.div`display:flex;gap:10px;justify-content:flex-end;margin-top:12px;`;
+const Btn = styled.button`padding:8px 12px;border-radius:10px;border:1px solid #ddd;background:#f7f9fc;`;
+const Primary = styled.button`padding:10px 14px;border:none;border-radius:12px;font-weight:800;font-size:.95rem;cursor:pointer;background:#1e90ff;color:#fff;`;
+const Input = styled.input`padding:10px 12px;border-radius:10px;border:1px solid #cfe1ff;width:100%;font-weight:800;letter-spacing:1px;margin-top:8px;`;
