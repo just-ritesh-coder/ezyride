@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const Ride = require('../models/Ride');
-const Booking = require('../models/Booking'); // ✅ Missing import fixed
+const Booking = require('../models/Booking');
 
 /**
  * POST /api/rides
@@ -16,13 +16,11 @@ router.post('/', protect, async (req, res) => {
 
     const { from, to, seatsAvailable, pricePerSeat, notes = '', date } = req.body;
 
-    // validations
     if (!from || !to) return res.status(400).json({ message: 'from and to are required' });
     if (!date) return res.status(400).json({ message: 'date is required' });
 
     const seats = Number(seatsAvailable);
     const price = Number(pricePerSeat);
-
     if (!Number.isInteger(seats) || seats < 1) {
       return res.status(400).json({ message: 'seatsAvailable must be a positive integer' });
     }
@@ -96,8 +94,22 @@ router.get('/search', async (req, res) => {
 });
 
 /**
+ * Internal helper: verify OTP and return booking or null
+ */
+async function verifyOtpForRide(rideId, code) {
+  if (!code) return null;
+  const booking = await Booking.findOne({
+    ride: rideId,
+    status: 'confirmed',
+    ride_start_code: code,
+    ride_start_code_used: { $ne: true },
+  }).select('_id ride_start_code_used');
+  return booking || null;
+}
+
+/**
  * POST /api/rides/:rideId/start
- * Start a ride (driver only, with optional code verification)
+ * Start a ride (driver only). If code provided, verify it first.
  */
 router.post('/:rideId/start', protect, async (req, res) => {
   try {
@@ -115,24 +127,15 @@ router.post('/:rideId/start', protect, async (req, res) => {
       return res.status(400).json({ message: 'Ride already started or completed' });
     }
 
-    // If code provided → validate with Booking
     if (code) {
-      const booking = await Booking.findOne({
-        ride: rideId,
-        status: 'confirmed',
-        ride_start_code: code,
-        ride_start_code_used: { $ne: true }
-      }).select('_id ride_start_code_used');
-
+      const booking = await verifyOtpForRide(rideId, code);
       if (!booking) {
         return res.status(400).json({ message: 'Invalid or already used code' });
       }
-
       booking.ride_start_code_used = true;
       await booking.save();
     }
 
-    // Start ride
     ride.status = 'ongoing';
     ride.startedAt = new Date();
     await ride.save();
@@ -141,6 +144,47 @@ router.post('/:rideId/start', protect, async (req, res) => {
   } catch (e) {
     console.error('Start ride error:', e);
     return res.status(500).json({ message: 'Server error', error: e.message });
+  }
+});
+
+/**
+ * POST /api/rides/:rideId/start/verify
+ * Optional alias that requires code (to match previous frontend calls)
+ */
+router.post('/:rideId/start/verify', protect, async (req, res) => {
+  try {
+    const { rideId } = req.params;
+    const { code } = req.body || {};
+    const userId = req.user?._id?.toString() || req.userId;
+
+    if (!code) return res.status(400).json({ message: 'Code required' });
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) return res.status(404).json({ message: 'Ride not found' });
+
+    if (ride.postedBy.toString() !== userId) {
+      return res.status(403).json({ message: 'Only the driver can start the ride' });
+    }
+    if (ride.status !== 'posted') {
+      return res.status(400).json({ message: 'Ride already started or completed' });
+    }
+
+    const booking = await verifyOtpForRide(rideId, code);
+    if (!booking) {
+      return res.status(400).json({ message: 'Invalid or already used code' });
+    }
+
+    booking.ride_start_code_used = true;
+    await booking.save();
+
+    ride.status = 'ongoing';
+    ride.startedAt = new Date();
+    await ride.save();
+
+    return res.json({ ok: true, rideId: ride._id, startedAt: ride.startedAt });
+  } catch (e) {
+    console.error('Start verify error:', e);
+    return res.status(500).json({ message: 'Failed to verify code' });
   }
 });
 
@@ -159,7 +203,6 @@ router.post('/:rideId/complete', protect, async (req, res) => {
     if (ride.postedBy.toString() !== userId) {
       return res.status(403).json({ message: 'Not authorized to complete this ride' });
     }
-
     if (ride.status === 'completed') {
       return res.status(400).json({ message: 'Ride already completed' });
     }
