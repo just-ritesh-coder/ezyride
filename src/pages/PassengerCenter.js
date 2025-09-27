@@ -17,6 +17,7 @@ const PassengerCenter = () => {
   const [newSeats, setNewSeats] = useState("");
 
   const token = localStorage.getItem("authToken");
+  const authUser = JSON.parse(localStorage.getItem("authUser"));
 
   const fetchBookings = useCallback(async () => {
     setErr("");
@@ -87,6 +88,62 @@ const PassengerCenter = () => {
     }
   };
 
+  // 🔹 Razorpay integration
+  const startRazorpay = async (booking) => {
+    try {
+      const res = await fetch("/api/payments/razorpay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ bookingId: booking._id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to create order");
+
+      const options = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "EzyRide",
+        description: `Payment for booking ${booking._id}`,
+        order_id: data.orderId,
+        prefill: {
+          name: authUser?.fullName || "",
+          email: authUser?.email || "",
+        },
+        theme: { color: "#1e90ff" },
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch("/api/payments/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                bookingId: booking._id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) throw new Error(verifyData.message || "Verification failed");
+
+            // optimistic UI update
+            setBookings(prev =>
+              prev.map(b => b._id === booking._id ? { ...b, paymentStatus: "succeeded" } : b)
+            );
+          } catch (e) {
+            setErr(e.message);
+          }
+        },
+        modal: { ondismiss: () => {} },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      setErr(e.message);
+    }
+  };
+
   return (
     <Wrap>
       <Header>
@@ -130,6 +187,9 @@ const PassengerCenter = () => {
                       <span>{dt ? dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>
                       <span>₹{ride.pricePerSeat}</span>
                       <span>Seats: {b.seatsBooked}</span>
+                      <span>
+                        {b.paymentStatus === "succeeded" ? "✅ Paid" : "❌ Unpaid"}
+                      </span>
                     </Meta>
 
                     {/* Rider Start Code (OTP) */}
@@ -152,6 +212,10 @@ const PassengerCenter = () => {
                       >
                         Directions
                       </Button>
+                      {/* 🔹 Payment button */}
+                      {b.paymentStatus !== "succeeded" && (
+                        <Primary onClick={() => startRazorpay(b)}>Pay</Primary>
+                      )}
                     </Actions>
 
                     <Actions>
@@ -264,6 +328,7 @@ const Button = styled.button`
   padding:10px 14px;border:none;border-radius:12px;font-weight:800;font-size:.95rem;cursor:pointer;
   background:#f0f7ff;color:#005bbb;border:1px solid #cfe1ff;&:hover{background:#e6f0ff;}
 `;
+const Primary = styled(Button)`background:#1e90ff;color:#fff;border:none;&:hover{background:#0b74ff;}`;
 const Err = styled.div`color:#b01212;background:#ffe5e5;padding:10px 14px;border-radius:10px;margin:10px 0;font-weight:600;`;
 const Muted = styled.div`color:#666;font-style:italic;font-weight:500;`;
 const OTPRow = styled.div`display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;`;
@@ -274,5 +339,4 @@ const Modal = styled.div`position:fixed;inset:0;background:rgba(0,0,0,.25);displ
 const ModalCard = styled.div`background:#fff;border-radius:12px;padding:16px;min-width:300px;box-shadow:0 12px 28px rgba(0,0,0,.18);`;
 const ActionsRow = styled.div`display:flex;gap:10px;justify-content:flex-end;margin-top:12px;`;
 const Btn = styled.button`padding:8px 12px;border-radius:10px;border:1px solid #ddd;background:#f7f9fc;`;
-const Primary = styled.button`padding:10px 14px;border:none;border-radius:12px;font-weight:800;font-size:.95rem;cursor:pointer;background:#1e90ff;color:#fff;`;
 const Input = styled.input`padding:10px 12px;border-radius:10px;border:1px solid #cfe1ff;width:100%;font-weight:800;letter-spacing:1px;margin-top:8px;`;

@@ -1,6 +1,7 @@
 // backend/routes/rides.js
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose'); // NEW
 const { protect } = require('../middleware/authMiddleware');
 const Ride = require('../models/Ride');
 const Booking = require('../models/Booking');
@@ -242,18 +243,26 @@ router.patch('/:rideId', protect, async (req, res) => {
 
 /**
  * DELETE /api/rides/:rideId
- * Driver cancels a posted ride
+ * Driver cancels a posted ride (safe)
  */
 router.delete('/:rideId', protect, async (req, res) => {
   try {
     const { rideId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(rideId)) {
+      return res.status(400).json({ message: 'Invalid rideId format' });
+    }
+
     const userId = req.user?._id?.toString() || req.userId;
+    if (!userId) return res.status(401).json({ message: 'Not authorized' });
 
     const ride = await Ride.findById(rideId);
     if (!ride) return res.status(404).json({ message: 'Ride not found' });
-    if (ride.postedBy.toString() !== userId) {
+
+    if (ride.postedBy?.toString?.() !== userId) {
       return res.status(403).json({ message: 'Not authorized to cancel this ride' });
     }
+
     if (ride.status !== 'posted') {
       return res.status(400).json({ message: 'Only posted rides can be cancelled' });
     }
@@ -262,7 +271,6 @@ router.delete('/:rideId', protect, async (req, res) => {
     ride.cancelledAt = new Date();
     await ride.save();
 
-    // TODO: notify confirmed riders and process refunds if applicable
     return res.json({ message: 'Ride cancelled', ride });
   } catch (e) {
     console.error('Cancel ride error:', e);

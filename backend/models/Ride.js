@@ -19,10 +19,11 @@ const RideSchema = new mongoose.Schema(
     passengerIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
     status: {
-      type: String,
-      enum: ['posted', 'ongoing', 'completed'],
-      default: 'posted',
-    },
+  type: String,
+  enum: ["posted", "ongoing", "completed", "cancelled"],
+  default: "posted",
+},
+
 
     notes: { type: String },
   },

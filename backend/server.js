@@ -24,8 +24,11 @@ const usersRoutes = require('./routes/users');
 const ridesRoutes = require('./routes/rides');
 const bookingsRoutes = require('./routes/bookings');
 const profileRoutes = require('./routes/profile');
-const chatsRoutes = require('./routes/chats'); // NEW: REST history/fallback
-const sosRoutes = require("./routes/sos"); // NEW: SOS
+const chatsRoutes = require('./routes/chats');
+const sosRoutes = require("./routes/sos");
+// NEW: Razorpay
+const razorpayRoutes = require("./routes/payments.razorpay");
+
 
 const app = express();
 
@@ -58,6 +61,8 @@ app.use('/api', meRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/chats', chatsRoutes); // NEW
 app.use("/api/sos", sosRoutes); // NEW
+// NEW: Razorpay
+app.use('/api/payments/razorpay', razorpayRoutes);
 // Optional: serve SPA in production (adjust path to your frontend build)
 if (process.env.NODE_ENV === 'production') {
   const clientBuild = path.join(__dirname, '..', 'client', 'dist');
