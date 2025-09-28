@@ -87,12 +87,12 @@ const SearchRides = () => {
         <AutocompleteInput
           value={origin}
           onChange={setOrigin}
-          placeholder="Origin"
+          placeholder="From (e.g., Mumbai, Delhi)"
         />
         <AutocompleteInput
           value={destination}
           onChange={setDestination}
-          placeholder="Destination"
+          placeholder="To (e.g., Bangalore, Pune)"
         />
         <Input
           type="date"
@@ -101,7 +101,7 @@ const SearchRides = () => {
           aria-label="Date (optional)"
         />
         <Button type="submit" disabled={loading}>
-          {loading ? "Searching..." : "Search"}
+          {loading ? "Searching..." : "Search Rides"}
         </Button>
       </SearchForm>
 
@@ -155,6 +155,16 @@ const Container = styled.div`
   margin: 40px auto;
   padding: 0 20px;
   font-family: "Poppins", sans-serif;
+  
+  @media (max-width: 768px) {
+    margin: 30px auto;
+    padding: 0 15px;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 20px auto;
+    padding: 0 12px;
+  }
 `;
 
 const Title = styled.h1`
@@ -163,50 +173,124 @@ const Title = styled.h1`
   font-size: 2.2rem;
   margin-bottom: 25px;
   text-align: center;
+  line-height: 1.2;
+  
+  @media (max-width: 768px) {
+    font-size: 1.9rem;
+    margin-bottom: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.6rem;
+    margin-bottom: 18px;
+  }
 `;
 
 const SearchForm = styled.form`
   display: flex;
   gap: 16px;
   margin-bottom: 28px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  
   @media (max-width: 600px) {
     flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 14px;
+    margin-bottom: 20px;
   }
 `;
 
 const Input = styled.input`
   padding: 12px 14px;
-  border: 1px solid #ccc;
+  border: 2px solid #e1e5e9;
   border-radius: 10px;
   font-size: 16px;
   outline: none;
   min-width: 160px;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  
   &:focus {
     border-color: #1e90ff;
-    box-shadow: 0 0 10px #a3c6ff88;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+  
+  @media (max-width: 768px) {
+    min-width: 140px;
+    padding: 10px 12px;
+  }
+  
+  @media (max-width: 600px) {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 `;
 
 const Button = styled.button`
-  padding: 0 22px;
-  background-color: #1e90ff;
+  padding: 12px 22px;
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
   font-weight: 700;
   font-size: 16px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.35s ease;
-  &:hover {
-    background-color: #005bbb;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  white-space: nowrap;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
   }
+  
   &:disabled {
-    background-color: #a0c4ff;
+    background: #a0c4ff;
     cursor: not-allowed;
+    transform: none;
   }
+  
+  @media (max-width: 768px) {
+    padding: 10px 18px;
+    font-size: 15px;
+  }
+  
   @media (max-width: 600px) {
     width: 100%;
     padding: 12px 0;
+    font-size: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 0;
+    min-height: 48px;
   }
 `;
 
@@ -214,6 +298,14 @@ const Results = styled.div`
   display: flex;
   flex-direction: column;
   gap: 18px;
+  
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 14px;
+  }
 `;
 
 const NoResults = styled.p`
@@ -221,22 +313,79 @@ const NoResults = styled.p`
   font-weight: 600;
   font-size: 1.1rem;
   color: #777;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  
+  @media (max-width: 768px) {
+    font-size: 1.05rem;
+    padding: 25px 16px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    padding: 20px 14px;
+  }
 `;
 
 const RideCard = styled.div`
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 12px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 18px 20px;
+    gap: 10px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 16px 18px;
+    gap: 8px;
+  }
 `;
 
 const RideInfo = styled.div`
   font-size: 1.3rem;
   font-weight: 700;
   color: #222;
+  line-height: 1.3;
+  
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+  }
 `;
 
 const RideDetails = styled.div`
@@ -245,26 +394,56 @@ const RideDetails = styled.div`
   gap: 14px;
   font-size: 1rem;
   color: #555;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+    font-size: 0.95rem;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
 `;
 
 const BookButton = styled.button`
   align-self: flex-start;
   margin-top: 8px;
-  padding: 10px 18px;
-  background-color: #1e90ff;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
   font-weight: 600;
   font-size: 1rem;
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  &:hover {
-    background-color: #005bbb;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
   }
+  
   &:disabled {
-    background-color: #a0c4ff;
+    background: #a0c4ff;
     cursor: not-allowed;
+    transform: none;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+  }
+  
+  @media (max-width: 480px) {
+    align-self: stretch;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    min-height: 48px;
   }
 `;
 
@@ -273,6 +452,20 @@ const ErrorMessage = styled.p`
   color: #d9534f;
   font-weight: 700;
   margin-bottom: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(217, 83, 79, 0.2);
+  
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+    padding: 10px 14px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    padding: 10px 12px;
+  }
 `;
 
 export default SearchRides;
