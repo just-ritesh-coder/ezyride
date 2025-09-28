@@ -209,84 +209,88 @@ const Profile = () => {
           </Section>
         )}
 
-       {/* ===== SOS ===== */}
-{active === "SOS" && (
-  <Section>
-    <Card>
-      <H3>SOS</H3>
-      <Muted>Configure emergency contacts and custom SOS message. Up to 3 contacts allowed.</Muted>
+        {/* ===== SOS ===== */}
+        {active === "SOS" && (
+          <Section>
+            <Card>
+              <H3>SOS Emergency Settings</H3>
+              <Muted>Configure emergency contacts and custom SOS message. Up to 3 contacts allowed.</Muted>
 
-      <SOSGrid>
-        {sos.contacts.map((c, i) => (
-          <SOSItem key={i}>
-            <SOSInput
-              placeholder="Name"
-              value={c.name}
-              onChange={e => {
-                const next = [...sos.contacts];
-                next[i].name = e.target.value;
-                setSOS(prev => ({ ...prev, contacts: next }));
-              }}
-            />
-            <SOSInput
-              placeholder="Phone"
-              value={c.phone}
-              onChange={e => {
-                const next = [...sos.contacts];
-                next[i].phone = e.target.value;
-                setSOS(prev => ({ ...prev, contacts: next }));
-              }}
-            />
-            <SOSInput
-              placeholder="Relation"
-              value={c.relation || ""}
-              onChange={e => {
-                const next = [...sos.contacts];
-                next[i].relation = e.target.value;
-                setSOS(prev => ({ ...prev, contacts: next }));
-              }}
-            />
-          </SOSItem>
-        ))}
-      </SOSGrid>
+              <SOSGrid>
+                {sos.contacts.map((c, i) => (
+                  <SOSItem key={i}>
+                    <SOSInput
+                      placeholder="Contact Name"
+                      value={c.name}
+                      onChange={e => {
+                        const next = [...sos.contacts];
+                        next[i].name = e.target.value;
+                        setSOS(prev => ({ ...prev, contacts: next }));
+                      }}
+                    />
+                    <SOSInput
+                      placeholder="Phone Number"
+                      type="tel"
+                      value={c.phone}
+                      onChange={e => {
+                        const next = [...sos.contacts];
+                        next[i].phone = e.target.value;
+                        setSOS(prev => ({ ...prev, contacts: next }));
+                      }}
+                    />
+                    <SOSInput
+                      placeholder="Relation (e.g., Family, Friend)"
+                      value={c.relation || ""}
+                      onChange={e => {
+                        const next = [...sos.contacts];
+                        next[i].relation = e.target.value;
+                        setSOS(prev => ({ ...prev, contacts: next }));
+                      }}
+                    />
+                  </SOSItem>
+                ))}
+              </SOSGrid>
 
-      <SOSActions>
-        <AddButton
-          onClick={() =>
-            setSOS(prev => ({
-              ...prev,
-              contacts: [...prev.contacts, { name: "", phone: "", relation: "" }]
-            }))
-          }
-          disabled={sos.contacts.length >= 3}
-        >
-          Add Contact
-        </AddButton>
+              <SOSActions>
+                <AddButton
+                  onClick={() =>
+                    setSOS(prev => ({
+                      ...prev,
+                      contacts: [...prev.contacts, { name: "", phone: "", relation: "" }]
+                    }))
+                  }
+                  disabled={sos.contacts.length >= 3}
+                >
+                  + Add Contact
+                </AddButton>
 
-        <RemoveButton
-          onClick={() =>
-            setSOS(prev => ({
-              ...prev,
-              contacts: prev.contacts.slice(0, Math.max(1, prev.contacts.length - 1))
-            }))
-          }
-        >
-          Remove Last
-        </RemoveButton>
-      </SOSActions>
+                <RemoveButton
+                  onClick={() =>
+                    setSOS(prev => ({
+                      ...prev,
+                      contacts: prev.contacts.slice(0, Math.max(1, prev.contacts.length - 1))
+                    }))
+                  }
+                  disabled={sos.contacts.length <= 1}
+                >
+                  - Remove Last
+                </RemoveButton>
+              </SOSActions>
 
-      <SOSMessage
-        rows={3}
-        value={sos.message}
-        onChange={e => setSOS(prev => ({ ...prev, message: e.target.value }))}
-      />
+              <SOSMessageLabel>Emergency Message:</SOSMessageLabel>
+              <SOSMessage
+                rows={3}
+                placeholder="Enter your emergency message here..."
+                value={sos.message}
+                onChange={e => setSOS(prev => ({ ...prev, message: e.target.value }))}
+              />
 
-      <SaveButton onClick={saveSOS} disabled={saving}>
-        {saving ? "Saving..." : "Save SOS Settings"}
-      </SaveButton>
-    </Card>
-  </Section>
-)}
+              <SaveButton onClick={saveSOS} disabled={saving}>
+                {saving ? "Saving..." : "Save SOS Settings"}
+              </SaveButton>
+            </Card>
+          </Section>
+        )}
 
 
         {/* ===== Features ===== */}
@@ -312,69 +316,587 @@ const Profile = () => {
 
 export default Profile;
 
-/* ===== Styles (same as your previous code) ===== */
-const Wrap = styled.div`max-width:1000px;margin:0 auto;padding:12px 20px 60px;font-family:"Poppins",sans-serif;`;
-const Header = styled.div`text-align:center;margin:6px 0 18px;`;
-const Title = styled.h1`color:#1e90ff;font-weight:900;font-size:2.2rem;margin:0;`;
-const Sub = styled.p`color:#666;font-weight:500;margin:6px 0 0;`;
-const Tabs = styled.div`display:flex;gap:10px;border-bottom:1px solid #e9eef5;padding-bottom:6px;overflow-x:auto;`;
-const Tab = styled.button`
-  padding:10px 14px;border:none;border-radius:999px;font-weight:800;
-  color:${({ active }) => (active ? "#fff" : "#1e90ff")};
-  background:${({ active }) => (active ? "#1e90ff" : "#e7f0ff")};
-  cursor:pointer;white-space:nowrap;
-  &:hover{background:${({ active }) => (active ? "#0b74ff" : "#dbe9ff")};}
+/* ===== Styles ===== */
+const Wrap = styled.div`
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 20px 60px;
+  font-family: "Poppins", sans-serif;
+  
+  @media (max-width: 768px) {
+    padding: 12px 15px 50px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 12px 40px;
+  }
 `;
-const Body = styled.div`margin-top:16px;`;
-const Section = styled.section`margin-bottom:18px;`;
-const Card = styled.div`background:#fff;border-radius:14px;box-shadow:0 12px 28px rgba(0,0,0,0.08);padding:18px;`;
-const H3 = styled.h3`color:#005bbb;font-weight:900;margin:0 0 12px;`;
-const Err = styled.p`text-align:center;color:#d9534f;font-weight:700;margin-top:8px;`;
-const Success = styled.p`text-align:center;color:#18794e;font-weight:700;margin-top:8px;`;
-const Muted = styled.p`color:#666;font-weight:600;margin:6px 0 0;`;
-const Grid = styled.div`display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;`;
-const Item = styled.div`background:#f7f9fc;border-radius:10px;padding:12px 14px;`;
-const Label = styled.div`color:#6b7a90;font-weight:700;font-size:0.8rem;margin-bottom:4px;`;
-const Value = styled.div`color:#2a2a2a;font-weight:800;`;
-const Input = styled.input`padding:10px 12px;font-size:1rem;border-radius:8px;border:1px solid #ccc;outline:none;&:focus{border-color:#1e90ff;box-shadow:0 0 8px #a3c6ff88;}`;
-const EditButton = styled.button`padding:10px 12px;font-weight:700;color:#1e90ff;border-radius:8px;border:1px solid #1e90ff;cursor:pointer;background:#fff;&:hover{background:#e7f0ff;}`;
-const SaveButton = styled.button`padding:10px 12px;font-weight:700;color:#fff;border-radius:8px;border:none;background:#1e90ff;cursor:pointer;&:hover{background:#0b74ff;}&:disabled{background:#a0c4ff;cursor:not-allowed;}`;
-const CancelButton = styled.button`padding:10px 12px;font-weight:700;color:#d9534f;border-radius:8px;border:1px solid #d9534f;cursor:pointer;background:#fff;&:hover{background:#f8d7da;}`;
-const HistoryGrid = styled.div`display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;`;
-const HistoryCard = styled.div`background:#fff;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,0.08);padding:16px;display:flex;flex-direction:column;gap:8px;`;
-const RouteTxt = styled.div`color:#222;font-weight:800;`;
-const Meta = styled.div`display:flex;gap:12px;flex-wrap:wrap;color:#555;font-weight:600;font-size:0.95rem;`;
-const Done = styled.span`align-self:flex-start;background:#e6f4ea;color:#18794e;border:1px solid #bfe3cf;border-radius:999px;padding:4px 8px;font-weight:800;font-size:0.8rem;`;
-const FeatureList = styled.ul`margin:6px 0 0 18px;color:#333;font-weight:600;`;
+
+const Header = styled.div`
+  text-align: center;
+  margin: 6px 0 18px;
+  
+  @media (max-width: 768px) {
+    margin: 6px 0 16px;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 6px 0 14px;
+  }
+`;
+
+const Title = styled.h1`
+  color: #1e90ff;
+  font-weight: 900;
+  font-size: 2.2rem;
+  margin: 0;
+  line-height: 1.2;
+  
+  @media (max-width: 768px) {
+    font-size: 1.9rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.6rem;
+  }
+`;
+
+const Sub = styled.p`
+  color: #666;
+  font-weight: 500;
+  margin: 6px 0 0;
+  
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+const Tabs = styled.div`
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid #e9eef5;
+  padding-bottom: 6px;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+`;
+
+const Tab = styled.button`
+  padding: 10px 14px;
+  border: none;
+  border-radius: 999px;
+  font-weight: 800;
+  color: ${({ active }) => (active ? "#fff" : "#1e90ff")};
+  background: ${({ active }) => (active ? "#1e90ff" : "#e7f0ff")};
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: ${({ active }) => (active ? "#0b74ff" : "#dbe9ff")};
+    transform: translateY(-1px);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+`;
+
+const Body = styled.div`
+  margin-top: 16px;
+  
+  @media (max-width: 480px) {
+    margin-top: 14px;
+  }
+`;
+
+const Section = styled.section`
+  margin-bottom: 18px;
+  
+  @media (max-width: 480px) {
+    margin-bottom: 16px;
+  }
+`;
+
+const Card = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  padding: 18px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 14px;
+    border-radius: 10px;
+  }
+`;
+
+const H3 = styled.h3`
+  color: #005bbb;
+  font-weight: 900;
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
+`;
+
+const Err = styled.p`
+  text-align: center;
+  color: #d9534f;
+  font-weight: 700;
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(217, 83, 79, 0.2);
+  
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.95rem;
+  }
+`;
+
+const Success = styled.p`
+  text-align: center;
+  color: #18794e;
+  font-weight: 700;
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(24, 121, 78, 0.2);
+  
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.95rem;
+  }
+`;
+
+const Muted = styled.p`
+  color: #666;
+  font-weight: 600;
+  margin: 6px 0 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+  
+  @media (max-width: 480px) {
+    padding: 15px;
+    font-size: 0.95rem;
+  }
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+`;
+
+const Item = styled.div`
+  background: linear-gradient(135deg, #f7f9fc 0%, #e9ecef 100%);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+  }
+`;
+
+const Label = styled.div`
+  color: #6b7a90;
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  
+  @media (max-width: 480px) {
+    font-size: 0.75rem;
+  }
+`;
+
+const Value = styled.div`
+  color: #2a2a2a;
+  font-weight: 800;
+  font-size: 1rem;
+  
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
+  }
+`;
+
+const Input = styled.input`
+  padding: 10px 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid #e1e5e9;
+  outline: none;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  width: 100%;
+  
+  &:focus {
+    border-color: #1e90ff;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+`;
+
+const EditButton = styled.button`
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #1e90ff;
+  border-radius: 8px;
+  border: 1px solid #1e90ff;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  
+  &:hover {
+    background: linear-gradient(135deg, #e7f0ff 0%, #d6ebff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+`;
+
+const SaveButton = styled.button`
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
+  }
+  
+  &:disabled {
+    background: #a0c4ff;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+`;
+
+const CancelButton = styled.button`
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #d9534f;
+  border-radius: 8px;
+  border: 1px solid #d9534f;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  
+  &:hover {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(217, 83, 79, 0.2);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+`;
+
+const HistoryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+`;
+
+const HistoryCard = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 14px;
+    border-radius: 10px;
+  }
+`;
+
+const RouteTxt = styled.div`
+  color: #222;
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
+`;
+
+const Meta = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.95rem;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+`;
+
+const Done = styled.span`
+  align-self: flex-start;
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
+  color: #18794e;
+  border: 1px solid #bfe3cf;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  
+  @media (max-width: 480px) {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+`;
+
+const FeatureList = styled.ul`
+  margin: 6px 0 0 18px;
+  color: #333;
+  font-weight: 600;
+  line-height: 1.6;
+  
+  @media (max-width: 480px) {
+    margin-left: 16px;
+    font-size: 0.95rem;
+  }
+`;
+
 const SOSGrid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 12px 0;
+  gap: 12px;
+  margin: 16px 0;
+  
+  @media (max-width: 768px) {
+    gap: 10px;
+    margin: 14px 0;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin: 12px 0;
+  }
 `;
 
 const SOSItem = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
 `;
 
 const SOSInput = styled.input`
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 0.95rem;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 2px solid #e1e5e9;
   outline: none;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  
   &:focus {
     border-color: #1e90ff;
-    box-shadow: 0 0 6px #a3c6ff88;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 10px 12px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 `;
 
 const SOSActions = styled.div`
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin: 16px 0;
+  
+  @media (max-width: 768px) {
+    gap: 10px;
+    margin: 14px 0;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+    flex-direction: column;
+    margin: 12px 0;
+  }
 `;
 
 const AddButton = styled.button`
@@ -382,26 +904,53 @@ const AddButton = styled.button`
   padding: 10px 14px;
   font-weight: 700;
   color: #1e90ff;
-  background: #e7f0ff;
+  background: linear-gradient(135deg, #e7f0ff 0%, #d6ebff 100%);
   border: 1px solid #1e90ff;
   border-radius: 8px;
   cursor: pointer;
-  &:hover {
-    background: #dbe9ff;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #dbe9ff 0%, #c6dfff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
   }
+  
   &:disabled {
     background: #f0f4ff;
     cursor: not-allowed;
     color: #9bb7dd;
+    transform: none;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    min-height: 40px;
   }
 `;
 
 const RemoveButton = styled(AddButton)`
-  background: #ffe7e7;
+  background: linear-gradient(135deg, #ffe7e7 0%, #ffd7d7 100%);
   border: 1px solid #d9534f;
   color: #d9534f;
-  &:hover {
-    background: #ffd7d7;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ffd7d7 0%, #ffc7c7 100%);
+    box-shadow: 0 4px 15px rgba(217, 83, 79, 0.2);
+  }
+`;
+
+const SOSMessageLabel = styled.div`
+  color: #6b7a90;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 16px 0 8px 0;
+  
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+    margin: 14px 0 6px 0;
   }
 `;
 
@@ -410,13 +959,30 @@ const SOSMessage = styled.textarea`
   padding: 10px 12px;
   font-size: 0.95rem;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 2px solid #e1e5e9;
   outline: none;
   resize: none;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  min-height: 80px;
+  
   &:focus {
     border-color: #1e90ff;
-    box-shadow: 0 0 6px #a3c6ff88;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
   }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+  
   margin-bottom: 12px;
+  
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 70px;
+  }
 `;
 
