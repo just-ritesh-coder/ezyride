@@ -209,88 +209,88 @@ const Profile = () => {
           </Section>
         )}
 
-        {/* ===== SOS ===== */}
-        {active === "SOS" && (
-          <Section>
-            <Card>
+       {/* ===== SOS ===== */}
+{active === "SOS" && (
+  <Section>
+    <Card>
               <H3>SOS Emergency Settings</H3>
-              <Muted>Configure emergency contacts and custom SOS message. Up to 3 contacts allowed.</Muted>
+      <Muted>Configure emergency contacts and custom SOS message. Up to 3 contacts allowed.</Muted>
 
-              <SOSGrid>
-                {sos.contacts.map((c, i) => (
-                  <SOSItem key={i}>
-                    <SOSInput
+      <SOSGrid>
+        {sos.contacts.map((c, i) => (
+          <SOSItem key={i}>
+            <SOSInput
                       placeholder="Contact Name"
-                      value={c.name}
-                      onChange={e => {
-                        const next = [...sos.contacts];
-                        next[i].name = e.target.value;
-                        setSOS(prev => ({ ...prev, contacts: next }));
-                      }}
-                    />
-                    <SOSInput
+              value={c.name}
+              onChange={e => {
+                const next = [...sos.contacts];
+                next[i].name = e.target.value;
+                setSOS(prev => ({ ...prev, contacts: next }));
+              }}
+            />
+            <SOSInput
                       placeholder="Phone Number"
                       type="tel"
-                      value={c.phone}
-                      onChange={e => {
-                        const next = [...sos.contacts];
-                        next[i].phone = e.target.value;
-                        setSOS(prev => ({ ...prev, contacts: next }));
-                      }}
-                    />
-                    <SOSInput
+              value={c.phone}
+              onChange={e => {
+                const next = [...sos.contacts];
+                next[i].phone = e.target.value;
+                setSOS(prev => ({ ...prev, contacts: next }));
+              }}
+            />
+            <SOSInput
                       placeholder="Relation (e.g., Family, Friend)"
-                      value={c.relation || ""}
-                      onChange={e => {
-                        const next = [...sos.contacts];
-                        next[i].relation = e.target.value;
-                        setSOS(prev => ({ ...prev, contacts: next }));
-                      }}
-                    />
-                  </SOSItem>
-                ))}
-              </SOSGrid>
+              value={c.relation || ""}
+              onChange={e => {
+                const next = [...sos.contacts];
+                next[i].relation = e.target.value;
+                setSOS(prev => ({ ...prev, contacts: next }));
+              }}
+            />
+          </SOSItem>
+        ))}
+      </SOSGrid>
 
-              <SOSActions>
-                <AddButton
-                  onClick={() =>
-                    setSOS(prev => ({
-                      ...prev,
-                      contacts: [...prev.contacts, { name: "", phone: "", relation: "" }]
-                    }))
-                  }
-                  disabled={sos.contacts.length >= 3}
-                >
+      <SOSActions>
+        <AddButton
+          onClick={() =>
+            setSOS(prev => ({
+              ...prev,
+              contacts: [...prev.contacts, { name: "", phone: "", relation: "" }]
+            }))
+          }
+          disabled={sos.contacts.length >= 3}
+        >
                   + Add Contact
-                </AddButton>
+        </AddButton>
 
-                <RemoveButton
-                  onClick={() =>
-                    setSOS(prev => ({
-                      ...prev,
-                      contacts: prev.contacts.slice(0, Math.max(1, prev.contacts.length - 1))
-                    }))
-                  }
+        <RemoveButton
+          onClick={() =>
+            setSOS(prev => ({
+              ...prev,
+              contacts: prev.contacts.slice(0, Math.max(1, prev.contacts.length - 1))
+            }))
+          }
                   disabled={sos.contacts.length <= 1}
-                >
+        >
                   - Remove Last
-                </RemoveButton>
-              </SOSActions>
+        </RemoveButton>
+      </SOSActions>
 
               <SOSMessageLabel>Emergency Message:</SOSMessageLabel>
-              <SOSMessage
-                rows={3}
+      <SOSMessage
+        rows={3}
                 placeholder="Enter your emergency message here..."
-                value={sos.message}
-                onChange={e => setSOS(prev => ({ ...prev, message: e.target.value }))}
-              />
+        value={sos.message}
+        onChange={e => setSOS(prev => ({ ...prev, message: e.target.value }))}
+      />
 
-              <SaveButton onClick={saveSOS} disabled={saving}>
-                {saving ? "Saving..." : "Save SOS Settings"}
-              </SaveButton>
-            </Card>
-          </Section>
-        )}
+      <SaveButton onClick={saveSOS} disabled={saving}>
+        {saving ? "Saving..." : "Save SOS Settings"}
+      </SaveButton>
+    </Card>
+  </Section>
+)}
 
 
         {/* ===== Features ===== */}
@@ -813,13 +813,13 @@ const SOSGrid = styled.div`
   margin: 16px 0;
   
   @media (max-width: 768px) {
-    gap: 10px;
+  gap: 10px;
     margin: 14px 0;
   }
   
   @media (max-width: 480px) {
     gap: 8px;
-    margin: 12px 0;
+  margin: 12px 0;
   }
 `;
 
@@ -839,7 +839,7 @@ const SOSItem = styled.div`
   }
   
   @media (max-width: 768px) {
-    gap: 10px;
+  gap: 10px;
     padding: 10px;
   }
   
@@ -888,7 +888,7 @@ const SOSActions = styled.div`
   margin: 16px 0;
   
   @media (max-width: 768px) {
-    gap: 10px;
+  gap: 10px;
     margin: 14px 0;
   }
   

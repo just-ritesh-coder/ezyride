@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
 
 export default function AutocompleteInput({
   value,
@@ -111,7 +112,7 @@ export default function AutocompleteInput({
 
   return (
     <div style={{ position: "relative" }}>
-      <input
+      <StyledInput
         ref={inputRef}
         type="text"
         placeholder={placeholder}
@@ -120,21 +121,11 @@ export default function AutocompleteInput({
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         disabled={disabled}
-        // ARIA: textbox + listbox pattern (no aria-expanded on textbox)
         aria-autocomplete="list"
         aria-controls={open && suggestions.length ? "ac-listbox" : undefined}
         aria-activedescendant={
           open && activeIndex >= 0 ? `ac-option-${suggestions[activeIndex]?.id}` : undefined
         }
-        style={{
-          width: "100%",
-          padding: "12px 14px",
-          border: "1px solid #ccc",
-          borderRadius: "10px",
-          fontSize: "16px",
-          outline: "none",
-          transition: "border-color 0.2s",
-        }}
         onFocus={() => {
           if (query.trim().length >= minChars && suggestions.length) setOpen(true);
         }}
@@ -201,3 +192,26 @@ export default function AutocompleteInput({
     </div>
   );
 }
+
+const StyledInput = styled.input`
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  background-color: #fafbfc;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: #9aa6b2;
+    opacity: 0.9;
+  }
+
+  &:hover { border-color: #b8c5d1; }
+  &:focus {
+    border-color: #1e90ff;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+  }
+`;

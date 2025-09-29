@@ -153,22 +153,31 @@ const SearchRides = () => {
           return (
             <RideCard key={ride._id}>
               <RideInfo>
-                {ride.from} to {ride.to}
+                <strong>{ride.from}</strong> → <strong>{ride.to}</strong>
               </RideInfo>
 
               <RideDetails>
-                <div>
-                  Date: {rideDate.toLocaleDateString()} Time:{" "}
-                  {rideDate.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-                <div>Seats Available: {seatsLeft}</div>
-                <div>Price: ₹{ride.pricePerSeat}</div>
-                <div>Driver: {driverName}</div>
+                <DetailItem>
+                  <DetailLabel>Date</DetailLabel>
+                  <DetailValue>
+                    {rideDate.toLocaleDateString()} {rideDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </DetailValue>
+                </DetailItem>
+                <DetailItem>
+                  <DetailLabel>Seats</DetailLabel>
+                  <DetailValue>{seatsLeft}</DetailValue>
+                </DetailItem>
+                <DetailItem>
+                  <DetailLabel>Price</DetailLabel>
+                  <DetailValue>₹{ride.pricePerSeat}</DetailValue>
+                </DetailItem>
+                <DetailItem>
+                  <DetailLabel>Driver</DetailLabel>
+                  <DetailValue>{driverName}</DetailValue>
+                </DetailItem>
               </RideDetails>
 
+              <CardFooter>
               <BookButton
                 onClick={() => bookRide(ride._id)}
                 disabled={bookingLoading || seatsLeft < 1}
@@ -176,6 +185,7 @@ const SearchRides = () => {
               >
                 {bookingLoading ? "Booking..." : "Book Now"}
               </BookButton>
+              </CardFooter>
             </RideCard>
           );
         })}
@@ -186,7 +196,7 @@ const SearchRides = () => {
 
 // Styled components
 const Container = styled.div`
-  max-width: 750px;
+  max-width: 1100px;
   margin: 40px auto;
   padding: 0 20px;
   font-family: "Poppins", sans-serif;
@@ -251,12 +261,15 @@ const SearchForm = styled.form`
 
 const FilterGroup = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, auto);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: end;
-  gap: 8px;
-  
+  gap: 10px;
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
   @media (max-width: 900px) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   @media (max-width: 600px) {
     grid-template-columns: 1fr 1fr;
@@ -458,24 +471,49 @@ const RideInfo = styled.div`
   }
 `;
 
-const RideDetails = styled.div`
+const CardFooter = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
+  justify-content: flex-end;
+  margin-top: 4px;
+`;
+
+const RideDetails = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
   font-size: 1rem;
   color: #555;
   font-weight: 500;
-  
-  @media (max-width: 768px) {
-    gap: 12px;
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
     font-size: 0.95rem;
   }
-  
-  @media (max-width: 480px) {
-    flex-direction: column;
-    gap: 8px;
-    font-size: 0.9rem;
-  }
+`;
+
+const DetailItem = styled.div`
+  background: #f7f9fc;
+  border: 1px solid rgba(0,0,0,.05);
+  border-radius: 10px;
+  padding: 10px 12px;
+`;
+
+const DetailLabel = styled.div`
+  color: #6b7a90;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+`;
+
+const DetailValue = styled.div`
+  color: #2a2a2a;
+  font-weight: 800;
 `;
 
 const BookButton = styled.button`
