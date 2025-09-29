@@ -11,6 +11,31 @@ const PassengerCenter = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [openChat, setOpenChat] = useState(null); // rideId currently chatting
+  const [savedSearches, setSavedSearches] = useState(() => {
+    try {
+      const raw = localStorage.getItem("savedSearches");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [newSearch, setNewSearch] = useState({ origin: "", destination: "" });
+
+  const [settings, setSettings] = useState(() => {
+    try {
+      const raw = localStorage.getItem("safetyPaymentSettings");
+      return (
+        raw ? JSON.parse(raw) : {
+          shareLocation: true,
+          requireOTP: true,
+          defaultPaymentMethod: "razorpay",
+        }
+      );
+    } catch {
+      return { shareLocation: true, requireOTP: true, defaultPaymentMethod: "razorpay" };
+    }
+  });
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Edit seats modal
   const [editFor, setEditFor] = useState(null);   // booking object
@@ -40,6 +65,16 @@ const PassengerCenter = () => {
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
+
+  // Persist saved searches
+  useEffect(() => {
+    try { localStorage.setItem("savedSearches", JSON.stringify(savedSearches)); } catch {}
+  }, [savedSearches]);
+
+  // Persist settings
+  useEffect(() => {
+    try { localStorage.setItem("safetyPaymentSettings", JSON.stringify(settings)); } catch {}
+  }, [settings]);
 
   const active = bookings.filter((b) => b.ride?.status !== "completed" && b.ride?.status !== "cancelled");
   const past = bookings.filter((b) => b.ride?.status === "completed" || b.ride?.status === "cancelled");
@@ -294,6 +329,115 @@ const PassengerCenter = () => {
             </List>
           )}
         </>
+      )}
+
+      {tab === "Saved Searches" && (
+        <Section>
+          <Card>
+            <H3>Saved Searches</H3>
+            <Muted>Store frequent routes for quick access.</Muted>
+
+            <FormRow>
+              <SmallInput
+                placeholder="From (e.g., Mumbai)"
+                value={newSearch.origin}
+                onChange={(e) => setNewSearch(s => ({ ...s, origin: e.target.value }))}
+              />
+              <SmallInput
+                placeholder="To (e.g., Pune)"
+                value={newSearch.destination}
+                onChange={(e) => setNewSearch(s => ({ ...s, destination: e.target.value }))}
+              />
+              <Primary
+                disabled={!newSearch.origin.trim() || !newSearch.destination.trim()}
+                onClick={() => {
+                  const item = {
+                    id: Date.now().toString(36),
+                    origin: newSearch.origin.trim(),
+                    destination: newSearch.destination.trim(),
+                  };
+                  setSavedSearches(prev => [item, ...prev].slice(0, 20));
+                  setNewSearch({ origin: "", destination: "" });
+                }}
+              >
+                Save
+              </Primary>
+            </FormRow>
+
+            {savedSearches.length === 0 ? (
+              <Muted>No saved searches yet.</Muted>
+            ) : (
+              <List>
+                {savedSearches.map(s => (
+                  <Card key={s.id}>
+                    <Top>
+                      <RouteTxt>
+                        <b>{s.origin}</b> → <b>{s.destination}</b>
+                      </RouteTxt>
+                    </Top>
+                    <Actions>
+                      <Primary onClick={() => {
+                        try {
+                          localStorage.setItem("lastSearch", JSON.stringify({ origin: s.origin, destination: s.destination }));
+                        } catch {}
+                        window.location.href = "/home/search-rides";
+                      }}>Use</Primary>
+                      <Button onClick={() => setSavedSearches(prev => prev.filter(x => x.id !== s.id))}>Delete</Button>
+                    </Actions>
+                  </Card>
+                ))}
+              </List>
+            )}
+          </Card>
+        </Section>
+      )}
+
+      {tab === "Safety & Payments" && (
+        <Section>
+          <Card>
+            <H3>Safety & Payment Settings</H3>
+            <Muted>Configure your preferences. These are stored on this device.</Muted>
+
+            <SettingsGrid>
+              <ToggleRow>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={!!settings.shareLocation}
+                    onChange={(e) => setSettings(s => ({ ...s, shareLocation: e.target.checked }))}
+                  />
+                  <span> Share location during rides</span>
+                </label>
+              </ToggleRow>
+              <ToggleRow>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={!!settings.requireOTP}
+                    onChange={(e) => setSettings(s => ({ ...s, requireOTP: e.target.checked }))}
+                  />
+                  <span> Require OTP to start ride</span>
+                </label>
+              </ToggleRow>
+              <ToggleRow>
+                <label>
+                  Default payment method
+                  <Select
+                    value={settings.defaultPaymentMethod}
+                    onChange={(e) => setSettings(s => ({ ...s, defaultPaymentMethod: e.target.value }))}
+                  >
+                    <option value="razorpay">Razorpay</option>
+                  </Select>
+                </label>
+              </ToggleRow>
+            </SettingsGrid>
+
+            <Actions>
+              <Primary onClick={() => { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 1500); }}>Save Settings</Primary>
+            </Actions>
+            {settingsSaved && <SuccessBanner>Settings saved.</SuccessBanner>}
+          </Card>
+        </Section>
       )}
     </Wrap>
   );
@@ -621,6 +765,67 @@ const Muted = styled.div`
     padding: 15px;
     font-size: 0.95rem;
   }
+`;
+
+// Saved Searches + Settings styles
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  margin: 10px 0 6px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SmallInput = styled.input`
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #e1e5e9;
+  width: 100%;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  
+  &:focus { border-color: #1e90ff; background-color: #fff; box-shadow: 0 0 0 3px rgba(30,144,255,.1); outline: none; }
+`;
+
+const SettingsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+`;
+
+const ToggleRow = styled.div`
+  background: linear-gradient(135deg, #f7f9fc 0%, #e9ecef 100%);
+  border: 1px solid rgba(0,0,0,.05);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  input { margin-right: 8px; }
+`;
+
+const Select = styled.select`
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #e1e5e9;
+  background: #fff;
+`;
+
+const SuccessBanner = styled.div`
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #18794e;
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
+  border: 1px solid #bfe3cf;
+  font-weight: 700;
+  text-align: center;
 `;
 
 const OTPRow = styled.div`
