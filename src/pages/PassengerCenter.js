@@ -11,30 +11,10 @@ const PassengerCenter = () => {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [openChat, setOpenChat] = useState(null); // rideId currently chatting
-  const [savedSearches, setSavedSearches] = useState(() => {
-    try {
-      const raw = localStorage.getItem("savedSearches");
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [savedSearches, setSavedSearches] = useState([]);
   const [newSearch, setNewSearch] = useState({ origin: "", destination: "" });
 
-  const [settings, setSettings] = useState(() => {
-    try {
-      const raw = localStorage.getItem("safetyPaymentSettings");
-      return (
-        raw ? JSON.parse(raw) : {
-          shareLocation: true,
-          requireOTP: true,
-          defaultPaymentMethod: "razorpay",
-        }
-      );
-    } catch {
-      return { shareLocation: true, requireOTP: true, defaultPaymentMethod: "razorpay" };
-    }
-  });
+  const [settings, setSettings] = useState({ shareLocation: true, requireOTP: true, defaultPaymentMethod: "razorpay" });
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Edit seats modal
@@ -66,15 +46,21 @@ const PassengerCenter = () => {
     fetchBookings();
   }, [fetchBookings]);
 
-  // Persist saved searches
+  // Load saved searches & settings from backend
   useEffect(() => {
-    try { localStorage.setItem("savedSearches", JSON.stringify(savedSearches)); } catch {}
-  }, [savedSearches]);
-
-  // Persist settings
-  useEffect(() => {
-    try { localStorage.setItem("safetyPaymentSettings", JSON.stringify(settings)); } catch {}
-  }, [settings]);
+    (async () => {
+      try {
+        const [ssRes, stRes] = await Promise.all([
+          fetch('/api/users/me/saved-searches', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/users/me/settings', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const ssData = await ssRes.json().catch(() => ({}));
+        const stData = await stRes.json().catch(() => ({}));
+        if (ssRes.ok) setSavedSearches(ssData.savedSearches || []);
+        if (stRes.ok && stData.settings) setSettings(stData.settings);
+      } catch {}
+    })();
+  }, [token]);
 
   const active = bookings.filter((b) => b.ride?.status !== "completed" && b.ride?.status !== "cancelled");
   const past = bookings.filter((b) => b.ride?.status === "completed" || b.ride?.status === "cancelled");
@@ -350,14 +336,21 @@ const PassengerCenter = () => {
               />
               <Primary
                 disabled={!newSearch.origin.trim() || !newSearch.destination.trim()}
-                onClick={() => {
-                  const item = {
-                    id: Date.now().toString(36),
-                    origin: newSearch.origin.trim(),
-                    destination: newSearch.destination.trim(),
-                  };
-                  setSavedSearches(prev => [item, ...prev].slice(0, 20));
-                  setNewSearch({ origin: "", destination: "" });
+                onClick={async () => {
+                  try {
+                    const body = { origin: newSearch.origin.trim(), destination: newSearch.destination.trim() };
+                    const res = await fetch('/api/users/me/saved-searches', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                      body: JSON.stringify(body),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Failed to save search');
+                    setSavedSearches(data.savedSearches || []);
+                    setNewSearch({ origin: '', destination: '' });
+                  } catch (e) {
+                    setErr(e.message);
+                  }
                 }}
               >
                 Save
@@ -382,7 +375,20 @@ const PassengerCenter = () => {
                         } catch {}
                         window.location.href = "/home/search-rides";
                       }}>Use</Primary>
-                      <Button onClick={() => setSavedSearches(prev => prev.filter(x => x.id !== s.id))}>Delete</Button>
+                      <Button onClick={async () => {
+                        try {
+                          const res = await fetch('/api/users/me/saved-searches', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({ origin: s.origin, destination: s.destination }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok) throw new Error(data.message || 'Failed to delete search');
+                          setSavedSearches(data.savedSearches || []);
+                        } catch (e) {
+                          setErr(e.message);
+                        }
+                      }}>Delete</Button>
                     </Actions>
                   </Card>
                 ))}
@@ -433,7 +439,22 @@ const PassengerCenter = () => {
             </SettingsGrid>
 
             <Actions>
-              <Primary onClick={() => { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 1500); }}>Save Settings</Primary>
+              <Primary onClick={async () => {
+                try {
+                  const res = await fetch('/api/users/me/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(settings),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.message || 'Failed to save settings');
+                  setSettings(data.settings || settings);
+                  setSettingsSaved(true);
+                  setTimeout(() => setSettingsSaved(false), 1500);
+                } catch (e) {
+                  setErr(e.message);
+                }
+              }}>Save Settings</Primary>
             </Actions>
             {settingsSaved && <SuccessBanner>Settings saved.</SuccessBanner>}
           </Card>
@@ -471,6 +492,25 @@ const Header = styled.div`
   
   @media (max-width: 480px) {
     margin: 6px 0 14px;
+  }
+`;
+
+const Section = styled.section`
+  margin-bottom: 18px;
+`;
+
+const H3 = styled.h3`
+  color: #1e90ff;
+  font-weight: 900;
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+  
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
   }
 `;
 

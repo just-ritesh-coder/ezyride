@@ -9,6 +9,20 @@ const userSchema = new mongoose.Schema({
   vehicle: { type: String },
   preferences: { type: String },
 
+  // Client features persisted to backend
+  savedSearches: [
+    {
+      origin: { type: String, trim: true },
+      destination: { type: String, trim: true },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
+  safetyPaymentSettings: {
+    shareLocation: { type: Boolean, default: true },
+    requireOTP: { type: Boolean, default: true },
+    defaultPaymentMethod: { type: String, default: 'razorpay' },
+  },
+
   // Add these for password reset
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },

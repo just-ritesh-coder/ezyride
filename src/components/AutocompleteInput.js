@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 export default function AutocompleteInput({
   value,
   onChange,
+  onPick, // optional: receives full item with {label, lat, lon}
   placeholder = "Search place",
   minChars = 3,
   limit = 5,
@@ -38,9 +39,12 @@ export default function AutocompleteInput({
       const items = (data.features || []).map((f) => {
         const p = f.properties || {};
         const parts = [p.name, p.street, p.city, p.state, p.country].filter(Boolean);
+        const coords = Array.isArray(f.geometry?.coordinates) ? f.geometry.coordinates : null;
         return {
           id: `${p.osm_id || ""}-${p.name || ""}-${p.postcode || ""}`,
           label: parts.join(", "),
+          lon: coords ? Number(coords[0]) : undefined,
+          lat: coords ? Number(coords[1]) : undefined,
         };
       });
 
@@ -77,6 +81,7 @@ export default function AutocompleteInput({
   const handleSelect = (item) => {
     onChange?.(item.label);
     setQuery(item.label);
+    onPick?.(item);
     setOpen(false);
     setActiveIndex(-1);
   };

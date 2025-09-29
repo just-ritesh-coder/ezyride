@@ -9,4 +9,4 @@ const ChatSchema = new mongoose.Schema({
 
 ChatSchema.index({ ride: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Chat', ChatSchema);
+module.exports = mongoose.models.Chat || mongoose.model('Chat', ChatSchema);

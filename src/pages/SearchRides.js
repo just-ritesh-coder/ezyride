@@ -8,6 +8,9 @@ const SearchRides = () => {
   const [date, setDate] = useState(""); // optional filter YYYY-MM-DD
 
   const [results, setResults] = useState([]);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(10000);
+  const [minSeats, setMinSeats] = useState(1);
   const [loading, setLoading] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState("");
@@ -100,6 +103,29 @@ const SearchRides = () => {
           onChange={(e) => setDate(e.target.value)}
           aria-label="Date (optional)"
         />
+        <FilterGroup>
+          <SmallLabel>Min Price</SmallLabel>
+          <SmallNumber
+            type="number"
+            min="0"
+            value={minPrice}
+            onChange={(e) => setMinPrice(Number(e.target.value) || 0)}
+          />
+          <SmallLabel>Max Price</SmallLabel>
+          <SmallNumber
+            type="number"
+            min="0"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(Number(e.target.value) || 0)}
+          />
+          <SmallLabel>Min Seats</SmallLabel>
+          <SmallNumber
+            type="number"
+            min="1"
+            value={minSeats}
+            onChange={(e) => setMinSeats(Number(e.target.value) || 1)}
+          />
+        </FilterGroup>
         <Button type="submit" disabled={loading}>
           {loading ? "Searching..." : "Search Rides"}
         </Button>
@@ -110,7 +136,16 @@ const SearchRides = () => {
           <NoResults>No rides found.</NoResults>
         )}
 
-        {results.map((ride) => {
+        {results
+          .filter((ride) => {
+            const price = Number(ride.pricePerSeat) || 0;
+            const seats = Number(ride.seatsAvailable) || 0;
+            if (price < minPrice) return false;
+            if (maxPrice > 0 && price > maxPrice) return false;
+            if (seats < minSeats) return false;
+            return true;
+          })
+          .map((ride) => {
           const rideDate = new Date(ride.date);
           const seatsLeft = ride.seatsAvailable ?? 0;
           const driverName =
@@ -212,6 +247,41 @@ const SearchForm = styled.form`
     padding: 14px;
     margin-bottom: 20px;
   }
+`;
+
+const FilterGroup = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, auto);
+  align-items: end;
+  gap: 8px;
+  
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SmallLabel = styled.label`
+  font-size: 12px;
+  color: #444;
+`;
+
+const SmallNumber = styled.input`
+  padding: 10px 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  width: 100%;
+  
+  &:focus { border-color: #1e90ff; background-color: #fff; box-shadow: 0 0 0 3px rgba(30,144,255,.1); }
 `;
 
 const Input = styled.input`

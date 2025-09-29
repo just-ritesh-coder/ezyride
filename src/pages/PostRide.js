@@ -5,6 +5,10 @@ import AutocompleteInput from "../components/AutocompleteInput";
 const PostRide = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
+  const [originCoord, setOriginCoord] = useState(null);
+  const [destCoord, setDestCoord] = useState(null);
+  const [perKm, setPerKm] = useState(12);
+  const [suggested, setSuggested] = useState(null);
   const [formData, setFormData] = useState({
     date: "", // yyyy-mm-dd
     time: "", // HH:mm
@@ -96,6 +100,31 @@ const PostRide = () => {
     }
   };
 
+  // Haversine distance (km)
+  const haversineKm = (a, b) => {
+    if (!a || !b) return 0;
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad((b.lat || 0) - (a.lat || 0));
+    const dLon = toRad((b.lon || 0) - (a.lon || 0));
+    const la1 = toRad(a.lat || 0);
+    const la2 = toRad(b.lat || 0);
+    const h =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  };
+
+  React.useEffect(() => {
+    const km = haversineKm(originCoord, destCoord);
+    if (km > 0 && perKm > 0) {
+      const price = Math.max(0, Math.round(km * perKm));
+      setSuggested(price);
+    } else {
+      setSuggested(null);
+    }
+  }, [originCoord, destCoord, perKm]);
+
   return (
     <Container>
       <Title>Post a New Ride</Title>
@@ -105,10 +134,20 @@ const PostRide = () => {
 
       <Form onSubmit={handleSubmit}>
         <Label>Origin</Label>
-        <AutocompleteInput value={origin} onChange={setOrigin} placeholder="Enter origin" />
+        <AutocompleteInput
+          value={origin}
+          onChange={setOrigin}
+          onPick={(it) => setOriginCoord(it?.lat && it?.lon ? { lat: it.lat, lon: it.lon } : null)}
+          placeholder="Enter origin"
+        />
 
         <Label>Destination</Label>
-        <AutocompleteInput value={destination} onChange={setDestination} placeholder="Enter destination" />
+        <AutocompleteInput
+          value={destination}
+          onChange={setDestination}
+          onPick={(it) => setDestCoord(it?.lat && it?.lon ? { lat: it.lat, lon: it.lon } : null)}
+          placeholder="Enter destination"
+        />
 
         <Label>Date</Label>
         <Input type="date" name="date" value={formData.date} onChange={handleChange} required />
@@ -124,6 +163,16 @@ const PostRide = () => {
             </option>
           ))}
         </Select>
+
+        <Label>Price per Km (₹)</Label>
+        <Input type="number" min="0" step="1" value={perKm} onChange={(e) => setPerKm(Number(e.target.value) || 0)} />
+
+        {suggested != null && (
+          <PriceHint>
+            Suggested total fare: ₹{suggested} (distance-based). For per-seat price,
+            divide by seats. You can override below.
+          </PriceHint>
+        )}
 
         <Label>Price per Seat (₹)</Label>
         <Input type="number" name="price" min="0" step="1" value={formData.price} onChange={handleChange} required />
@@ -283,6 +332,16 @@ const Input = styled.input`
     padding: 10px 12px;
     min-height: 42px;
   }
+`;
+
+const PriceHint = styled.div`
+  margin-top: 8px;
+  color: #0b6b2b;
+  background: #e6f4ea;
+  border: 1px solid #bfe3cf;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
 `;
 
 const Select = styled.select`
