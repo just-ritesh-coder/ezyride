@@ -212,10 +212,6 @@ const PassengerCenter = () => {
                       >
                         Directions
                       </Button>
-                      {/* 🔹 Payment button */}
-                      {b.paymentStatus !== "succeeded" && (
-                        <Primary onClick={() => startRazorpay(b)}>Pay</Primary>
-                      )}
                     </Actions>
 
                     <Actions>
@@ -279,6 +275,9 @@ const PassengerCenter = () => {
                       <span>Seats: {b.seatsBooked}</span>
                     </Meta>
                     <Actions>
+                      {b.paymentStatus !== "succeeded" && (
+                        <Primary onClick={() => startRazorpay(b)}>Pay</Primary>
+                      )}
                       <Button disabled>Rate & Review</Button>
                       <Button
                         onClick={() => {

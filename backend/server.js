@@ -11,8 +11,8 @@ const jwt = require('jsonwebtoken');
 
 dotenv.config();
 
-// Models
-const Chat = require('./models/Chat');
+// Models (ensure case-correct paths for Linux)
+const Chat = require('./models/chat');
 const Ride = require('./models/Ride');
 
 // Routes
@@ -65,7 +65,7 @@ app.use("/api/sos", sosRoutes); // NEW
 app.use('/api/payments/razorpay', razorpayRoutes);
 // Optional: serve SPA in production (adjust path to your frontend build)
 if (process.env.NODE_ENV === 'production') {
-  const clientBuild = path.join(__dirname, '..', 'client', 'dist');
+  const clientBuild = path.join(__dirname, '..', 'build');
   app.use(express.static(clientBuild));
   app.get('*', (_req, res) => res.sendFile(path.join(clientBuild, 'index.html')));
 }
