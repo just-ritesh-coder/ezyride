@@ -1,7 +1,25 @@
 // src/pages/MyPostedRides.jsx
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import ChatPanel from "../components/ChatPanel";
+import { 
+  FaMapMarkerAlt, 
+  FaCalendarAlt, 
+  FaClock, 
+  FaRupeeSign, 
+  FaUsers, 
+  FaCheckCircle,
+  FaPlay,
+  FaStop,
+  FaEdit,
+  FaTrash,
+  FaComments,
+  FaExclamationTriangle,
+  FaSpinner,
+  FaArrowRight,
+  FaTimes,
+  FaKey
+} from "react-icons/fa";
 
 // Drawer shell (same pattern used in PassengerCenter)
 const Backdrop = styled.div`
@@ -31,8 +49,30 @@ const RouteBadge = styled.span`
   font-weight:800; padding:2px 8px; border-radius:999px; font-size:.8rem;
 `;
 const CloseX = styled.button`
-  border:none; background:transparent; font-size:1.6rem; line-height:1;
-  cursor:pointer; color:#475569; &:hover{ color:#0f172a; }
+  border:none; 
+  background:transparent; 
+  font-size:1.5rem; 
+  line-height:1;
+  cursor:pointer; 
+  color:#475569; 
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  &:hover{ 
+    color:#0f172a; 
+    background: rgba(0, 0, 0, 0.05);
+    transform: rotate(90deg);
+  }
 `;
 const DrawerBody = styled.div`
   flex:1; min-height:0; display:flex; flex-direction:column;
@@ -171,9 +211,21 @@ const MyPostedRides = () => {
         <Subtitle>Active rides only. Completed rides appear in Ride History.</Subtitle>
       </Header>
 
-      {loading && <Info>Loading your rides...</Info>}
-      {err && <Error>{err}</Error>}
-      {!loading && !err && rides.length === 0 && <Empty>No active rides right now.</Empty>}
+      {loading && (
+        <Info>
+          <FaSpinner /> Loading your rides...
+        </Info>
+      )}
+      {err && (
+        <Error>
+          <FaExclamationTriangle /> {err}
+        </Error>
+      )}
+      {!loading && !err && rides.length === 0 && (
+        <Empty>
+          <FaMapMarkerAlt /> No active rides right now.
+        </Empty>
+      )}
 
       <List>
         {rides.map((ride) => {
@@ -186,33 +238,68 @@ const MyPostedRides = () => {
           return (
             <Card key={ride._id}>
               <Top>
-                <RouteText><b>{ride.from}</b> → <b>{ride.to}</b></RouteText>
-                <Chip status={status}>{status}</Chip>
+                <RouteInfo>
+                  <RouteIcon><FaMapMarkerAlt /></RouteIcon>
+                  <RouteText><b>{ride.from}</b> <ArrowIcon><FaArrowRight /></ArrowIcon> <b>{ride.to}</b></RouteText>
+                </RouteInfo>
+                <Chip status={status}>
+                  {status === "posted" && <FaCheckCircle />}
+                  {status === "ongoing" && <FaPlay />}
+                  {status === "completed" && <FaCheckCircle />}
+                  {status}
+                </Chip>
               </Top>
 
               <Meta>
-                <span>{dt.toLocaleDateString()}</span>
-                <span>{dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                <span>Seats: {ride.seatsAvailable}</span>
-                <span>₹{ride.pricePerSeat}</span>
+                <MetaItem>
+                  <MetaIcon><FaCalendarAlt /></MetaIcon>
+                  <span>{dt.toLocaleDateString()}</span>
+                </MetaItem>
+                <MetaItem>
+                  <MetaIcon><FaClock /></MetaIcon>
+                  <span>{dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                </MetaItem>
+                <MetaItem>
+                  <MetaIcon><FaUsers /></MetaIcon>
+                  <span>{ride.seatsAvailable} {ride.seatsAvailable === 1 ? 'seat' : 'seats'}</span>
+                </MetaItem>
+                <MetaItem>
+                  <MetaIcon><FaRupeeSign /></MetaIcon>
+                  <span>{ride.pricePerSeat}</span>
+                </MetaItem>
               </Meta>
 
               <Actions>
-                <Primary disabled={!canStart} onClick={() => setOpenFor(ride._id)}>Start Ride</Primary>
-                <Secondary disabled={!canComplete} onClick={() => completeRide(ride._id)}>Complete Ride</Secondary>
-                <Secondary onClick={() => setChat({ open:true, ride:{ id: ride._id, from: ride.from, to: ride.to } })}>Chat</Secondary>
+                <Primary disabled={!canStart} onClick={() => setOpenFor(ride._id)}>
+                  <FaPlay /> Start Ride
+                </Primary>
+                <Secondary disabled={!canComplete} onClick={() => completeRide(ride._id)}>
+                  <FaStop /> Complete Ride
+                </Secondary>
+                <Secondary onClick={() => setChat({ open:true, ride:{ id: ride._id, from: ride.from, to: ride.to } })}>
+                  <FaComments /> Chat
+                </Secondary>
               </Actions>
 
               <Actions>
-                <Secondary disabled={!canEditOrCancel} onClick={() => openEdit(ride)}>Modify</Secondary>
-                <Secondary disabled={!canEditOrCancel} onClick={() => cancelRide(ride._id)}>Cancel</Secondary>
+                <Secondary disabled={!canEditOrCancel} onClick={() => openEdit(ride)}>
+                  <FaEdit /> Modify
+                </Secondary>
+                <Secondary disabled={!canEditOrCancel} onClick={() => cancelRide(ride._id)}>
+                  <FaTrash /> Cancel
+                </Secondary>
               </Actions>
 
               {/* OTP Modal */}
               {openFor === ride._id && (
                 <Modal>
                   <ModalCard>
-                    <h3>Enter Rider Start Code</h3>
+                    <ModalHeader>
+                      <ModalTitle><FaKey /> Enter Rider Start Code</ModalTitle>
+                      <CloseModalBtn onClick={() => { setOpenFor(null); setCode(""); }}>
+                        <FaTimes />
+                      </CloseModalBtn>
+                    </ModalHeader>
                     <Input
                       inputMode="numeric" pattern="\d*" maxLength={6}
                       value={code}
@@ -220,8 +307,12 @@ const MyPostedRides = () => {
                       placeholder="6-digit code"
                     />
                     <ActionsRow>
-                      <Btn onClick={() => { setOpenFor(null); setCode(""); }}>Cancel</Btn>
-                      <Primary onClick={() => verifyAndStart(ride._id)}>Verify & Start</Primary>
+                      <Btn onClick={() => { setOpenFor(null); setCode(""); }}>
+                        <FaTimes /> Cancel
+                      </Btn>
+                      <Primary onClick={() => verifyAndStart(ride._id)}>
+                        <FaCheckCircle /> Verify & Start
+                      </Primary>
                     </ActionsRow>
                   </ModalCard>
                 </Modal>
@@ -231,7 +322,12 @@ const MyPostedRides = () => {
               {editFor && editFor._id === ride._id && (
                 <Modal>
                   <ModalCard>
-                    <h3>Edit Ride</h3>
+                    <ModalHeader>
+                      <ModalTitle><FaEdit /> Edit Ride</ModalTitle>
+                      <CloseModalBtn onClick={()=> setEditFor(null)}>
+                        <FaTimes />
+                      </CloseModalBtn>
+                    </ModalHeader>
                     <FormGrid>
                       <Input placeholder="From" value={editForm.from}
                         onChange={e=>setEditForm(f=>({...f,from:e.target.value}))}/>
@@ -250,8 +346,12 @@ const MyPostedRides = () => {
                         onChange={e=>setEditForm(f=>({...f,notes:e.target.value}))}/>
                     </FormGrid>
                     <ActionsRow>
-                      <Btn onClick={()=> setEditFor(null)}>Close</Btn>
-                      <Primary onClick={saveEdit}>Save</Primary>
+                      <Btn onClick={()=> setEditFor(null)}>
+                        <FaTimes /> Close
+                      </Btn>
+                      <Primary onClick={saveEdit}>
+                        <FaCheckCircle /> Save
+                      </Primary>
                     </ActionsRow>
                   </ModalCard>
                 </Modal>
@@ -271,7 +371,9 @@ const MyPostedRides = () => {
               <RouteBadge>{chat.ride.from} → {chat.ride.to}</RouteBadge>
             )}
           </DrawerTitle>
-          <CloseX aria-label="Close chat" onClick={() => setChat({ open:false, ride:null })}>×</CloseX>
+          <CloseX aria-label="Close chat" onClick={() => setChat({ open:false, ride:null })}>
+            <FaTimes />
+          </CloseX>
         </DrawerHead>
         <DrawerBody>
           {chat.open && chat.ride?.id && (
@@ -298,34 +400,129 @@ const Header = styled.div`
   @media (max-width: 480px) { margin: 10px 0 18px; }
 `;
 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
 const Title = styled.h1`
-  color: #1e90ff; font-weight: 900; font-size: 2.2rem; margin: 0 0 6px; line-height: 1.2;
-  @media (max-width: 768px) { font-size: 1.9rem; }
-  @media (max-width: 480px) { font-size: 1.6rem; }
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900; 
+  font-size: 2.4rem; 
+  margin: 0 0 10px; 
+  line-height: 1.2;
+  
+  @media (max-width: 768px) { 
+    font-size: 2rem; 
+  }
+  
+  @media (max-width: 480px) { 
+    font-size: 1.8rem; 
+  }
 `;
 
 const Subtitle = styled.p`
-  color: #666; font-weight: 500; font-size: 1rem; margin: 0;
-  @media (max-width: 768px) { font-size: 0.95rem; }
-  @media (max-width: 480px) { font-size: 0.9rem; }
+  color: #666; 
+  font-weight: 500; 
+  font-size: 1.05rem; 
+  margin: 0;
+  
+  @media (max-width: 768px) { 
+    font-size: 1rem; 
+  }
+  
+  @media (max-width: 480px) { 
+    font-size: 0.95rem; 
+  }
 `;
 
 const Info = styled.p`
-  text-align: center; color: #555; font-weight: 600; padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border: 1px solid rgba(0,0,0,.05);
-  @media (max-width: 480px) { padding: 15px; font-size: 0.95rem; }
+  text-align: center; 
+  color: #1e90ff; 
+  font-weight: 700; 
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); 
+  border-radius: 12px; 
+  border: 1px solid rgba(30, 144, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  
+  svg {
+    font-size: 1.2rem;
+    animation: ${spin} 1s linear infinite;
+  }
+  
+  @media (max-width: 480px) { 
+    padding: 16px; 
+    font-size: 0.95rem; 
+  }
 `;
 
 const Error = styled.p`
-  text-align: center; color: #d9534f; font-weight: 700; margin-bottom: 14px; padding: 15px;
-  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-radius: 12px; border: 1px solid rgba(220,53,69,.2);
-  @media (max-width: 480px) { padding: 12px; font-size: 0.95rem; }
+  text-align: center; 
+  color: #d9534f; 
+  font-weight: 700; 
+  margin-bottom: 20px; 
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%); 
+  border-radius: 12px; 
+  border: 1px solid rgba(217, 83, 79, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  
+  svg {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  
+  @media (max-width: 480px) { 
+    padding: 14px 18px; 
+    font-size: 0.95rem; 
+  }
 `;
 
 const Empty = styled.p`
-  text-align: center; color: #777; font-weight: 600; padding: 30px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border: 1px solid rgba(0,0,0,.05);
-  @media (max-width: 480px) { padding: 20px; font-size: 0.95rem; }
+  text-align: center; 
+  color: #666; 
+  font-weight: 600; 
+  padding: 60px 30px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+  border-radius: 16px; 
+  border: 2px dashed rgba(30, 144, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  font-size: 1.1rem;
+  
+  svg {
+    font-size: 3rem;
+    color: #1e90ff;
+    opacity: 0.6;
+  }
+  
+  @media (max-width: 480px) { 
+    padding: 50px 20px; 
+    font-size: 1rem; 
+  }
 `;
 
 const List = styled.div`
@@ -354,28 +551,129 @@ const Card = styled.div`
 `;
 
 const Top = styled.div`
-  display: flex; align-items: center; justify-content: space-between;
-  @media (max-width: 480px) { flex-direction: column; align-items: flex-start; gap: 8px; }
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  gap: 12px;
+  
+  @media (max-width: 480px) { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 10px; 
+  }
+`;
+
+const RouteInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const RouteIcon = styled.div`
+  color: #1e90ff;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
+const ArrowIcon = styled.span`
+  color: #1e90ff;
+  margin: 0 6px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
 `;
 
 const RouteText = styled.div`
-  color: #222; font-weight: 800; font-size: 1.05rem; line-height: 1.3;
-  @media (max-width: 768px) { font-size: 1rem; }
-  @media (max-width: 480px) { font-size: 0.95rem; }
+  color: #222; 
+  font-weight: 800; 
+  font-size: 1.1rem; 
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  
+  b {
+    color: #1e90ff;
+  }
+  
+  @media (max-width: 768px) { 
+    font-size: 1rem; 
+  }
+  
+  @media (max-width: 480px) { 
+    font-size: 0.95rem; 
+  }
 `;
 
 const Chip = styled.span`
-  text-transform: capitalize; font-weight: 800; font-size: 0.85rem; padding: 6px 10px; border-radius: 999px;
+  text-transform: capitalize; 
+  font-weight: 800; 
+  font-size: 0.85rem; 
+  padding: 8px 14px; 
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: ${({ status }) => status === "posted" ? "#0b74ff" : status === "ongoing" ? "#b76e00" : "#18794e"};
   background: ${({ status }) => status === "posted" ? "#e7f0ff" : status === "ongoing" ? "#fff3cd" : "#e6f4ea"};
   border: 1px solid ${({ status }) => status === "posted" ? "#cfe1ff" : status === "ongoing" ? "#ffe69c" : "#bfe3cf"};
-  @media (max-width: 480px) { font-size: 0.8rem; padding: 5px 8px; }
+  
+  svg {
+    font-size: 0.75rem;
+  }
+  
+  @media (max-width: 480px) { 
+    font-size: 0.8rem; 
+    padding: 6px 12px; 
+  }
 `;
 
 const Meta = styled.div`
-  display: flex; gap: 14px; flex-wrap: wrap; color: #555; font-size: 0.95rem;
-  @media (max-width: 768px) { gap: 12px; font-size: 0.9rem; }
-  @media (max-width: 480px) { flex-direction: column; gap: 6px; font-size: 0.85rem; }
+  display: flex; 
+  gap: 12px; 
+  flex-wrap: wrap; 
+  color: #555; 
+  font-size: 0.95rem;
+  
+  @media (max-width: 768px) { 
+    gap: 10px; 
+    font-size: 0.9rem; 
+  }
+  
+  @media (max-width: 480px) { 
+    flex-direction: column; 
+    gap: 8px; 
+    font-size: 0.85rem; 
+  }
+`;
+
+const MetaItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  
+  svg {
+    color: #1e90ff;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+`;
+
+const MetaIcon = styled.span`
+  display: flex;
+  align-items: center;
+  color: #1e90ff;
+  font-size: 0.85rem;
 `;
 
 const Actions = styled.div`
@@ -384,35 +682,156 @@ const Actions = styled.div`
 `;
 
 const Btn = styled.button`
-  flex: 1; padding: 10px 14px; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer;
-  transition: all 0.3s ease; min-height: 44px;
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
-  &:hover:not(:disabled) { transform: translateY(-1px); }
-  @media (max-width: 768px) { padding: 8px 12px; font-size: 0.9rem; min-height: 40px; }
-  @media (max-width: 480px) { padding: 8px 10px; font-size: 0.85rem; min-height: 38px; }
-  @media (max-width: 360px) { min-height: 36px; }
+  flex: 1; 
+  padding: 10px 16px; 
+  border: none; 
+  border-radius: 12px; 
+  font-weight: 800; 
+  font-size: 0.95rem; 
+  cursor: pointer;
+  transition: all 0.3s ease; 
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  svg {
+    font-size: 0.85rem;
+  }
+  
+  &:disabled { 
+    opacity: 0.55; 
+    cursor: not-allowed; 
+    transform: none;
+  }
+  
+  &:hover:not(:disabled) { 
+    transform: translateY(-2px); 
+  }
+  
+  @media (max-width: 768px) { 
+    padding: 8px 14px; 
+    font-size: 0.9rem; 
+    min-height: 40px; 
+  }
+  
+  @media (max-width: 480px) { 
+    padding: 8px 12px; 
+    font-size: 0.85rem; 
+    min-height: 38px; 
+  }
+  
+  @media (max-width: 360px) { 
+    min-height: 36px; 
+  }
 `;
 
 const Primary = styled(Btn)`
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: #fff;
-  &:hover:not(:disabled) { background: linear-gradient(135deg, #0066cc 0%, #004499 100%); box-shadow: 0 4px 15px rgba(30,144,255,.3); }
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); 
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(30,144,255,.3);
+  
+  &:hover:not(:disabled) { 
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%); 
+    box-shadow: 0 6px 20px rgba(30,144,255,.4); 
+  }
 `;
 
 const Secondary = styled(Btn)`
-  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); color: #005bbb; border: 1px solid #cfe1ff;
-  &:hover:not(:disabled) { background: linear-gradient(135deg, #e6f0ff 0%, #d6ebff 100%); box-shadow: 0 4px 15px rgba(0,91,187,.2); }
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); 
+  color: #005bbb; 
+  border: 1px solid #cfe1ff;
+  box-shadow: 0 2px 8px rgba(30, 144, 255, 0.15);
+  
+  &:hover:not(:disabled) { 
+    background: linear-gradient(135deg, #e6f0ff 0%, #d6ebff 100%); 
+    box-shadow: 0 4px 15px rgba(0,91,187,.25); 
+  }
 `;
 
 const Modal = styled.div`
-  position: fixed; inset: 0; background: rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px;
-  @media (max-width: 480px) { padding: 15px; }
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,.6); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 1200; 
+  padding: 20px;
+  animation: ${fadeIn} 0.3s ease-out;
+  
+  @media (max-width: 480px) { 
+    padding: 15px; 
+  }
 `;
 
 const ModalCard = styled.div`
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 12px; padding: 16px; min-width: 320px; max-width: 520px; width: 100%;
-  box-shadow: 0 12px 28px rgba(0,0,0,.18); border: 1px solid rgba(30,144,255,.1);
-  h3 { margin: 0 0 16px 0; color: #1e90ff; font-weight: 800; font-size: 1.3rem; }
-  @media (max-width: 480px) { padding: 14px; min-width: 280px; h3{ font-size:1.2rem; } }
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); 
+  border-radius: 20px; 
+  padding: 28px; 
+  min-width: 320px; 
+  max-width: 520px; 
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3); 
+  border: 1px solid rgba(30,144,255,.1);
+  animation: ${fadeIn} 0.3s ease-out 0.1s both;
+  
+  @media (max-width: 480px) { 
+    padding: 24px; 
+    min-width: 280px; 
+  }
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+const ModalTitle = styled.h3`
+  margin: 0; 
+  color: #1e90ff; 
+  font-weight: 900; 
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  svg {
+    font-size: 1.2rem;
+  }
+  
+  @media (max-width: 480px) { 
+    font-size: 1.2rem; 
+  }
+`;
+
+const CloseModalBtn = styled.button`
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+    transform: rotate(90deg);
+  }
 `;
 
 const ActionsRow = styled.div`

@@ -1,6 +1,18 @@
 import React, { useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import AutocompleteInput from "../components/AutocompleteInput";
+import { 
+  FaMapMarkerAlt, 
+  FaCalendarAlt, 
+  FaClock, 
+  FaUsers, 
+  FaRupeeSign, 
+  FaStickyNote,
+  FaPaperPlane,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaSpinner
+} from "react-icons/fa";
 
 const PostRide = () => {
   const [origin, setOrigin] = useState("");
@@ -127,61 +139,117 @@ const PostRide = () => {
 
   return (
     <Container>
-      <Title>Post a New Ride</Title>
+      <Header>
+        <Title>Post a New Ride</Title>
+        <Subtitle>Share your journey and help others travel</Subtitle>
+      </Header>
 
-      {submitted && <SuccessMessage>Ride posted successfully!</SuccessMessage>}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {submitted && (
+        <SuccessMessage>
+          <FaCheckCircle /> Ride posted successfully!
+        </SuccessMessage>
+      )}
+      {error && (
+        <ErrorMessage>
+          <FaExclamationTriangle /> {error}
+        </ErrorMessage>
+      )}
 
       <Form onSubmit={handleSubmit}>
-        <Label>Origin</Label>
-        <AutocompleteInput
-          value={origin}
-          onChange={setOrigin}
-          onPick={(it) => setOriginCoord(it?.lat && it?.lon ? { lat: it.lat, lon: it.lon } : null)}
-          placeholder="Enter origin"
-        />
+        <FormSection>
+          <SectionTitle>
+            <FaMapMarkerAlt /> Route Details
+          </SectionTitle>
+          <InputGroup>
+            <Label><FaMapMarkerAlt /> Origin</Label>
+            <AutocompleteInput
+              value={origin}
+              onChange={setOrigin}
+              onPick={(it) => setOriginCoord(it?.lat && it?.lon ? { lat: it.lat, lon: it.lon } : null)}
+              placeholder="Enter origin location"
+            />
+          </InputGroup>
 
-        <Label>Destination</Label>
-        <AutocompleteInput
-          value={destination}
-          onChange={setDestination}
-          onPick={(it) => setDestCoord(it?.lat && it?.lon ? { lat: it.lat, lon: it.lon } : null)}
-          placeholder="Enter destination"
-        />
+          <InputGroup>
+            <Label><FaMapMarkerAlt /> Destination</Label>
+            <AutocompleteInput
+              value={destination}
+              onChange={setDestination}
+              onPick={(it) => setDestCoord(it?.lat && it?.lon ? { lat: it.lat, lon: it.lon } : null)}
+              placeholder="Enter destination location"
+            />
+          </InputGroup>
+        </FormSection>
 
-        <Label>Date</Label>
-        <Input type="date" name="date" value={formData.date} onChange={handleChange} required />
+        <FormSection>
+          <SectionTitle>
+            <FaCalendarAlt /> Date & Time
+          </SectionTitle>
+          <InputRow>
+            <InputGroup>
+              <Label><FaCalendarAlt /> Date</Label>
+              <Input type="date" name="date" value={formData.date} onChange={handleChange} required />
+            </InputGroup>
 
-        <Label>Time</Label>
-        <Input type="time" name="time" value={formData.time} onChange={handleChange} required />
+            <InputGroup>
+              <Label><FaClock /> Time</Label>
+              <Input type="time" name="time" value={formData.time} onChange={handleChange} required />
+            </InputGroup>
+          </InputRow>
+        </FormSection>
 
-        <Label>Available Seats</Label>
-        <Select name="seats" value={formData.seats} onChange={handleChange}>
-          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </Select>
+        <FormSection>
+          <SectionTitle>
+            <FaUsers /> Seats & Pricing
+          </SectionTitle>
+          <InputGroup>
+            <Label><FaUsers /> Available Seats</Label>
+            <Select name="seats" value={formData.seats} onChange={handleChange}>
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n} {n === 1 ? 'seat' : 'seats'}
+                </option>
+              ))}
+            </Select>
+          </InputGroup>
 
-        <Label>Price per Km (₹)</Label>
-        <Input type="number" min="0" step="1" value={perKm} onChange={(e) => setPerKm(Number(e.target.value) || 0)} />
+          <InputGroup>
+            <Label><FaRupeeSign /> Price per Km (₹)</Label>
+            <Input type="number" min="0" step="1" value={perKm} onChange={(e) => setPerKm(Number(e.target.value) || 0)} />
+          </InputGroup>
 
-        {suggested != null && (
-          <PriceHint>
-            Suggested total fare: ₹{suggested} (distance-based). For per-seat price,
-            divide by seats. You can override below.
-          </PriceHint>
-        )}
+          {suggested != null && (
+            <PriceHint>
+              💡 Suggested total fare: ₹{suggested} (distance-based). For per-seat price, divide by seats.
+            </PriceHint>
+          )}
 
-        <Label>Price per Seat (₹)</Label>
-        <Input type="number" name="price" min="0" step="1" value={formData.price} onChange={handleChange} required />
+          <InputGroup>
+            <Label><FaRupeeSign /> Price per Seat (₹)</Label>
+            <Input type="number" name="price" min="0" step="1" value={formData.price} onChange={handleChange} required />
+          </InputGroup>
+        </FormSection>
 
-        <Label>Additional Notes (Optional)</Label>
-        <TextArea name="notes" rows={3} value={formData.notes} onChange={handleChange} placeholder="Any notes for passengers" />
+        <FormSection>
+          <SectionTitle>
+            <FaStickyNote /> Additional Information
+          </SectionTitle>
+          <InputGroup>
+            <Label><FaStickyNote /> Notes (Optional)</Label>
+            <TextArea name="notes" rows={4} value={formData.notes} onChange={handleChange} placeholder="Any notes for passengers (e.g., luggage space, music preference, etc.)" />
+          </InputGroup>
+        </FormSection>
 
         <SubmitButton type="submit" disabled={loading}>
-          {loading ? "Posting..." : "Post Ride"}
+          {loading ? (
+            <>
+              <Spinner /> Posting Ride...
+            </>
+          ) : (
+            <>
+              <FaPaperPlane /> Post Ride
+            </>
+          )}
         </SubmitButton>
       </Form>
     </Container>
@@ -214,63 +282,118 @@ const Container = styled.div`
   }
 `;
 
-const Title = styled.h1`
-  margin-bottom: 35px;
-  color: #1e90ff;
-  font-weight: 800;
-  font-size: 2.2rem;
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const Header = styled.div`
   text-align: center;
+  margin-bottom: 40px;
+  animation: ${fadeIn} 0.6s ease-out;
+`;
+
+const Title = styled.h1`
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  font-size: 2.4rem;
   line-height: 1.2;
   
   @media (max-width: 768px) {
-    font-size: 1.9rem;
-    margin-bottom: 30px;
+    font-size: 2rem;
+    margin-bottom: 10px;
   }
   
   @media (max-width: 480px) {
-    font-size: 1.6rem;
-    margin-bottom: 25px;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+`;
+
+const Subtitle = styled.p`
+  color: #666;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin: 0;
+  
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
   }
 `;
 
 const SuccessMessage = styled.p`
   background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   color: #155724;
-  padding: 14px 22px;
+  padding: 16px 24px;
   border-radius: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
   border: 1px solid rgba(21, 87, 36, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  animation: ${fadeIn} 0.5s ease-out;
+  
+  svg {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
   
   @media (max-width: 768px) {
-    padding: 12px 18px;
+    padding: 14px 20px;
     font-size: 0.95rem;
   }
   
   @media (max-width: 480px) {
-    padding: 10px 15px;
+    padding: 12px 18px;
     font-size: 0.9rem;
   }
 `;
 
 const ErrorMessage = styled.p`
-  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-  color: #842029;
-  padding: 14px 22px;
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+  color: #d9534f;
+  padding: 16px 24px;
   border-radius: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   text-align: center;
-  font-weight: 600;
-  border: 1px solid rgba(132, 32, 41, 0.2);
+  font-weight: 700;
+  border: 1px solid rgba(217, 83, 79, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  animation: ${fadeIn} 0.5s ease-out;
+  
+  svg {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
   
   @media (max-width: 768px) {
-    padding: 12px 18px;
+    padding: 14px 20px;
     font-size: 0.95rem;
   }
   
   @media (max-width: 480px) {
-    padding: 10px 15px;
+    padding: 12px 18px;
     font-size: 0.9rem;
   }
 `;
@@ -278,23 +401,82 @@ const ErrorMessage = styled.p`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 32px;
+  animation: ${fadeIn} 0.6s ease-out 0.2s both;
+  
+  @media (max-width: 480px) {
+    gap: 28px;
+  }
+`;
+
+const FormSection = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  
+  @media (max-width: 480px) {
+    padding: 20px;
+    border-radius: 12px;
+  }
+`;
+
+const SectionTitle = styled.h3`
+  color: #1e90ff;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  svg {
+    font-size: 1.1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+`;
+
+const InputGroup = styled.div`
+  margin-bottom: 20px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const InputRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 `;
 
 const Label = styled.label`
-  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
   font-weight: 700;
   color: #222;
   font-size: 14px;
   
-  @media (max-width: 768px) {
-    margin-top: 18px;
-    font-size: 13px;
+  svg {
+    color: #1e90ff;
+    font-size: 0.9rem;
   }
   
   @media (max-width: 480px) {
-    margin-top: 16px;
     font-size: 13px;
+    margin-bottom: 8px;
   }
 `;
 
@@ -415,20 +597,29 @@ const TextArea = styled.textarea`
   }
 `;
 
+const Spinner = styled(FaSpinner)`
+  animation: ${spin} 1s linear infinite;
+`;
+
 const SubmitButton = styled.button`
-  margin-top: 28px;
-  padding: 16px 24px;
+  margin-top: 8px;
+  padding: 18px 32px;
   background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
   font-weight: 800;
   border-radius: 12px;
   border: none;
-  cursor: pointer;
-  font-size: 16px;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  font-size: 17px;
   transition: all 0.3s ease;
-  min-height: 48px;
+  min-height: 56px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(30, 144, 255, 0.3);
   
   &::before {
     content: '';
@@ -437,14 +628,26 @@ const SubmitButton = styled.button`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
   }
   
   &:hover:not(:disabled) {
     background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(30, 144, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(30, 144, 255, 0.4);
+  }
+  
+  &:hover:not(:disabled)::before {
+    left: 100%;
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+  }
+  
+  svg {
+    font-size: 1rem;
   }
   
   &:hover:not(:disabled)::before {
@@ -476,3 +679,4 @@ const SubmitButton = styled.button`
     min-height: 42px;
   }
 `;
+

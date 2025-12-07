@@ -21,6 +21,10 @@ const ReviewSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  bookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Review', ReviewSchema);

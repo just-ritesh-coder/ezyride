@@ -22,7 +22,7 @@ const protect = async (req, res, next) => {
     req.userId = decoded.id;
 
     const user = await User.findById(decoded.id).select(
-      "_id fullName email phone vehicle preferences createdAt"
+      "_id fullName email phone vehicle preferences profilePicture createdAt"
     );
     if (!user) {
       return res.status(401).json({ message: "Not authorized, user not found" });

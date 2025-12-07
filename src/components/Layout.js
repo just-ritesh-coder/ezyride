@@ -1,6 +1,19 @@
 import React, { useState } from "react";
 import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
+import { 
+  FaHome, 
+  FaCar, 
+  FaSearch, 
+  FaUser, 
+  FaListAlt, 
+  FaTicketAlt, 
+  FaSignOutAlt, 
+  FaBars, 
+  FaTimes,
+  FaExclamationTriangle,
+  FaSpinner
+} from "react-icons/fa";
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -60,30 +73,30 @@ const Layout = () => {
         >
           <MobileMenuHeader>
             <MobileLogo>EzyRide</MobileLogo>
-            <CloseButton onClick={closeMobileMenu}>×</CloseButton>
+            <CloseButton onClick={closeMobileMenu}><FaTimes /></CloseButton>
           </MobileMenuHeader>
           
           <MobileNavLinks>
             <MobileNavLink to="" end onClick={closeMobileMenu}>
-              <span>🏠</span> Home
+              <MobileNavIcon><FaHome /></MobileNavIcon> Home
             </MobileNavLink>
             <MobileNavLink to="post-ride" onClick={closeMobileMenu}>
-              <span>🚗</span> Post Ride
+              <MobileNavIcon><FaCar /></MobileNavIcon> Post Ride
             </MobileNavLink>
             <MobileNavLink to="search-rides" onClick={closeMobileMenu}>
-              <span>🔍</span> Search Ride
+              <MobileNavIcon><FaSearch /></MobileNavIcon> Search Ride
             </MobileNavLink>
             <MobileNavLink to="profile" onClick={closeMobileMenu}>
-              <span>👤</span> Profile
+              <MobileNavIcon><FaUser /></MobileNavIcon> Profile
             </MobileNavLink>
             <MobileNavLink to="my-posted-rides" onClick={closeMobileMenu}>
-              <span>📋</span> My Posted Rides
+              <MobileNavIcon><FaListAlt /></MobileNavIcon> My Posted Rides
             </MobileNavLink>
             <MobileNavLink to="/home/passenger-center" onClick={closeMobileMenu}>
-              <span>🎫</span> Passenger Center
+              <MobileNavIcon><FaTicketAlt /></MobileNavIcon> Passenger Center
             </MobileNavLink>
             <MobileLogoutButton onClick={handleLogout}>
-              <span>🚪</span> Logout
+              <MobileNavIcon><FaSignOutAlt /></MobileNavIcon> Logout
             </MobileLogoutButton>
           </MobileNavLinks>
         </MobileMenu>
@@ -139,7 +152,9 @@ const SOSFloating = () => {
       disabled={sending}
       title="Send SOS to emergency contacts"
     >
-      <SOSIcon>{sending ? "⏳" : "🚨"}</SOSIcon>
+      <SOSIcon>
+        {sending ? <FaSpinner /> : <FaExclamationTriangle />}
+      </SOSIcon>
       <SOSText>{sending ? "Sending..." : "SOS"}</SOSText>
     </SOSButton>
   );
@@ -201,6 +216,20 @@ const SOSButton = styled.button`
 
 const SOSIcon = styled.span`
   font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+    ${props => props.sending ? 'animation: spin 1s linear infinite;' : ''}
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
   
   @media (max-width: 480px) {
     font-size: 1rem;
@@ -421,24 +450,44 @@ const CloseButton = styled.button`
   background: none;
   border: none;
   color: white;
-  font-size: 2rem;
+  font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
   }
 `;
 
 const MobileNavLinks = styled.div`
   padding: 20px 0;
+`;
+
+const MobileNavIcon = styled.span`
+  font-size: 1.2rem;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 const MobileNavLink = styled(NavLink)`
@@ -453,12 +502,6 @@ const MobileNavLink = styled(NavLink)`
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
   
-  span {
-    font-size: 1.2rem;
-    width: 24px;
-    text-align: center;
-  }
-  
   &.active {
     background-color: rgba(255, 255, 255, 0.2);
     border-left-color: white;
@@ -467,6 +510,10 @@ const MobileNavLink = styled(NavLink)`
   &:hover:not(.active) {
     background-color: rgba(255, 255, 255, 0.1);
     padding-left: 25px;
+    
+    ${MobileNavIcon} {
+      transform: scale(1.1);
+    }
   }
 `;
 
@@ -485,15 +532,18 @@ const MobileLogoutButton = styled.button`
   transition: all 0.3s ease;
   margin-top: 10px;
   
-  span {
+  ${MobileNavIcon} {
     font-size: 1.2rem;
     width: 24px;
-    text-align: center;
   }
   
   &:hover {
     background-color: #e84118;
     padding-left: 25px;
+    
+    ${MobileNavIcon} {
+      transform: scale(1.1);
+    }
   }
 `;
 

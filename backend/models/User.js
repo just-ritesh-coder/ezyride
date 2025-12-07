@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   vehicle: { type: String },
   preferences: { type: String },
+  
 
   // Client features persisted to backend
   savedSearches: [
@@ -26,6 +27,9 @@ const userSchema = new mongoose.Schema({
   // Add these for password reset
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  
+  // Profile picture (base64 encoded or URL)
+  profilePicture: { type: String },
 }, { timestamps: true });
 
 // Hash password before saving

@@ -1,7 +1,18 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Added Link import
-import styled from "styled-components";
+import { useNavigate, Link } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
 import { AuthContext } from "../context/AuthContext";
+import { 
+  FaUser, 
+  FaPhone, 
+  FaEnvelope, 
+  FaLock, 
+  FaCar, 
+  FaHeart,
+  FaArrowRight,
+  FaExclamationTriangle,
+  FaSpinner
+} from "react-icons/fa";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,6 +24,8 @@ const AuthPage = () => {
     vehicle: "",
     preferences: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -39,6 +52,8 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     if (isLogin) {
       try {
@@ -54,18 +69,21 @@ const AuthPage = () => {
         const data = await response.json();
 
         if (!response.ok) {
-          alert(data.message || "Login failed");
+          setError(data.message || "Login failed");
+          setLoading(false);
           return;
         }
 
         login(data.token);
         navigate("/home");
       } catch (err) {
-        alert("Login failed: " + err.message);
+        setError("Login failed: " + err.message);
+        setLoading(false);
       }
     } else {
       if (!formData.fullName || !formData.phone) {
-        alert("Please fill in all required fields.");
+        setError("Please fill in all required fields.");
+        setLoading(false);
         return;
       }
 
@@ -79,14 +97,16 @@ const AuthPage = () => {
         const data = await response.json();
 
         if (!response.ok) {
-          alert(data.message || "Signup failed");
+          setError(data.message || "Signup failed");
+          setLoading(false);
           return;
         }
 
         login(data.token);
         navigate("/home");
       } catch (err) {
-        alert("Signup failed: " + err.message);
+        setError("Signup failed: " + err.message);
+        setLoading(false);
       }
     }
   };
@@ -105,53 +125,62 @@ const AuthPage = () => {
       </LeftPane>
 
       <RightPane>
-        <FormTitle>{isLogin ? "Login" : "Sign Up"}</FormTitle>
+        <FormTitle>{isLogin ? "Welcome Back" : "Create Account"}</FormTitle>
+        <FormSubtitle>{isLogin ? "Login to continue your journey" : "Join EzyRide today"}</FormSubtitle>
+        {error && <ErrorMessage><FaExclamationTriangle /> {error}</ErrorMessage>}
         <Form onSubmit={handleSubmit}>
           {!isLogin && (
             <>
-              <Label>Full Name</Label>
-              <Input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="John Doe"
-                required={!isLogin}
-              />
+              <InputWrapper>
+                <InputIcon><FaUser /></InputIcon>
+                <Input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  required={!isLogin}
+                />
+              </InputWrapper>
 
-              <Label>Phone Number</Label>
-              <Input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+91 9876543210"
-                required={!isLogin}
-              />
+              <InputWrapper>
+                <InputIcon><FaPhone /></InputIcon>
+                <Input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  required={!isLogin}
+                />
+              </InputWrapper>
             </>
           )}
 
-          <Label>Email</Label>
-          <Input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            required
-          />
+          <InputWrapper>
+            <InputIcon><FaEnvelope /></InputIcon>
+            <Input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email Address"
+              required
+            />
+          </InputWrapper>
 
-          <Label>Password</Label>
-          <Input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Enter your password"
-            required
-          />
+          <InputWrapper>
+            <InputIcon><FaLock /></InputIcon>
+            <Input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required
+            />
+          </InputWrapper>
 
-          {/* Forgot Password Link - Visible only on Login form */}
           {isLogin && (
             <ForgotPasswordLink>
               <Link to="/forgot-password">Forgot password?</Link>
@@ -160,27 +189,41 @@ const AuthPage = () => {
 
           {!isLogin && (
             <>
-              <Label>Vehicle Info (optional)</Label>
-              <Input
-                type="text"
-                name="vehicle"
-                value={formData.vehicle}
-                onChange={handleChange}
-                placeholder="Car model, registration (e.g., Toyota Corolla)"
-              />
+              <InputWrapper>
+                <InputIcon><FaCar /></InputIcon>
+                <Input
+                  type="text"
+                  name="vehicle"
+                  value={formData.vehicle}
+                  onChange={handleChange}
+                  placeholder="Vehicle Info (optional)"
+                />
+              </InputWrapper>
 
-              <Label>Preferences (optional)</Label>
-              <Input
-                type="text"
-                name="preferences"
-                value={formData.preferences}
-                onChange={handleChange}
-                placeholder="Non-smoker, music preference, etc."
-              />
+              <InputWrapper>
+                <InputIcon><FaHeart /></InputIcon>
+                <Input
+                  type="text"
+                  name="preferences"
+                  value={formData.preferences}
+                  onChange={handleChange}
+                  placeholder="Preferences (optional)"
+                />
+              </InputWrapper>
             </>
           )}
 
-          <SubmitButton type="submit">{isLogin ? "Login" : "Sign Up"}</SubmitButton>
+          <SubmitButton type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <Spinner /> {isLogin ? "Logging in..." : "Signing up..."}
+              </>
+            ) : (
+              <>
+                {isLogin ? "Login" : "Sign Up"} <FaArrowRight />
+              </>
+            )}
+          </SubmitButton>
         </Form>
 
         <ToggleText>
@@ -196,10 +239,33 @@ const AuthPage = () => {
 
 /* Styled Components */
 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const slideIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
 const Container = styled.div`
   display: flex;
   min-height: 100vh;
   font-family: 'Poppins', sans-serif;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -313,19 +379,20 @@ const Image = styled.img`
 
 const RightPane = styled.div`
   flex: 1;
-  background-color: #fff;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   padding: 60px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 450px;
+  max-width: 480px;
   margin: auto;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
   position: relative;
+  animation: ${fadeIn} 0.6s ease-out;
   
   @media (max-width: 768px) {
-    padding: 40px 20px;
+    padding: 40px 24px;
     max-width: 100%;
     margin: 0;
     border-radius: 0;
@@ -335,25 +402,67 @@ const RightPane = styled.div`
   }
   
   @media (max-width: 480px) {
-    padding: 30px 15px;
+    padding: 30px 20px;
     min-height: 65vh;
   }
 `;
 
 const FormTitle = styled.h2`
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 2rem;
-  font-weight: 600;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.4rem;
+  font-weight: 900;
+  text-align: center;
   
   @media (max-width: 768px) {
-    font-size: 1.6rem;
-    margin-bottom: 15px;
+    font-size: 2rem;
+    margin-bottom: 6px;
   }
   
   @media (max-width: 480px) {
-    font-size: 1.4rem;
-    margin-bottom: 12px;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+  }
+`;
+
+const FormSubtitle = styled.p`
+  margin-bottom: 32px;
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 500;
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+  color: #d9534f;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(217, 83, 79, 0.2);
+  animation: ${fadeIn} 0.3s ease-out;
+  
+  svg {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px 16px;
+    font-size: 0.9rem;
   }
 `;
 
@@ -375,25 +484,51 @@ const Label = styled.label`
   }
 `;
 
+const InputWrapper = styled.div`
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+`;
+
+const InputIcon = styled.div`
+  position: absolute;
+  left: 16px;
+  color: #1e90ff;
+  font-size: 1.1rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
 const Input = styled.input`
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border-radius: 8px;
+  padding: 14px 16px 14px 48px;
+  width: 100%;
+  border-radius: 12px;
   border: 2px solid #e1e5e9;
   font-size: 16px;
   outline: none;
   transition: all 0.3s ease;
   background-color: #fafbfc;
-  min-height: 48px;
+  min-height: 52px;
+  font-family: 'Poppins', sans-serif;
   
   &:focus {
     border-color: #1e90ff;
     background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
+    transform: translateY(-1px);
   }
   
-  &:hover {
+  &:hover:not(:focus) {
     border-color: #b8c5d1;
+    background-color: #fff;
   }
   
   &::placeholder {
@@ -401,10 +536,11 @@ const Input = styled.input`
   }
   
   @media (max-width: 480px) {
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    font-size: 16px; /* Prevents zoom on iOS */
-    min-height: 44px;
+    padding: 12px 14px 12px 44px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    min-height: 48px;
+    border-radius: 10px;
   }
 `;
 
@@ -440,19 +576,33 @@ const ForgotPasswordLink = styled.div`
   }
 `;
 
+const Spinner = styled(FaSpinner)`
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+
 const SubmitButton = styled.button`
   padding: 16px 24px;
   background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   border: none;
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   transition: all 0.3s ease;
-  min-height: 48px;
+  min-height: 52px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
   
   &::before {
     content: '';
@@ -461,29 +611,39 @@ const SubmitButton = styled.button`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
   }
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(30, 144, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(30, 144, 255, 0.4);
   }
   
-  &:hover::before {
+  &:hover:not(:disabled)::before {
     left: 100%;
   }
   
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  svg {
+    font-size: 0.9rem;
   }
   
   @media (max-width: 480px) {
     padding: 14px 20px;
     font-size: 15px;
-    min-height: 44px;
+    min-height: 48px;
+    border-radius: 10px;
   }
 `;
 

@@ -26,6 +26,7 @@ const bookingsRoutes = require('./routes/bookings');
 const profileRoutes = require('./routes/profile');
 const chatsRoutes = require('./routes/chats');
 const sosRoutes = require("./routes/sos");
+const reviewsRoutes = require("./routes/reviews");
 // NEW: Razorpay
 const razorpayRoutes = require("./routes/payments.razorpay");
 
@@ -36,7 +37,9 @@ const app = express();
 const allowOrigin = process.env.CORS_ORIGIN || '*';
 app.use(cors({ origin: allowOrigin, credentials: true }));
 
-app.use(express.json());
+// Increase body size limit for image uploads (50MB)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Mongo
 mongoose
@@ -61,6 +64,7 @@ app.use('/api', meRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/chats', chatsRoutes); // NEW
 app.use("/api/sos", sosRoutes); // NEW
+app.use("/api/reviews", reviewsRoutes); // NEW
 // NEW: Razorpay
 app.use('/api/payments/razorpay', razorpayRoutes);
 // Optional: serve SPA in production (adjust path to your frontend build)

@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5000",
+  "backendAuthType": "Bearer token",
+  "backendCredential": "b6b347741b87b53be66d0263b691738515836a8128f26c58be50c9f86a4008a21dfce004959dfd99f97fc0e6a0956406822bd9f96aabf5343688ade678f940ed",
+  "executionArgs": {
+    "projectName": "ezyride",
+    "projectPath": "C:\\Users\\Ritesh\\OneDrive\\Desktop\\ezyride",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-7IwyuSKIVkafqcncJn3edaKsB_3An0_94htzDQeDw9m7cYfr9M9SmJ4rJnotZzLtIi6rV2WUVfLCyMxTNH1ihZiLCPBIpdLTFUa1XhZ_bDt61X8eZuh_4MgJp8J1eumGRaw"
+    }
+  },
+  "proxy": "http://45cde398-86c8-4bf1-83c4-d5d1b6399297:gWrY4yUve8YwaFAqQJTHNHWD7UpYcbWG@tun.testsprite.com:8080"
+}

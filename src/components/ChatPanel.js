@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
+import { FaTimes, FaPaperPlane, FaComments, FaSpinner } from "react-icons/fa";
 
 const ChatPanel = ({ rideId, onClose }) => {
   const [msgs, setMsgs] = useState([]);
@@ -99,8 +100,12 @@ const ChatPanel = ({ rideId, onClose }) => {
     <Overlay>
       <Popup ref={popupRef}>
         <Header>
-          <Title>Ride Chat</Title>
-          <CloseButton onClick={onClose}>×</CloseButton>
+          <Title>
+            <FaComments /> Ride Chat
+          </Title>
+          <CloseButton onClick={onClose}>
+            <FaTimes />
+          </CloseButton>
         </Header>
 
         <Messages>
@@ -109,7 +114,16 @@ const ChatPanel = ({ rideId, onClose }) => {
               {m.message}
             </Msg>
           ))}
-          {typing && <Typing>Someone is typing…</Typing>}
+          {typing && (
+            <Typing>
+              <TypingDots>
+                <span></span>
+                <span></span>
+                <span></span>
+              </TypingDots>
+              Someone is typing…
+            </Typing>
+          )}
           <div ref={messagesEndRef} />
         </Messages>
 
@@ -120,7 +134,9 @@ const ChatPanel = ({ rideId, onClose }) => {
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
           />
-          <Send onClick={send}>Send</Send>
+          <Send onClick={send}>
+            <FaPaperPlane /> Send
+          </Send>
         </InputArea>
       </Popup>
     </Overlay>
@@ -133,126 +149,258 @@ export default ChatPanel;
           STYLES
 =========================== */
 
+const slideUp = keyframes`
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+`;
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+const pulse = keyframes`
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+`;
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
   z-index: 1000;
+  animation: ${fadeIn} 0.3s ease-out;
 `;
 
 const Popup = styled.div`
-  width: 380px;
-  height: 480px;
-  background: #fff;
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  width: 400px;
+  height: 550px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(30, 144, 255, 0.1);
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.3s ease;
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(100px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
+  animation: ${slideUp} 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 
   @media (max-width: 500px) {
     width: 100%;
-    height: 80%;
-    border-radius: 20px 20px 0 0;
+    height: 85%;
+    border-radius: 24px 24px 0 0;
   }
 `;
 
 const Header = styled.div`
-  background: linear-gradient(135deg, #1e90ff, #0066cc);
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: #fff;
-  padding: 14px 18px;
+  padding: 18px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(30, 144, 255, 0.3);
 `;
 
 const Title = styled.h3`
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  
+  svg {
+    font-size: 1.1rem;
+  }
 `;
 
 const CloseButton = styled.button`
-  background: transparent;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   color: #fff;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
 `;
 
 const Messages = styled.div`
   flex: 1;
-  padding: 14px;
+  padding: 20px;
   overflow-y: auto;
-  background: #f8fbff;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(30, 144, 255, 0.3);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(30, 144, 255, 0.5);
+    }
+  }
 `;
 
 const Msg = styled.div`
   align-self: ${(p) => (p.mine ? "flex-end" : "flex-start")};
   background: ${(p) =>
-    p.mine ? "linear-gradient(135deg, #1e90ff, #0066cc)" : "#e6f0ff"};
+    p.mine 
+      ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)" 
+      : "linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%)"};
   color: ${(p) => (p.mine ? "#fff" : "#333")};
-  padding: 10px 14px;
-  border-radius: 14px;
+  padding: 12px 16px;
+  border-radius: ${(p) => p.mine ? "18px 18px 4px 18px" : "18px 18px 18px 4px"};
   max-width: 75%;
   word-break: break-word;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  box-shadow: ${(p) => 
+    p.mine 
+      ? "0 4px 12px rgba(30, 144, 255, 0.3)" 
+      : "0 2px 8px rgba(0, 0, 0, 0.1)"};
+  animation: ${fadeIn} 0.3s ease-out;
+  border: ${(p) => p.mine ? "none" : "1px solid rgba(30, 144, 255, 0.1)"};
 `;
 
 const Typing = styled.div`
   font-style: italic;
   color: #6b7280;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+  border-radius: 12px;
+  width: fit-content;
+`;
+
+const TypingDots = styled.div`
+  display: flex;
+  gap: 4px;
+  
+  span {
+    width: 6px;
+    height: 6px;
+    background: #1e90ff;
+    border-radius: 50%;
+    animation: ${pulse} 1.4s ease-in-out infinite;
+    
+    &:nth-child(1) {
+      animation-delay: 0s;
+    }
+    
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+  }
 `;
 
 const InputArea = styled.div`
   display: flex;
-  padding: 12px;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  padding: 16px 20px;
+  border-top: 2px solid rgba(30, 144, 255, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  gap: 12px;
+  align-items: center;
 `;
 
 const Input = styled.input`
   flex: 1;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
   border: 2px solid #e1e5e9;
-  font-size: 1rem;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  
   &:focus {
     border-color: #1e90ff;
+    background-color: #fff;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
   }
 `;
 
 const Send = styled.button`
-  background: linear-gradient(135deg, #1e90ff, #0066cc);
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
   border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-weight: 600;
-  margin-left: 10px;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-weight: 700;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
+  min-height: 44px;
+  
+  svg {
+    font-size: 0.9rem;
+  }
+  
   &:hover {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
 `;

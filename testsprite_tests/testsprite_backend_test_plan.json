@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "user_registration_with_valid_data",
+    "description": "Verify that a user can successfully register with valid email, password, full name, and phone number."
+  },
+  {
+    "id": "TC002",
+    "title": "user_login_with_correct_credentials",
+    "description": "Verify that a user can login successfully using valid email and password and receives a JWT token."
+  },
+  {
+    "id": "TC003",
+    "title": "password_reset_request_and_completion",
+    "description": "Verify that a user can request a password reset via email and reset the password using a valid token."
+  },
+  {
+    "id": "TC004",
+    "title": "post_ride_with_required_fields",
+    "description": "Verify that a user can post a ride with origin, destination, date, seats available, and price per seat, and the ride status defaults to 'posted'."
+  },
+  {
+    "id": "TC005",
+    "title": "search_rides_by_origin_and_destination",
+    "description": "Verify that users can search for rides by origin and destination and receive rides matching the criteria with available seats and price."
+  },
+  {
+    "id": "TC006",
+    "title": "book_seats_on_available_ride",
+    "description": "Verify that a user can book seats on an available ride, which reduces the available seats accordingly."
+  },
+  {
+    "id": "TC007",
+    "title": "initiate_payment_for_completed_ride",
+    "description": "Verify that payment can only be initiated for completed rides, Razorpay order is created with the correct amount, and payment signature is verified."
+  },
+  {
+    "id": "TC008",
+    "title": "update_ride_status_and_generate_otp",
+    "description": "Verify that ride owners can update the ride status (posted, ongoing, completed, cancelled), generate an OTP for ride start, and verify the OTP before the ride starts."
+  },
+  {
+    "id": "TC009",
+    "title": "real_time_chat_access_and_messaging",
+    "description": "Verify that users can join ride chat rooms, send and receive messages in real-time, and only ride participants can access the chat."
+  },
+  {
+    "id": "TC010",
+    "title": "trigger_sos_and_record_request",
+    "description": "Verify that a user can trigger an SOS request and that the request is recorded in the database."
+  }
+]
