@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
-import { 
-  FaHome, 
-  FaCar, 
-  FaSearch, 
-  FaUser, 
-  FaListAlt, 
-  FaTicketAlt, 
-  FaSignOutAlt, 
-  FaBars, 
+import {
+  FaHome,
+  FaCar,
+  FaSearch,
+  FaUser,
+  FaListAlt,
+  FaTicketAlt,
+  FaSignOutAlt,
   FaTimes,
   FaExclamationTriangle,
   FaSpinner
 } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const Layout = () => {
     <>
       <NavBar>
         <Logo to="/home">EzyRide</Logo>
-        
+
         {/* Desktop Navigation */}
         <NavLinks>
           <StyledNavLink to="" end onClick={closeMobileMenu}>
@@ -51,8 +51,8 @@ const Layout = () => {
         </NavLinks>
 
         {/* Mobile Menu Button */}
-        <MobileMenuButton 
-          onClick={toggleMobileMenu} 
+        <MobileMenuButton
+          onClick={toggleMobileMenu}
           isOpen={isMobileMenuOpen}
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileMenuOpen}
@@ -65,8 +65,8 @@ const Layout = () => {
 
       {/* Mobile Menu Overlay */}
       <MobileMenuOverlay isOpen={isMobileMenuOpen} onClick={closeMobileMenu}>
-        <MobileMenu 
-          isOpen={isMobileMenuOpen} 
+        <MobileMenu
+          isOpen={isMobileMenuOpen}
           onClick={(e) => e.stopPropagation()}
           role="navigation"
           aria-label="Mobile navigation menu"
@@ -75,7 +75,7 @@ const Layout = () => {
             <MobileLogo>EzyRide</MobileLogo>
             <CloseButton onClick={closeMobileMenu}><FaTimes /></CloseButton>
           </MobileMenuHeader>
-          
+
           <MobileNavLinks>
             <MobileNavLink to="" end onClick={closeMobileMenu}>
               <MobileNavIcon><FaHome /></MobileNavIcon> Home
@@ -131,7 +131,7 @@ const SOSFloating = () => {
           )
         );
       }
-      const res = await fetch("/api/sos/trigger", {
+      const res = await fetch(`${API_BASE_URL}/api/sos/trigger`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(coords || {}),

@@ -87,7 +87,8 @@ router.post("/forgot-password", async (req, res) => {
       },
     });
 
-    const resetUrl = `http://localhost:3000/reset-password?token=${token}&email=${email}`;
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const resetUrl = `${clientUrl}/reset-password?token=${token}&email=${email}`;
     await transporter.sendMail({
       to: email,
       subject: "Password Reset",
@@ -124,7 +125,7 @@ router.post("/reset-password", async (req, res) => {
     console.error("Reset password error:", error);
     res.status(500).json({ message: "Server error" });
   }
-  
+
 });
 
 module.exports = router;

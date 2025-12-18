@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { FaLock, FaCheckCircle, FaExclamationTriangle, FaArrowLeft, FaSpinner } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -31,7 +32,7 @@ export default function ResetPassword() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/auth/reset-password", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, token, password }),
@@ -218,11 +219,7 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
-const Label = styled.label`
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-`;
+
 
 const InputWrapper = styled.div`
   position: relative;

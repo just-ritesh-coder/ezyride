@@ -2,12 +2,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
 import ChatPanel from "../components/ChatPanel";
-import { 
-  FaMapMarkerAlt, 
-  FaCalendarAlt, 
-  FaClock, 
-  FaRupeeSign, 
-  FaUsers, 
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaClock,
+  FaRupeeSign,
+  FaUsers,
   FaCheckCircle,
   FaTimesCircle,
   FaCopy,
@@ -26,12 +26,13 @@ import {
   FaPaperPlane,
   FaSpinner
 } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 // Chat drawer components
 const Backdrop = styled.div`
   position: fixed; inset: 0; background: rgba(0,0,0,.35);
-  opacity: ${({open})=>open?1:0};
-  pointer-events: ${({open})=>open?'auto':'none'};
+  opacity: ${({ open }) => open ? 1 : 0};
+  pointer-events: ${({ open }) => open ? 'auto' : 'none'};
   transition: opacity .25s ease;
   z-index: 2000;
 `;
@@ -39,7 +40,7 @@ const Backdrop = styled.div`
 const Drawer = styled.aside`
   position: fixed; top:0; right:0; height:100vh; width:min(500px,100%);
   background:#fff; box-shadow:-24px 0 48px rgba(0,0,0,.22);
-  transform: translateX(${({open})=>open?'0':'100%'});
+  transform: translateX(${({ open }) => open ? '0' : '100%'});
   transition: transform .28s ease;
   z-index: 2001; display:flex; flex-direction:column;
   @media (max-width: 640px) { width: 100%; }
@@ -162,15 +163,15 @@ const PassengerCenter = () => {
   const [err, setErr] = useState("");
 
   // Chat drawer state
-  const [chat, setChat] = useState({ open:false, ride:null });
+  const [chat, setChat] = useState({ open: false, ride: null });
 
   const [savedSearches, setSavedSearches] = useState([]);
   const [newSearch, setNewSearch] = useState({ origin: "", destination: "" });
 
-  const [settings, setSettings] = useState({ 
-    shareLocation: true, 
-    requireOTP: true, 
-    defaultPaymentMethod: "razorpay" 
+  const [settings, setSettings] = useState({
+    shareLocation: true,
+    requireOTP: true,
+    defaultPaymentMethod: "razorpay"
   });
   const [settingsSaved, setSettingsSaved] = useState(false);
 
@@ -192,7 +193,7 @@ const PassengerCenter = () => {
     setErr("");
     try {
       setLoading(true);
-      const res = await fetch("/api/bookings/mybookings", {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/mybookings`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       });
@@ -209,10 +210,10 @@ const PassengerCenter = () => {
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   // Filter bookings - must be defined before useEffects that use them
-  const active = bookings.filter((b) => 
+  const active = bookings.filter((b) =>
     b.ride?.status !== "completed" && b.ride?.status !== "cancelled"
   );
-  const past = bookings.filter((b) => 
+  const past = bookings.filter((b) =>
     b.ride?.status === "completed" || b.ride?.status === "cancelled"
   );
 
@@ -221,10 +222,10 @@ const PassengerCenter = () => {
     const checkReviews = async () => {
       const token = localStorage.getItem("authToken");
       if (!token || past.length === 0) return;
-      
+
       const checks = past.map(async (b) => {
         try {
-          const res = await fetch(`/api/reviews/booking/${b._id}`, {
+          const res = await fetch(`${API_BASE_URL}/api/reviews/booking/${b._id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
@@ -237,7 +238,7 @@ const PassengerCenter = () => {
       });
       await Promise.all(checks);
     };
-    
+
     if (tab === "Past Rides" && past.length > 0) {
       checkReviews();
     }
@@ -248,18 +249,18 @@ const PassengerCenter = () => {
     (async () => {
       try {
         const [ssRes, stRes] = await Promise.all([
-          fetch('/api/users/me/saved-searches', { 
-            headers: { Authorization: `Bearer ${token}` } 
+          fetch(`${API_BASE_URL}/api/users/me/saved-searches`, {
+            headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch('/api/users/me/settings', { 
-            headers: { Authorization: `Bearer ${token}` } 
+          fetch(`${API_BASE_URL}/api/users/me/settings`, {
+            headers: { Authorization: `Bearer ${token}` }
           }),
         ]);
         const ssData = await ssRes.json().catch(() => ({}));
         const stData = await stRes.json().catch(() => ({}));
         if (ssRes.ok) setSavedSearches(ssData.savedSearches || []);
         if (stRes.ok && stData.settings) setSettings(stData.settings);
-      } catch {}
+      } catch { }
     })();
   }, [token]);
 
@@ -276,23 +277,23 @@ const PassengerCenter = () => {
       if (!Number.isInteger(seatsNum) || seatsNum < 1) {
         throw new Error("Seats must be a positive integer");
       }
-      const res = await fetch(`/api/bookings/${editFor._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${editFor._id}`, {
         method: "PATCH",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ seats: seatsNum }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update seats");
-      setBookings((prev) => 
+      setBookings((prev) =>
         prev.map(b => b._id === editFor._id ? data.booking : b)
       );
       setEditFor(null);
       setNewSeats("");
-    } catch (e) { 
-      setErr(e.message); 
+    } catch (e) {
+      setErr(e.message);
     }
   };
 
@@ -300,23 +301,29 @@ const PassengerCenter = () => {
   const cancelBooking = async (bookingId) => {
     if (!window.confirm("Cancel this booking?")) return;
     try {
-      const res = await fetch(`/api/bookings/${bookingId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to cancel booking");
       setBookings(prev => prev.filter(b => b._id !== bookingId));
-    } catch (e) { 
-      setErr(e.message); 
+    } catch (e) {
+      setErr(e.message);
     }
   };
 
   // Open review modal
   const openReview = (booking) => {
+    const ride = booking.ride || {};
+    if (ride.status !== "completed") {
+      setErr("You can only review completed rides.");
+      return;
+    }
     setReviewFor(booking);
     setReviewRating(0);
     setReviewComment("");
+    setErr("");
   };
 
   // Submit review
@@ -329,7 +336,9 @@ const PassengerCenter = () => {
     setReviewLoading(true);
     setErr("");
     try {
-      const res = await fetch("/api/reviews", {
+      console.log("Submitting review for booking:", reviewFor._id, "Rating:", reviewRating);
+
+      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -343,7 +352,11 @@ const PassengerCenter = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to submit review");
+      console.log("Review API response:", data);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to submit review");
+      }
 
       setHasReviewed(prev => ({ ...prev, [reviewFor._id]: true }));
       setReviewFor(null);
@@ -351,6 +364,7 @@ const PassengerCenter = () => {
       setReviewComment("");
       alert("Review submitted successfully! Thank you for your feedback.");
     } catch (e) {
+      console.error("Review submission error:", e);
       setErr(e.message || "Failed to submit review");
     } finally {
       setReviewLoading(false);
@@ -367,19 +381,19 @@ const PassengerCenter = () => {
 
       setErr("");
       console.log("🔄 Creating Razorpay order for booking:", booking._id);
-      
-      const res = await fetch("/api/payments/razorpay/order", {
+
+      const res = await fetch(`${API_BASE_URL}/api/payments/razorpay/order`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          Authorization: `Bearer ${token}` 
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ bookingId: booking._id }),
       });
-      
+
       const data = await res.json();
       console.log("📦 Order creation response:", { status: res.status, data });
-      
+
       if (!res.ok) {
         const errorMsg = data.message || data.error || "Failed to create payment order";
         console.error("❌ Order creation failed:", errorMsg, data);
@@ -397,18 +411,18 @@ const PassengerCenter = () => {
         name: "EzyRide",
         description: `Payment for booking ${booking._id}`,
         order_id: data.orderId,
-        prefill: { 
-          name: authUser?.fullName || "", 
-          email: authUser?.email || "" 
+        prefill: {
+          name: authUser?.fullName || "",
+          email: authUser?.email || ""
         },
         theme: { color: "#1e90ff" },
         handler: async function (response) {
           try {
-            const verifyRes = await fetch("/api/payments/razorpay/verify", {
+            const verifyRes = await fetch(`${API_BASE_URL}/api/payments/razorpay/verify`, {
               method: "POST",
-              headers: { 
-                "Content-Type": "application/json", 
-                Authorization: `Bearer ${token}` 
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
               },
               body: JSON.stringify({
                 bookingId: booking._id,
@@ -421,27 +435,27 @@ const PassengerCenter = () => {
             if (!verifyRes.ok) {
               throw new Error(verifyData.message || "Payment verification failed");
             }
-            setBookings(prev => 
-              prev.map(b => 
+            setBookings(prev =>
+              prev.map(b =>
                 b._id === booking._id ? { ...b, paymentStatus: "succeeded" } : b
               )
             );
             setErr("");
-          } catch (e) { 
+          } catch (e) {
             setErr(e.message || "Payment verification failed");
           }
         },
-        modal: { 
-          ondismiss: () => {}
+        modal: {
+          ondismiss: () => { }
         },
       };
-      
+
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response) {
         setErr(`Payment failed: ${response.error?.description || "Unknown error"}`);
       });
       rzp.open();
-    } catch (e) { 
+    } catch (e) {
       setErr(e.message || "Failed to initiate payment");
     }
   };
@@ -493,8 +507,8 @@ const PassengerCenter = () => {
                       <RouteInfo>
                         <RouteIcon><FaMapMarkerAlt /></RouteIcon>
                         <RouteTxt>
-                          <b>{ride.from}</b> 
-                          <ArrowIcon><FaArrowRight /></ArrowIcon> 
+                          <b>{ride.from}</b>
+                          <ArrowIcon><FaArrowRight /></ArrowIcon>
                           <b>{ride.to}</b>
                         </RouteTxt>
                       </RouteInfo>
@@ -509,9 +523,9 @@ const PassengerCenter = () => {
                       <MetaItem>
                         <MetaIcon><FaClock /></MetaIcon>
                         <span>
-                          {dt ? dt.toLocaleTimeString([], { 
-                            hour: "2-digit", 
-                            minute: "2-digit" 
+                          {dt ? dt.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit"
                           }) : ""}
                         </span>
                       </MetaItem>
@@ -548,8 +562,8 @@ const PassengerCenter = () => {
                       <OTPLabel>Start Code:</OTPLabel>
                       <Code>{b.ride_start_code || "—"}</Code>
                       {b.ride_start_code && (
-                        <CopyBtn 
-                          onClick={() => 
+                        <CopyBtn
+                          onClick={() =>
                             navigator.clipboard.writeText(b.ride_start_code)
                           }
                         >
@@ -562,14 +576,14 @@ const PassengerCenter = () => {
                     </OTPRow>
 
                     <Actions>
-                      <Button 
-                        onClick={() => setChat({ 
-                          open:true, 
-                          ride:{ 
-                            id: ride._id, 
-                            from: ride.from, 
-                            to: ride.to 
-                          } 
+                      <Button
+                        onClick={() => setChat({
+                          open: true,
+                          ride: {
+                            id: ride._id,
+                            from: ride.from,
+                            to: ride.to
+                          }
                         })}
                       >
                         <FaComments /> Chat
@@ -585,14 +599,14 @@ const PassengerCenter = () => {
                     </Actions>
 
                     <Actions>
-                      <Button 
-                        disabled={!canEdit} 
+                      <Button
+                        disabled={!canEdit}
                         onClick={() => openSeats(b)}
                       >
                         <FaEdit /> Modify Seats
                       </Button>
-                      <Button 
-                        disabled={!canEdit} 
+                      <Button
+                        disabled={!canEdit}
                         onClick={() => cancelBooking(b._id)}
                       >
                         <FaTrash /> Cancel Booking
@@ -604,10 +618,10 @@ const PassengerCenter = () => {
                         <ModalCard>
                           <ModalHeader>
                             <ModalTitle><FaEdit /> Modify Seats</ModalTitle>
-                            <CloseModalBtn 
-                              onClick={() => { 
-                                setEditFor(null); 
-                                setNewSeats(""); 
+                            <CloseModalBtn
+                              onClick={() => {
+                                setEditFor(null);
+                                setNewSeats("");
                               }}
                             >
                               <FaTimes />
@@ -617,16 +631,16 @@ const PassengerCenter = () => {
                             inputMode="numeric"
                             pattern="\d*"
                             value={newSeats}
-                            onChange={(e) => 
+                            onChange={(e) =>
                               setNewSeats(e.target.value.replace(/\D/g, ""))
                             }
                             placeholder="Number of seats"
                           />
                           <ActionsRow>
-                            <Btn 
-                              onClick={() => { 
-                                setEditFor(null); 
-                                setNewSeats(""); 
+                            <Btn
+                              onClick={() => {
+                                setEditFor(null);
+                                setNewSeats("");
                               }}
                             >
                               <FaTimes /> Close
@@ -653,13 +667,13 @@ const PassengerCenter = () => {
                               <FaTimes />
                             </CloseModalBtn>
                           </ModalHeader>
-                          
+
                           <ReviewContent>
                             <ReviewRoute>
                               <RouteIcon><FaMapMarkerAlt /></RouteIcon>
                               <span><b>{ride.from}</b> <FaArrowRight /> <b>{ride.to}</b></span>
                             </ReviewRoute>
-                            
+
                             <RatingSection>
                               <RatingLabel>Your Rating</RatingLabel>
                               <StarRating>
@@ -675,11 +689,11 @@ const PassengerCenter = () => {
                               </StarRating>
                               {reviewRating > 0 && (
                                 <RatingText>
-                  {reviewRating === 1 && "Poor"}
-                  {reviewRating === 2 && "Fair"}
-                  {reviewRating === 3 && "Good"}
-                  {reviewRating === 4 && "Very Good"}
-                  {reviewRating === 5 && "Excellent"}
+                                  {reviewRating === 1 && "Poor"}
+                                  {reviewRating === 2 && "Fair"}
+                                  {reviewRating === 3 && "Good"}
+                                  {reviewRating === 4 && "Very Good"}
+                                  {reviewRating === 5 && "Excellent"}
                                 </RatingText>
                               )}
                             </RatingSection>
@@ -693,6 +707,12 @@ const PassengerCenter = () => {
                                 rows={4}
                               />
                             </CommentSection>
+
+                            {err && (
+                              <Err style={{ marginTop: "15px", marginBottom: "10px" }}>
+                                <FaExclamationTriangle /> {err}
+                              </Err>
+                            )}
 
                             <ActionsRow>
                               <Btn onClick={() => {
@@ -743,8 +763,8 @@ const PassengerCenter = () => {
                       <RouteInfo>
                         <RouteIcon><FaMapMarkerAlt /></RouteIcon>
                         <RouteTxt>
-                          <b>{ride.from}</b> 
-                          <ArrowIcon><FaArrowRight /></ArrowIcon> 
+                          <b>{ride.from}</b>
+                          <ArrowIcon><FaArrowRight /></ArrowIcon>
                           <b>{ride.to}</b>
                         </RouteTxt>
                       </RouteInfo>
@@ -772,31 +792,33 @@ const PassengerCenter = () => {
                           <FaCreditCard /> Pay Now
                         </Primary>
                       )}
-                      <Button 
-                        onClick={() => openReview(b)}
-                        disabled={hasReviewed[b._id]}
-                      >
-                        {hasReviewed[b._id] ? (
-                          <>
-                            <FaCheckCircle /> Reviewed
-                          </>
-                        ) : (
-                          <>
-                            <FaStar /> Rate & Review
-                          </>
-                        )}
-                      </Button>
+                      {ride.status === "completed" && (
+                        <Button
+                          onClick={() => openReview(b)}
+                          disabled={hasReviewed[b._id]}
+                        >
+                          {hasReviewed[b._id] ? (
+                            <>
+                              <FaCheckCircle /> Reviewed
+                            </>
+                          ) : (
+                            <>
+                              <FaStar /> Rate & Review
+                            </>
+                          )}
+                        </Button>
+                      )}
                       <Button
                         onClick={() => {
                           try {
                             localStorage.setItem(
-                              "lastSearch", 
-                              JSON.stringify({ 
-                                origin: ride.from, 
-                                destination: ride.to 
+                              "lastSearch",
+                              JSON.stringify({
+                                origin: ride.from,
+                                destination: ride.to
                               })
                             );
-                          } catch {}
+                          } catch { }
                           window.location.href = "/home/search-rides";
                         }}
                       >
@@ -823,7 +845,7 @@ const PassengerCenter = () => {
                 <SmallInput
                   placeholder="From (e.g., Mumbai)"
                   value={newSearch.origin}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setNewSearch(s => ({ ...s, origin: e.target.value }))
                   }
                 />
@@ -833,7 +855,7 @@ const PassengerCenter = () => {
                 <SmallInput
                   placeholder="To (e.g., Pune)"
                   value={newSearch.destination}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setNewSearch(s => ({ ...s, destination: e.target.value }))
                   }
                 />
@@ -842,15 +864,15 @@ const PassengerCenter = () => {
                 disabled={!newSearch.origin.trim() || !newSearch.destination.trim()}
                 onClick={async () => {
                   try {
-                    const body = { 
-                      origin: newSearch.origin.trim(), 
-                      destination: newSearch.destination.trim() 
+                    const body = {
+                      origin: newSearch.origin.trim(),
+                      destination: newSearch.destination.trim()
                     };
                     const res = await fetch('/api/users/me/saved-searches', {
                       method: 'POST',
-                      headers: { 
-                        'Content-Type': 'application/json', 
-                        Authorization: `Bearer ${token}` 
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
                       },
                       body: JSON.stringify(body),
                     });
@@ -860,8 +882,8 @@ const PassengerCenter = () => {
                     }
                     setSavedSearches(data.savedSearches || []);
                     setNewSearch({ origin: '', destination: '' });
-                  } catch (e) { 
-                    setErr(e.message); 
+                  } catch (e) {
+                    setErr(e.message);
                   }
                 }}
               >
@@ -879,8 +901,8 @@ const PassengerCenter = () => {
                       <RouteInfo>
                         <RouteIcon><FaMapMarkerAlt /></RouteIcon>
                         <RouteTxt>
-                          <b>{s.origin}</b> 
-                          <ArrowIcon><FaArrowRight /></ArrowIcon> 
+                          <b>{s.origin}</b>
+                          <ArrowIcon><FaArrowRight /></ArrowIcon>
                           <b>{s.destination}</b>
                         </RouteTxt>
                       </RouteInfo>
@@ -889,13 +911,13 @@ const PassengerCenter = () => {
                       <Primary onClick={() => {
                         try {
                           localStorage.setItem(
-                            "lastSearch", 
-                            JSON.stringify({ 
-                              origin: s.origin, 
-                              destination: s.destination 
+                            "lastSearch",
+                            JSON.stringify({
+                              origin: s.origin,
+                              destination: s.destination
                             })
                           );
-                        } catch {}
+                        } catch { }
                         window.location.href = "/home/search-rides";
                       }}>
                         <FaSearch /> Use
@@ -904,13 +926,13 @@ const PassengerCenter = () => {
                         try {
                           const res = await fetch('/api/users/me/saved-searches', {
                             method: 'DELETE',
-                            headers: { 
-                              'Content-Type': 'application/json', 
-                              Authorization: `Bearer ${token}` 
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}`
                             },
-                            body: JSON.stringify({ 
-                              origin: s.origin, 
-                              destination: s.destination 
+                            body: JSON.stringify({
+                              origin: s.origin,
+                              destination: s.destination
                             }),
                           });
                           const data = await res.json();
@@ -918,8 +940,8 @@ const PassengerCenter = () => {
                             throw new Error(data.message || 'Failed to delete search');
                           }
                           setSavedSearches(data.savedSearches || []);
-                        } catch (e) { 
-                          setErr(e.message); 
+                        } catch (e) {
+                          setErr(e.message);
                         }
                       }}>
                         <FaTrash /> Delete
@@ -945,7 +967,7 @@ const PassengerCenter = () => {
                   <input
                     type="checkbox"
                     checked={!!settings.shareLocation}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       setSettings(s => ({ ...s, shareLocation: e.target.checked }))
                     }
                   />
@@ -957,7 +979,7 @@ const PassengerCenter = () => {
                   <input
                     type="checkbox"
                     checked={!!settings.requireOTP}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       setSettings(s => ({ ...s, requireOTP: e.target.checked }))
                     }
                   />
@@ -969,7 +991,7 @@ const PassengerCenter = () => {
                   Default payment method
                   <Select
                     value={settings.defaultPaymentMethod}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       setSettings(s => ({ ...s, defaultPaymentMethod: e.target.value }))
                     }
                   >
@@ -984,9 +1006,9 @@ const PassengerCenter = () => {
                 try {
                   const res = await fetch('/api/users/me/settings', {
                     method: 'PUT',
-                    headers: { 
-                      'Content-Type': 'application/json', 
-                      Authorization: `Bearer ${token}` 
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify(settings),
                   });
@@ -997,8 +1019,8 @@ const PassengerCenter = () => {
                   setSettings(data.settings || settings);
                   setSettingsSaved(true);
                   setTimeout(() => setSettingsSaved(false), 1500);
-                } catch (e) { 
-                  setErr(e.message); 
+                } catch (e) {
+                  setErr(e.message);
                 }
               }}>
                 <FaSave /> Save Settings
@@ -1010,9 +1032,9 @@ const PassengerCenter = () => {
       )}
 
       {/* Chat drawer */}
-      <Backdrop 
-        open={chat.open} 
-        onClick={() => setChat({ open:false, ride:null })} 
+      <Backdrop
+        open={chat.open}
+        onClick={() => setChat({ open: false, ride: null })}
       />
       <Drawer open={chat.open} aria-hidden={!chat.open} aria-label="Ride chat">
         <DrawerHead>
@@ -1022,18 +1044,18 @@ const PassengerCenter = () => {
               <RouteBadge>{chat.ride.from} → {chat.ride.to}</RouteBadge>
             )}
           </DrawerTitle>
-          <CloseX 
-            aria-label="Close chat" 
-            onClick={() => setChat({ open:false, ride:null })}
+          <CloseX
+            aria-label="Close chat"
+            onClick={() => setChat({ open: false, ride: null })}
           >
             <FaTimes />
           </CloseX>
         </DrawerHead>
         <DrawerBody>
           {chat.open && chat.ride?.id && (
-            <ChatPanel 
-              rideId={chat.ride.id} 
-              onClose={() => setChat({ open:false, ride:null })} 
+            <ChatPanel
+              rideId={chat.ride.id}
+              onClose={() => setChat({ open: false, ride: null })}
             />
           )}
         </DrawerBody>
@@ -1118,8 +1140,8 @@ const Tab = styled.button`
   border: none; 
   border-radius: 999px; 
   font-weight: 800;
-  color: ${({$active}) => $active ? "#fff" : "#1e90ff"};
-  background: ${({$active}) => 
+  color: ${({ $active }) => $active ? "#fff" : "#1e90ff"};
+  background: ${({ $active }) =>
     $active ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)" : "#e7f0ff"
   };
   cursor: pointer; 
@@ -1128,7 +1150,7 @@ const Tab = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: ${({$active}) => 
+  box-shadow: ${({ $active }) =>
     $active ? "0 4px 15px rgba(30, 144, 255, 0.3)" : "none"
   };
 
@@ -1137,13 +1159,13 @@ const Tab = styled.button`
   }
 
   &:hover { 
-    background: ${({$active}) => 
-      $active ? "linear-gradient(135deg, #0066cc 0%, #004499 100%)" : "#dbe9ff"
-    }; 
+    background: ${({ $active }) =>
+    $active ? "linear-gradient(135deg, #0066cc 0%, #004499 100%)" : "#dbe9ff"
+  }; 
     transform: translateY(-2px); 
-    box-shadow: ${({$active}) => 
-      $active ? "0 6px 20px rgba(30, 144, 255, 0.4)" : "0 2px 8px rgba(30, 144, 255, 0.2)"
-    };
+    box-shadow: ${({ $active }) =>
+    $active ? "0 6px 20px rgba(30, 144, 255, 0.4)" : "0 2px 8px rgba(30, 144, 255, 0.2)"
+  };
   }
   
   @media (max-width: 768px) { 
@@ -1273,9 +1295,9 @@ const Chip = styled.span`
   font-size: 0.85rem; 
   padding: 6px 10px; 
   border-radius: 999px;
-  color: ${({$done}) => $done ? "#18794e" : "#0b74ff"}; 
-  background: ${({$done}) => $done ? "#e6f4ea" : "#e7f0ff"};
-  border: 1px solid ${({$done}) => $done ? "#bfe3cf" : "#cfe1ff"};
+  color: ${({ $done }) => $done ? "#18794e" : "#0b74ff"}; 
+  background: ${({ $done }) => $done ? "#e6f4ea" : "#e7f0ff"};
+  border: 1px solid ${({ $done }) => $done ? "#bfe3cf" : "#cfe1ff"};
   
   @media (max-width: 480px) { font-size: 0.8rem; padding: 5px 8px; }
 `;
@@ -1820,14 +1842,5 @@ const CommentTextArea = styled.textarea`
   
   &::placeholder {
     color: #9ca3af;
-  }
-`;
-
-const Spinner = styled(FaSpinner)`
-  animation: spin 1s linear infinite;
-  
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
   }
 `;

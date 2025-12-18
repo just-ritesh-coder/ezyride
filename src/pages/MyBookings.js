@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { API_BASE_URL } from "../utils/config";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -16,7 +17,7 @@ const MyBookings = () => {
       }
 
       try {
-        const response = await fetch("/api/bookings/mybookings", {
+        const response = await fetch(`${API_BASE_URL}/api/bookings/mybookings`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

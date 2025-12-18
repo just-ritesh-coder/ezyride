@@ -2,17 +2,20 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { AuthContext } from "../context/AuthContext";
-import { 
-  FaUser, 
-  FaPhone, 
-  FaEnvelope, 
-  FaLock, 
-  FaCar, 
+import {
+  FaUser,
+  FaPhone,
+  FaEnvelope,
+  FaLock,
+  FaCar,
   FaHeart,
   FaArrowRight,
   FaExclamationTriangle,
   FaSpinner
 } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
+
+import csmtImage from "../assets/csmt_img.png";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -57,7 +60,7 @@ const AuthPage = () => {
 
     if (isLogin) {
       try {
-        const response = await fetch("http://localhost:5000/api/auth/login", {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -88,7 +91,7 @@ const AuthPage = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/auth/register", {
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -119,7 +122,7 @@ const AuthPage = () => {
           Connecting riders and drivers, saving money & the environment together.
         </Tagline>
         <Image
-          src="https://images.timesproperty.com/blog/4980/CSMT_Railway_Station.png"
+          src={csmtImage}
           alt="Chhatrapati Shivaji Maharaj Terminus (CSMT)"
         />
       </LeftPane>
@@ -250,16 +253,7 @@ const fadeIn = keyframes`
   }
 `;
 
-const slideIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-`;
+
 
 const Container = styled.div`
   display: flex;
@@ -472,17 +466,7 @@ const Form = styled.form`
   gap: 5px;
 `;
 
-const Label = styled.label`
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #333;
-  font-size: 14px;
-  
-  @media (max-width: 480px) {
-    font-size: 13px;
-    margin-bottom: 4px;
-  }
-`;
+
 
 const InputWrapper = styled.div`
   position: relative;

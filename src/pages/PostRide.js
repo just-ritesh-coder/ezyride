@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import AutocompleteInput from "../components/AutocompleteInput";
-import { 
-  FaMapMarkerAlt, 
-  FaCalendarAlt, 
-  FaClock, 
-  FaUsers, 
-  FaRupeeSign, 
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaClock,
+  FaUsers,
+  FaRupeeSign,
   FaStickyNote,
   FaPaperPlane,
   FaCheckCircle,
   FaExclamationTriangle,
   FaSpinner
 } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 const PostRide = () => {
   const [origin, setOrigin] = useState("");
@@ -81,7 +82,7 @@ const PostRide = () => {
       setLoading(true);
       const token = localStorage.getItem("authToken");
 
-      const response = await fetch("/api/rides", {
+      const response = await fetch(`${API_BASE_URL}/api/rides`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

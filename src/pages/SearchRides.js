@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import AutocompleteInput from "../components/AutocompleteInput";
-import { 
-  FaSearch, 
-  FaMapMarkerAlt, 
-  FaCalendarAlt, 
-  FaUsers, 
-  FaUser, 
+import {
+  FaSearch,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaUsers,
+  FaUser,
   FaRupeeSign,
   FaCheckCircle,
   FaExclamationTriangle,
   FaSpinner,
-  FaFilter,
-  FaArrowRight
+  FaArrowRight,
+  FaFilter
 } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 const SearchRides = () => {
   const [origin, setOrigin] = useState("");
@@ -42,7 +43,7 @@ const SearchRides = () => {
       const params = new URLSearchParams({ from: origin, to: destination });
       if (date) params.set("date", date);
 
-      const res = await fetch(`/api/rides/search?${params.toString()}`);
+      const res = await fetch(`${API_BASE_URL}/api/rides/search?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch rides");
 
       const data = await res.json();
@@ -64,7 +65,7 @@ const SearchRides = () => {
 
     try {
       setBookingLoading(true);
-      const res = await fetch("/api/bookings", {
+      const res = await fetch(`${API_BASE_URL}/api/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { FaEnvelope, FaCheckCircle, FaExclamationTriangle, FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../utils/config";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ const ForgotPassword = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -181,11 +182,7 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
-const Label = styled.label`
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-`;
+
 
 const InputWrapper = styled.div`
   position: relative;

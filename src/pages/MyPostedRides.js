@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import ChatPanel from "../components/ChatPanel";
-import { 
-  FaMapMarkerAlt, 
-  FaCalendarAlt, 
-  FaClock, 
-  FaRupeeSign, 
-  FaUsers, 
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaClock,
+  FaRupeeSign,
+  FaUsers,
   FaCheckCircle,
   FaPlay,
   FaStop,
@@ -20,19 +20,20 @@ import {
   FaTimes,
   FaKey
 } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 // Drawer shell (same pattern used in PassengerCenter)
 const Backdrop = styled.div`
   position: fixed; inset: 0; background: rgba(0,0,0,.35);
-  opacity: ${({open})=>open?1:0};
-  pointer-events: ${({open})=>open?'auto':'none'};
+  opacity: ${({ open }) => open ? 1 : 0};
+  pointer-events: ${({ open }) => open ? 'auto' : 'none'};
   transition: opacity .25s ease;
   z-index: 2000;
 `;
 const Drawer = styled.aside`
   position: fixed; top:0; right:0; height:100vh; width:min(500px,100%);
   background:#fff; box-shadow:-24px 0 48px rgba(0,0,0,.22);
-  transform: translateX(${({open})=>open?'0':'100%'});
+  transform: translateX(${({ open }) => open ? '0' : '100%'});
   transition: transform .28s ease;
   z-index: 2001; display:flex; flex-direction:column;
   @media (max-width: 640px) { width: 100%; }
@@ -84,7 +85,7 @@ const MyPostedRides = () => {
   const [err, setErr] = useState("");
 
   // Drawer chat state
-  const [chat, setChat] = useState({ open:false, ride:null }); // { open, ride:{ id, from, to } }
+  const [chat, setChat] = useState({ open: false, ride: null }); // { open, ride:{ id, from, to } }
 
   const [openFor, setOpenFor] = useState(null);   // rideId for OTP modal
   const [code, setCode] = useState("");
@@ -100,7 +101,7 @@ const MyPostedRides = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
-      const res = await fetch("/api/users/me/rides/active", {
+      const res = await fetch(`${API_BASE_URL}/api/users/me/rides/active`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
       });
@@ -121,7 +122,7 @@ const MyPostedRides = () => {
     setErr("");
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/rides/${rideId}/start/verify`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${rideId}/start/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ code }),
@@ -139,9 +140,9 @@ const MyPostedRides = () => {
     setRides((prev) => prev.filter((r) => r._id !== rideId));
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/rides/${rideId}/complete`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${rideId}/complete`, {
         method: "POST",
-        headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to complete ride");
@@ -157,7 +158,7 @@ const MyPostedRides = () => {
     setEditForm({
       from: ride.from || "",
       to: ride.to || "",
-      date: ride.date ? new Date(ride.date).toISOString().slice(0,16) : "",
+      date: ride.date ? new Date(ride.date).toISOString().slice(0, 16) : "",
       seatsAvailable: "",
       pricePerSeat: ride.pricePerSeat ?? "",
       notes: ride.notes ?? "",
@@ -176,9 +177,9 @@ const MyPostedRides = () => {
       if (editForm.pricePerSeat !== "") payload.pricePerSeat = Number(editForm.pricePerSeat);
       if (editForm.notes !== "") payload.notes = editForm.notes;
 
-      const res = await fetch(`/api/rides/${editFor._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${editFor._id}`, {
         method: "PATCH",
-        headers: { "Content-Type":"application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
@@ -194,7 +195,7 @@ const MyPostedRides = () => {
     if (!window.confirm("Cancel this ride? This cannot be undone.")) return;
     try {
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`/api/rides/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${rideId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -276,7 +277,7 @@ const MyPostedRides = () => {
                 <Secondary disabled={!canComplete} onClick={() => completeRide(ride._id)}>
                   <FaStop /> Complete Ride
                 </Secondary>
-                <Secondary onClick={() => setChat({ open:true, ride:{ id: ride._id, from: ride.from, to: ride.to } })}>
+                <Secondary onClick={() => setChat({ open: true, ride: { id: ride._id, from: ride.from, to: ride.to } })}>
                   <FaComments /> Chat
                 </Secondary>
               </Actions>
@@ -324,29 +325,29 @@ const MyPostedRides = () => {
                   <ModalCard>
                     <ModalHeader>
                       <ModalTitle><FaEdit /> Edit Ride</ModalTitle>
-                      <CloseModalBtn onClick={()=> setEditFor(null)}>
+                      <CloseModalBtn onClick={() => setEditFor(null)}>
                         <FaTimes />
                       </CloseModalBtn>
                     </ModalHeader>
                     <FormGrid>
                       <Input placeholder="From" value={editForm.from}
-                        onChange={e=>setEditForm(f=>({...f,from:e.target.value}))}/>
+                        onChange={e => setEditForm(f => ({ ...f, from: e.target.value }))} />
                       <Input placeholder="To" value={editForm.to}
-                        onChange={e=>setEditForm(f=>({...f,to:e.target.value}))}/>
+                        onChange={e => setEditForm(f => ({ ...f, to: e.target.value }))} />
                       <Input type="datetime-local" value={editForm.date}
-                        onChange={e=>setEditForm(f=>({...f,date:e.target.value}))}/>
+                        onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} />
                       <Input placeholder="Total seats (capacity)" inputMode="numeric"
                         value={editForm.seatsAvailable}
-                        onChange={e=>setEditForm(f=>({...f,seatsAvailable:e.target.value.replace(/\D/g,"")}))}/>
+                        onChange={e => setEditForm(f => ({ ...f, seatsAvailable: e.target.value.replace(/\D/g, "") }))} />
                       <Input placeholder="Price per seat" inputMode="decimal"
                         value={editForm.pricePerSeat}
-                        onChange={e=>setEditForm(f=>({...f,pricePerSeat:e.target.value}))}/>
+                        onChange={e => setEditForm(f => ({ ...f, pricePerSeat: e.target.value }))} />
                       <TextArea placeholder="Notes"
                         value={editForm.notes}
-                        onChange={e=>setEditForm(f=>({...f,notes:e.target.value}))}/>
+                        onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} />
                     </FormGrid>
                     <ActionsRow>
-                      <Btn onClick={()=> setEditFor(null)}>
+                      <Btn onClick={() => setEditFor(null)}>
                         <FaTimes /> Close
                       </Btn>
                       <Primary onClick={saveEdit}>
@@ -362,7 +363,7 @@ const MyPostedRides = () => {
       </List>
 
       {/* Chat drawer renders once */}
-      <Backdrop open={chat.open} onClick={() => setChat({ open:false, ride:null })} />
+      <Backdrop open={chat.open} onClick={() => setChat({ open: false, ride: null })} />
       <Drawer open={chat.open} aria-hidden={!chat.open} aria-label="Ride chat">
         <DrawerHead>
           <DrawerTitle>
@@ -371,13 +372,13 @@ const MyPostedRides = () => {
               <RouteBadge>{chat.ride.from} → {chat.ride.to}</RouteBadge>
             )}
           </DrawerTitle>
-          <CloseX aria-label="Close chat" onClick={() => setChat({ open:false, ride:null })}>
+          <CloseX aria-label="Close chat" onClick={() => setChat({ open: false, ride: null })}>
             <FaTimes />
           </CloseX>
         </DrawerHead>
         <DrawerBody>
           {chat.open && chat.ride?.id && (
-            <ChatPanel rideId={chat.ride.id} onClose={() => setChat({ open:false, ride:null })} />
+            <ChatPanel rideId={chat.ride.id} onClose={() => setChat({ open: false, ride: null })} />
           )}
         </DrawerBody>
       </Drawer>

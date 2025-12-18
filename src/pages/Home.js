@@ -1,13 +1,13 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { 
-  FaCar, 
-  FaCalendarAlt, 
-  FaStar, 
-  FaSearch, 
-  FaUser, 
-  FaCog, 
+import {
+  FaCar,
+  FaCalendarAlt,
+  FaStar,
+  FaSearch,
+  FaUser,
+  FaCog,
   FaListAlt,
   FaMapMarkerAlt,
   FaExclamationTriangle,
@@ -15,10 +15,11 @@ import {
   FaArrowRight,
   FaSpinner
 } from "react-icons/fa";
-import { 
+import {
   HiOutlineSparkles,
   HiOutlineClock
 } from "react-icons/hi";
+import { API_BASE_URL } from "../utils/config";
 
 // Animation keyframes
 const fadeInUp = keyframes`
@@ -43,14 +44,7 @@ const slideInRight = keyframes`
   }
 `;
 
-const pulse = keyframes`
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-`;
+
 
 const shimmer = keyframes`
   0% {
@@ -116,7 +110,7 @@ const Home = () => {
         setLoading(true);
         setError("");
         const token = localStorage.getItem("authToken");
-        const response = await fetch("http://localhost:5000/api/dashboard", {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {

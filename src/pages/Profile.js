@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
+import { API_BASE_URL } from "../utils/config";
 
 const TABS = ["Account Details", "Ride History", "SOS", "Features"];
 
@@ -43,7 +44,7 @@ const Profile = () => {
   const fetchUser = useCallback(async () => {
     try {
       setErr("");
-      const res = await fetch("/api/users/me", {
+      const res = await fetch(`${API_BASE_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}`, "Cache-Control": "no-store" },
       });
       const data = await res.json();
@@ -66,7 +67,7 @@ const Profile = () => {
     try {
       setLoading(true);
       setErr("");
-      const res = await fetch("/api/users/me/rides/completed", {
+      const res = await fetch(`${API_BASE_URL}/api/users/me/rides/completed`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -82,7 +83,7 @@ const Profile = () => {
   // ======= Fetch SOS =======
   const fetchSOS = useCallback(async () => {
     try {
-      const res = await fetch("/api/sos/me", { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE_URL}/api/sos/me`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (res.ok && data.sos) {
         setSOS({
@@ -100,7 +101,7 @@ const Profile = () => {
     setSaving(true);
     try {
       const body = { contacts: sos.contacts.filter(c => c.name && c.phone).slice(0, 3), message: sos.message };
-      const res = await fetch("/api/sos/me", {
+      const res = await fetch(`${API_BASE_URL}/api/sos/me`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(body),
@@ -139,7 +140,7 @@ const Profile = () => {
     setErr("");
     setSuccessMsg("");
     try {
-      const res = await fetch("/api/users/me", {
+      const res = await fetch(`${API_BASE_URL}/api/users/me`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(editData),
@@ -218,13 +219,13 @@ const Profile = () => {
     try {
       setUploadingPicture(true);
       setErr("");
-      
+
       // Compress and convert to base64
       const compressedBase64 = await compressImage(file);
-      
+
       // Show preview
       setPreviewImage(compressedBase64);
-      
+
       // Upload compressed image
       await uploadProfilePicture(compressedBase64);
     } catch (error) {
@@ -236,12 +237,12 @@ const Profile = () => {
   const uploadProfilePicture = async (base64Image) => {
     setErr("");
     try {
-      const res = await fetch("/api/users/me/profile-picture", {
+      const res = await fetch(`${API_BASE_URL}/api/users/me/profile-picture`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ profilePicture: base64Image }),
       });
-      
+
       let data;
       try {
         data = await res.json();
@@ -252,14 +253,14 @@ const Profile = () => {
         }
         throw new Error("Server error occurred");
       }
-      
+
       if (!res.ok) {
         if (res.status === 413) {
           throw new Error("Image is too large. Please try a smaller image.");
         }
         throw new Error(data.message || "Failed to upload profile picture");
       }
-      
+
       setUser(data.user);
       setSuccessMsg("Profile picture updated successfully!");
       setPreviewImage(null);
@@ -274,11 +275,11 @@ const Profile = () => {
 
   const removeProfilePicture = async () => {
     if (!window.confirm("Are you sure you want to remove your profile picture?")) return;
-    
+
     setUploadingPicture(true);
     setErr("");
     try {
-      const res = await fetch("/api/users/me/profile-picture", {
+      const res = await fetch(`${API_BASE_URL}/api/users/me/profile-picture`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ profilePicture: null }),
@@ -302,8 +303,8 @@ const Profile = () => {
         <ProfileHeader>
           <AvatarContainer>
             <AvatarWrapper>
-              <Avatar 
-                src={previewImage || user?.profilePicture} 
+              <Avatar
+                src={previewImage || user?.profilePicture}
                 hasImage={!!(previewImage || user?.profilePicture)}
               >
                 {!(previewImage || user?.profilePicture) && (
@@ -457,91 +458,91 @@ const Profile = () => {
           </Section>
         )}
 
-       {/* ===== SOS ===== */}
-{active === "SOS" && (
-  <Section>
-    <SOSCard>
+        {/* ===== SOS ===== */}
+        {active === "SOS" && (
+          <Section>
+            <SOSCard>
               <SOSCardHeader>
                 <H3>SOS Emergency Settings</H3>
                 <SOSHeaderIcon>🚨</SOSHeaderIcon>
               </SOSCardHeader>
-      <Muted>Configure emergency contacts and custom SOS message. Up to 3 contacts allowed.</Muted>
+              <Muted>Configure emergency contacts and custom SOS message. Up to 3 contacts allowed.</Muted>
 
-      <SOSGrid>
-        {sos.contacts.map((c, i) => (
-          <SOSItem key={i}>
-            <SOSInput
+              <SOSGrid>
+                {sos.contacts.map((c, i) => (
+                  <SOSItem key={i}>
+                    <SOSInput
                       placeholder="Contact Name"
-              value={c.name}
-              onChange={e => {
-                const next = [...sos.contacts];
-                next[i].name = e.target.value;
-                setSOS(prev => ({ ...prev, contacts: next }));
-              }}
-            />
-            <SOSInput
+                      value={c.name}
+                      onChange={e => {
+                        const next = [...sos.contacts];
+                        next[i].name = e.target.value;
+                        setSOS(prev => ({ ...prev, contacts: next }));
+                      }}
+                    />
+                    <SOSInput
                       placeholder="Phone Number"
                       type="tel"
-              value={c.phone}
-              onChange={e => {
-                const next = [...sos.contacts];
-                next[i].phone = e.target.value;
-                setSOS(prev => ({ ...prev, contacts: next }));
-              }}
-            />
-            <SOSInput
+                      value={c.phone}
+                      onChange={e => {
+                        const next = [...sos.contacts];
+                        next[i].phone = e.target.value;
+                        setSOS(prev => ({ ...prev, contacts: next }));
+                      }}
+                    />
+                    <SOSInput
                       placeholder="Relation (e.g., Family, Friend)"
-              value={c.relation || ""}
-              onChange={e => {
-                const next = [...sos.contacts];
-                next[i].relation = e.target.value;
-                setSOS(prev => ({ ...prev, contacts: next }));
-              }}
-            />
-          </SOSItem>
-        ))}
-      </SOSGrid>
+                      value={c.relation || ""}
+                      onChange={e => {
+                        const next = [...sos.contacts];
+                        next[i].relation = e.target.value;
+                        setSOS(prev => ({ ...prev, contacts: next }));
+                      }}
+                    />
+                  </SOSItem>
+                ))}
+              </SOSGrid>
 
-      <SOSActions>
-        <AddButton
-          onClick={() =>
-            setSOS(prev => ({
-              ...prev,
-              contacts: [...prev.contacts, { name: "", phone: "", relation: "" }]
-            }))
-          }
-          disabled={sos.contacts.length >= 3}
-        >
+              <SOSActions>
+                <AddButton
+                  onClick={() =>
+                    setSOS(prev => ({
+                      ...prev,
+                      contacts: [...prev.contacts, { name: "", phone: "", relation: "" }]
+                    }))
+                  }
+                  disabled={sos.contacts.length >= 3}
+                >
                   + Add Contact
-        </AddButton>
+                </AddButton>
 
-        <RemoveButton
-          onClick={() =>
-            setSOS(prev => ({
-              ...prev,
-              contacts: prev.contacts.slice(0, Math.max(1, prev.contacts.length - 1))
-            }))
-          }
+                <RemoveButton
+                  onClick={() =>
+                    setSOS(prev => ({
+                      ...prev,
+                      contacts: prev.contacts.slice(0, Math.max(1, prev.contacts.length - 1))
+                    }))
+                  }
                   disabled={sos.contacts.length <= 1}
-        >
+                >
                   - Remove Last
-        </RemoveButton>
-      </SOSActions>
+                </RemoveButton>
+              </SOSActions>
 
               <SOSMessageLabel>Emergency Message:</SOSMessageLabel>
-      <SOSMessage
-        rows={3}
+              <SOSMessage
+                rows={3}
                 placeholder="Enter your emergency message here..."
-        value={sos.message}
-        onChange={e => setSOS(prev => ({ ...prev, message: e.target.value }))}
-      />
+                value={sos.message}
+                onChange={e => setSOS(prev => ({ ...prev, message: e.target.value }))}
+              />
 
-      <SaveButton onClick={saveSOS} disabled={saving}>
-        {saving ? "Saving..." : "Save SOS Settings"}
-      </SaveButton>
-    </SOSCard>
-  </Section>
-)}
+              <SaveButton onClick={saveSOS} disabled={saving}>
+                {saving ? "Saving..." : "Save SOS Settings"}
+              </SaveButton>
+            </SOSCard>
+          </Section>
+        )}
 
 
         {/* ===== Features ===== */}
@@ -668,9 +669,9 @@ const Avatar = styled.div`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: ${({ hasImage, src }) => 
-    hasImage && src 
-      ? `url(${src}) center/cover no-repeat` 
+  background: ${({ hasImage, src }) =>
+    hasImage && src
+      ? `url(${src}) center/cover no-repeat`
       : 'linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)'};
   color: white;
   display: flex;

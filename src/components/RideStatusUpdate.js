@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { FaPlay, FaStop, FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
+import { API_BASE_URL } from '../utils/config';
 
 const RideStatusUpdate = ({ rideId, initialStatus }) => {
   const [status, setStatus] = useState(initialStatus || 'posted');
@@ -12,7 +13,7 @@ const RideStatusUpdate = ({ rideId, initialStatus }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`/api/rides/${rideId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/rides/${rideId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import styled, { keyframes } from "styled-components";
-import { FaTimes, FaPaperPlane, FaComments, FaSpinner } from "react-icons/fa";
+import { FaTimes, FaPaperPlane, FaComments } from "react-icons/fa";
+import { API_BASE_URL } from "../utils/config";
 
 const ChatPanel = ({ rideId, onClose }) => {
   const [msgs, setMsgs] = useState([]);
@@ -17,7 +18,7 @@ const ChatPanel = ({ rideId, onClose }) => {
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const res = await fetch(`/api/chats/${rideId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/chats/${rideId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -31,7 +32,7 @@ const ChatPanel = ({ rideId, onClose }) => {
 
   // Connect socket
   useEffect(() => {
-    const s = io("/", { auth: { token } });
+    const s = io(API_BASE_URL, { auth: { token } });
     socketRef.current = s;
     s.emit("chat:join", { rideId });
     s.on("chat:message", ({ chat }) => {
@@ -287,8 +288,8 @@ const Messages = styled.div`
 const Msg = styled.div`
   align-self: ${(p) => (p.mine ? "flex-end" : "flex-start")};
   background: ${(p) =>
-    p.mine 
-      ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)" 
+    p.mine
+      ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)"
       : "linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%)"};
   color: ${(p) => (p.mine ? "#fff" : "#333")};
   padding: 12px 16px;
@@ -297,9 +298,9 @@ const Msg = styled.div`
   word-break: break-word;
   font-size: 0.95rem;
   line-height: 1.5;
-  box-shadow: ${(p) => 
-    p.mine 
-      ? "0 4px 12px rgba(30, 144, 255, 0.3)" 
+  box-shadow: ${(p) =>
+    p.mine
+      ? "0 4px 12px rgba(30, 144, 255, 0.3)"
       : "0 2px 8px rgba(0, 0, 0, 0.1)"};
   animation: ${fadeIn} 0.3s ease-out;
   border: ${(p) => p.mine ? "none" : "1px solid rgba(30, 144, 255, 0.1)"};

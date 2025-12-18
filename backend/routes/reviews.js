@@ -15,6 +15,8 @@ router.post('/', protect, async (req, res) => {
     const userId = req.user?._id?.toString() || req.userId;
     const { bookingId, rating, comment } = req.body;
 
+    console.log('Review submission request:', { userId, bookingId, rating, comment });
+
     if (!userId) return res.status(401).json({ message: 'Not authorized' });
     if (!bookingId) return res.status(400).json({ message: 'bookingId is required' });
     if (!rating || rating < 1 || rating > 5) {
@@ -26,14 +28,32 @@ router.post('/', protect, async (req, res) => {
       .populate('ride', 'postedBy status')
       .populate('user', '_id');
 
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    if (booking.user._id.toString() !== userId) {
+    if (!booking) {
+      console.log('Booking not found:', bookingId);
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    console.log('Booking found:', { 
+      bookingId: booking._id, 
+      userId: booking.user?._id?.toString() || booking.user?.toString(),
+      rideStatus: booking.ride?.status 
+    });
+    
+    // Handle both populated and non-populated user
+    const bookingUserId = booking.user?._id?.toString() || booking.user?.toString() || booking.user;
+    if (bookingUserId !== userId) {
+      console.log('User mismatch:', { bookingUserId, userId });
       return res.status(403).json({ message: 'You can only review rides you booked' });
     }
 
     // Check if ride is completed
+    if (!booking.ride) {
+      return res.status(400).json({ message: 'Ride not found for this booking' });
+    }
+    
     if (booking.ride.status !== 'completed') {
-      return res.status(400).json({ message: 'Can only review completed rides' });
+      console.log('Ride not completed:', booking.ride.status);
+      return res.status(400).json({ message: 'Can only review completed rides. Current status: ' + booking.ride.status });
     }
 
     const driverId = booking.ride.postedBy?.toString();
@@ -104,7 +124,10 @@ router.get('/booking/:bookingId', protect, async (req, res) => {
       .populate('ride', 'postedBy');
 
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    if (booking.user.toString() !== userId) {
+    
+    // Handle both populated and non-populated user
+    const bookingUserId = booking.user?._id?.toString() || booking.user?.toString() || booking.user;
+    if (bookingUserId !== userId) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
