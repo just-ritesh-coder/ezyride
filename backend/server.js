@@ -12,7 +12,7 @@ const jwt = require('jsonwebtoken');
 dotenv.config();
 
 // Models (ensure case-correct paths for Linux)
-const Chat = require('./models/chat');
+const Chat = require('./models/Chat');
 const Ride = require('./models/Ride');
 
 // Routes
