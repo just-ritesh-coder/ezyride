@@ -274,17 +274,29 @@ const SearchRides = () => {
 };
 
 /* ===========================
-   STYLES - Rido Premium Theme (Forest/Mint)
+   STYLES - Premium Design
 =========================== */
 
 const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
 const slideIn = keyframes`
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 `;
 
 const spin = keyframes`
@@ -296,9 +308,16 @@ const Container = styled.div`
   max-width: 900px;
   margin: 40px auto;
   padding: 0 20px 40px;
+  font-family: "Poppins", sans-serif;
   
   @media (max-width: 768px) {
     margin: 20px auto;
+    padding: 0 15px 30px;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 15px auto;
+    padding: 0 12px 25px;
   }
 `;
 
@@ -306,37 +325,61 @@ const Header = styled.div`
   text-align: center;
   margin-bottom: 40px;
   animation: ${fadeIn} 0.6s ease-out;
+  
+  @media (max-width: 480px) {
+    margin-bottom: 30px;
+  }
 `;
 
 const Title = styled.h1`
   margin-bottom: 12px;
-  color: ${({ theme }) => theme.colors.text.primary};
-  font-weight: 800;
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
   font-size: 2.5rem;
   
   @media (max-width: 768px) {
     font-size: 2.2rem;
   }
+  
+  @media (max-width: 480px) {
+    font-size: 1.9rem;
+    margin-bottom: 10px;
+  }
 `;
 
 const Subtitle = styled.p`
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: #666;
   font-size: 1.1rem;
   font-weight: 500;
   margin: 0;
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 `;
 
 const SearchCard = styled.div`
-  background: ${({ theme }) => theme.colors.section.dark}; /* Dark Green Block */
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   padding: 32px;
-  border-radius: ${({ theme }) => theme.borders.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadows.glass};
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(30, 144, 255, 0.1);
   margin-bottom: 40px;
   animation: ${fadeIn} 0.6s ease-out 0.2s both;
   
   @media (max-width: 768px) {
-    padding: 24px;
+    padding: 28px 24px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 24px 20px;
+    border-radius: 14px;
+    margin-bottom: 25px;
   }
 `;
 
@@ -357,56 +400,61 @@ const InputLabel = styled.label`
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.text.inverse}; /* White text on Dark Card */
+  color: #222;
   font-size: 14px;
   
   svg {
-    color: ${({ theme }) => theme.colors.accentBright};
+    color: #1e90ff;
     font-size: 0.9rem;
   }
 `;
 
 const Input = styled.input`
   padding: 14px 16px;
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
-  border-radius: ${({ theme }) => theme.borders.radius.md};
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
   outline: none;
   font-size: 16px;
-  background-color: rgba(255, 255, 255, 0.05); /* Glass input */
-  color: ${({ theme }) => theme.colors.text.inverse}; /* White text for input inside dark card */
+  background-color: #fafbfc;
   transition: all 0.3s ease;
   min-height: 52px;
-  font-family: inherit;
+  font-family: "Poppins", sans-serif;
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    background-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 0 4px ${({ theme }) => theme.colors.surfaceHover};
+    border-color: #1e90ff;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
     transform: translateY(-1px);
   }
   
+  &:hover:not(:focus) {
+    border-color: #b8c5d1;
+    background-color: #fff;
+  }
+  
   &::placeholder {
-    color: ${({ theme }) => theme.colors.text.inverseSecondary};
-    opacity: 0.5;
+    color: #9ca3af;
   }
 `;
 
 const FilterSection = styled.div`
-  margin-top: 10px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(30, 144, 255, 0.15);
 `;
 
 const FilterTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 10px;
-  color: ${({ theme }) => theme.colors.text.inverse};
+  color: #1e90ff;
   font-weight: 800;
   font-size: 1.1rem;
   margin-bottom: 16px;
   
   svg {
     font-size: 1rem;
-    color: ${({ theme }) => theme.colors.accentBright};
   }
 `;
 
@@ -414,8 +462,8 @@ const FilterGroup = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
-
-  @media(max-width: 480px) {
+  
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -432,33 +480,31 @@ const FilterLabel = styled.label`
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.text.inverse}; /* High Contrast */
+  color: #555;
   
   svg {
-    color: ${({ theme }) => theme.colors.accentBright};
+    color: #1e90ff;
     font-size: 0.85rem;
   }
 `;
 
 const SmallNumber = styled.input`
   padding: 12px 14px;
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
-  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
   outline: none;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: ${({ theme }) => theme.colors.text.inverse};
+  background-color: #fff;
   transition: all 0.3s ease;
   font-size: 15px;
   font-weight: 600;
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 3px rgba(197, 237, 203, 0.1);
+    border-color: #1e90ff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
   }
   
   &::placeholder {
-    color: ${({ theme }) => theme.colors.text.inverseSecondary};
-    opacity: 0.5;
+    color: #9ca3af;
   }
 `;
 
@@ -468,32 +514,47 @@ const Spinner = styled(FaSpinner)`
 
 const SubmitButton = styled.button`
   padding: 18px 32px;
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.text.inverse};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  color: white;
   font-weight: 800;
-  border-radius: ${({ theme }) => theme.borders.radius.full};
+  border-radius: 12px;
   border: none;
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   font-size: 17px;
   transition: all 0.3s ease;
   min-height: 56px;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  box-shadow: 0 6px 20px ${({ theme }) => theme.colors.glass.border};
+  box-shadow: 0 6px 20px rgba(30, 144, 255, 0.3);
   
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+  }
+
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.secondary};
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
     transform: translateY(-3px);
-    box-shadow: ${({ theme }) => theme.shadows.neon};
+    box-shadow: 0 10px 30px rgba(30, 144, 255, 0.4);
   }
   
+  &:hover:not(:disabled)::before {
+    left: 100%;
+  }
+
   &:disabled {
-    background: ${({ theme }) => theme.colors.glass.border};
+    background: linear-gradient(135deg, #a0c4ff 0%, #8bb3ff 100%);
     opacity: 0.7;
-    color: ${({ theme }) => theme.colors.text.secondary};
-    box-shadow: none;
   }
   
   svg {
@@ -510,14 +571,14 @@ const Results = styled.div`
 const LoadingState = styled.div`
   text-align: center;
   padding: 60px 20px;
-  background: ${({ theme }) => theme.colors.glass.light};
-  border-radius: ${({ theme }) => theme.borders.radius.lg};
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-weight: 700;
   font-size: 1.1rem;
   
@@ -529,59 +590,87 @@ const LoadingState = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 60px 40px;
-  background: ${({ theme }) => theme.colors.glass.light};
-  border-radius: ${({ theme }) => theme.borders.radius.lg};
-  border: 1px dashed ${({ theme }) => theme.colors.glass.border};
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  border: 2px dashed rgba(30, 144, 255, 0.2);
   animation: ${fadeIn} 0.6s ease-out;
-
-  @media(max-width: 480px) {
+  
+  @media (max-width: 480px) {
     padding: 50px 30px;
   }
 `;
 
 const EmptyIcon = styled.div`
   font-size: 4rem;
-  color: ${({ theme }) => theme.colors.palette.tomThumb};
+  color: #1e90ff;
   margin-bottom: 20px;
-  opacity: 1; /* Removed blur/dullness */
+  opacity: 0.6;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
 `;
 
 const EmptyTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: #1e90ff;
   font-weight: 800;
   font-size: 1.5rem;
   margin-bottom: 12px;
+  
+  @media (max-width: 480px) {
+    font-size: 1.3rem;
+  }
 `;
 
 const EmptyText = styled.p`
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: #666;
   font-size: 1rem;
   font-weight: 500;
 `;
 
 const RideCard = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt}; /* Light Mint Grey on White */
-  border-radius: ${({ theme }) => theme.borders.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(30, 144, 255, 0.1);
   padding: 24px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: ${slideIn} 0.5s ease-out ${({ delay }) => delay || 0}s both;
   position: relative;
   overflow: hidden;
-
-  /* Accent line on left instead of top for Rido feel */
-  border-left: 4px solid ${({ theme }) => theme.colors.section.dark};
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #1e90ff, #0066cc, #1e90ff);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
 
   &:hover {
     transform: translateY(-6px) scale(1.01);
-    background: white;
-    box-shadow: ${({ theme }) => theme.shadows.md};
-    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 16px 48px rgba(30, 144, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
+    border-color: rgba(30, 144, 255, 0.3);
   }
-
-  @media(max-width: 480px) {
+  
+  &:hover::before {
+    transform: scaleX(1);
+  }
+  
+  @media (max-width: 480px) {
     padding: 20px;
+    border-radius: 14px;
   }
 `;
 
@@ -591,8 +680,8 @@ const RideHeader = styled.div`
   align-items: flex-start;
   margin-bottom: 20px;
   gap: 16px;
-
-  @media(max-width: 480px) {
+  
+  @media (max-width: 480px) {
     flex-direction: column;
     gap: 12px;
   }
@@ -606,42 +695,57 @@ const RouteInfo = styled.div`
 `;
 
 const RouteIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1.5rem;
   margin-top: 4px;
   flex-shrink: 0;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 const ArrowIcon = styled.span`
-  color: ${({ theme }) => theme.colors.palette.tomThumb};
+  color: #1e90ff;
   margin: 0 8px;
   font-size: 0.9rem;
 `;
 
 const RideRoute = styled.h3`
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: #222;
   font-weight: 800;
   font-size: 1.3rem;
   line-height: 1.4;
   margin: 0;
   
   strong {
-    color: ${({ theme }) => theme.colors.primary};
+    color: #1e90ff;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.15rem;
   }
 `;
 
 const Price = styled.div`
-  background: rgba(16, 185, 129, 0.1);
-  color: ${({ theme }) => theme.colors.secondary};
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
+  color: #0b6b2b;
   font-weight: 800;
   padding: 10px 16px;
-  border-radius: ${({ theme }) => theme.borders.radius.md};
+  border-radius: 12px;
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 1.2rem;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(11, 107, 43, 0.2);
+  box-shadow: 0 2px 8px rgba(11, 107, 43, 0.1);
   flex-shrink: 0;
+  
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+    padding: 8px 14px;
+  }
 `;
 
 const PriceIcon = styled.span`
@@ -653,33 +757,38 @@ const RideDetails = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 20px;
-
-  @media(max-width: 480px) {
+  
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 `;
 
 const DetailItem = styled.div`
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
   padding: 14px 16px;
-  border-radius: ${({ theme }) => theme.borders.radius.md};
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border-radius: 12px;
+  border: 1px solid rgba(30, 144, 255, 0.1);
   display: flex;
   align-items: center;
   gap: 12px;
   transition: all 0.3s ease;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: linear-gradient(135deg, #e8f4ff 0%, #e0f0ff 100%);
     transform: translateY(-2px);
   }
 `;
 
 const DetailIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1.3rem;
   flex-shrink: 0;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 const DetailContent = styled.div`
@@ -688,69 +797,59 @@ const DetailContent = styled.div`
 `;
 
 const DetailLabel = styled.div`
-  color: ${({ theme }) => theme.colors.palette.tomThumb}; /* Enforced Dark Green */
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-bottom: 2px;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
 
 const DetailValue = styled.div`
-  color: ${({ theme }) => theme.colors.text.primary};
-  font-weight: 600;
+  font-weight: 800;
+  color: #222;
   font-size: 0.95rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const CardFooter = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(30, 144, 255, 0.1);
 `;
 
-const BookButton = styled.button`
-  padding: 12px 24px;
-  background: ${({ theme }) => theme.colors.primary}; /* Mint Green */
-  color: ${({ theme }) => theme.colors.text.inverse};
-  border: none;
-  border-radius: ${({ theme }) => theme.borders.radius.full}; /* Pill shape from Rido */
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  font-size: 1rem;
+const BookButton = styled(SubmitButton)`
+  padding: 14px 24px;
+  font-size: 15px;
+  min-height: 48px;
+  margin-top: 0;
   
-  &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.secondary};
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(197, 237, 203, 0.3);
-  }
-  
-  &:disabled {
-    background: ${({ theme }) => theme.colors.glass.border};
-    color: ${({ theme }) => theme.colors.text.secondary};
-    cursor: not-allowed;
-    opacity: 0.7;
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 12px 20px;
   }
 `;
 
-const ErrorMessage = styled.div`
-  background: rgba(239, 68, 68, 0.1);
-  color: ${({ theme }) => theme.colors.error};
-  padding: 16px;
-  border-radius: ${({ theme }) => theme.borders.radius.md};
+const ErrorMessage = styled.p`
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+  color: #d9534f;
+  padding: 16px 24px;
+  border-radius: 12px;
   margin-bottom: 24px;
+  text-align: center;
+  font-weight: 700;
+  border: 1px solid rgba(217, 83, 79, 0.2);
   display: flex;
   align-items: center;
-  gap: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  justify-content: center;
+  gap: 10px;
+  animation: ${fadeIn} 0.5s ease-out;
+  
+  svg {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
 `;
 
 export default SearchRides;

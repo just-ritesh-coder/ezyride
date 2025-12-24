@@ -619,7 +619,7 @@ const Header = styled.div`
 `;
 
 const Title = styled.h1`
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: #1e90ff;
   font-weight: 900;
   font-size: 2.2rem;
   margin: 0;
@@ -635,7 +635,7 @@ const Title = styled.h1`
 `;
 
 const Sub = styled.p`
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: #666;
   font-weight: 500;
   margin: 6px 0 0;
   
@@ -669,17 +669,17 @@ const Avatar = styled.div`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: ${({ hasImage, src, theme }) =>
+  background: ${({ hasImage, src }) =>
     hasImage && src
       ? `url(${src}) center/cover no-repeat`
-      : theme.colors.section.dark};
-  color: ${({ theme }) => theme.colors.text.inverse};
+      : 'linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)'};
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
   font-weight: 900;
-  box-shadow: ${({ theme }) => theme.shadows.glass};
+  box-shadow: 0 8px 24px rgba(30, 144, 255, 0.3);
   position: relative;
   z-index: 2;
   animation: ${fadeIn} 0.6s ease-out;
@@ -737,8 +737,8 @@ const AvatarInput = styled.input`
 
 const AvatarLabel = styled.label`
   padding: 8px 16px;
-  background: ${({ theme }) => theme.colors.section.dark};
-  color: ${({ theme }) => theme.colors.text.inverse};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  color: white;
   border-radius: 8px;
   font-weight: 700;
   font-size: 0.9rem;
@@ -748,9 +748,9 @@ const AvatarLabel = styled.label`
   display: inline-block;
   
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.primary};
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(43, 73, 44, 0.3);
+    box-shadow: 0 4px 12px rgba(30, 144, 255, 0.3);
   }
   
   &:active:not(:disabled) {
@@ -765,7 +765,7 @@ const AvatarLabel = styled.label`
 
 const RemovePhotoButton = styled.button`
   padding: 6px 14px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffe7e7 0%, #ffd7d7 100%);
   color: #d9534f;
   border: 1px solid #d9534f;
   border-radius: 8px;
@@ -776,7 +776,7 @@ const RemovePhotoButton = styled.button`
   opacity: ${({ disabled }) => disabled ? 0.6 : 1};
   
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.backgroundAlt};
+    background: linear-gradient(135deg, #ffd7d7 0%, #ffc7c7 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
   }
@@ -798,7 +798,7 @@ const AvatarRing = styled.div`
   right: -4px;
   bottom: -4px;
   border-radius: 50%;
-  background: ${({ theme }) => theme.colors.primaryGradient};
+  background: linear-gradient(135deg, #1e90ff, #0066cc, #1e90ff);
   background-size: 200% 200%;
   animation: ${pulse} 3s infinite;
   opacity: 0.3;
@@ -818,26 +818,43 @@ const MemberSince = styled.div`
 
 const Tabs = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 25px;
+  gap: 10px;
+  border-bottom: 1px solid #e9eef5;
+  padding-bottom: 6px;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
   
   @media (max-width: 480px) {
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 6px;
+    padding-bottom: 8px;
   }
 `;
 
 const Tab = styled.button`
-  padding: 10px 20px;
-  border-radius: ${({ theme }) => theme.borders.radius.full};
+  padding: 10px 14px;
   border: none;
-  background: ${({ active, theme }) => (active ? theme.colors.primary : theme.colors.glass.light)};
-  color: ${({ active, theme }) => (active ? theme.colors.text.inverse : theme.colors.text.primary)};
-  font-weight: 700;
-  font-size: 0.95rem;
+  border-radius: 999px;
+  font-weight: 800;
+  color: ${({ active }) => (active ? "#fff" : "#1e90ff")};
+  background: ${({ active }) => (active ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)" : "#e7f0ff")};
   cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: ${({ active }) => active ? "0 4px 15px rgba(30, 144, 255, 0.3)" : "none"};
+  
+  &:hover {
+    background: ${({ active }) => (active ? "linear-gradient(135deg, #0b74ff 0%, #0052a3 100%)" : "#dbe9ff")};
+    transform: translateY(-2px);
+    box-shadow: ${({ active }) => active ? "0 6px 20px rgba(30, 144, 255, 0.4)" : "0 2px 8px rgba(30, 144, 255, 0.2)"};
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 0.9rem;
   }
   
   @media (max-width: 480px) {
@@ -863,7 +880,7 @@ const Section = styled.section`
 `;
 
 const Card = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 24px;
@@ -880,7 +897,7 @@ const Card = styled.div`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: transparent;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.6s ease;
   }
   
@@ -891,7 +908,7 @@ const Card = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: ${({ theme }) => theme.colors.secondaryGradient};
+    background: linear-gradient(90deg, #1e90ff, #0066cc, #1e90ff);
     background-size: 200% 100%;
     animation: ${shimmer} 3s infinite;
     opacity: 0;
@@ -942,7 +959,7 @@ const HeaderIcon = styled.span`
 `;
 
 const SOSCard = styled(Card)`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
   border-color: rgba(217, 83, 79, 0.2);
   
   &:hover {
@@ -951,7 +968,7 @@ const SOSCard = styled(Card)`
   }
   
   &::after {
-    background: ${({ theme }) => theme.colors.error};
+    background: linear-gradient(90deg, #d9534f, #c9302c, #d9534f);
   }
 `;
 
@@ -984,7 +1001,7 @@ const Err = styled.p`
   font-weight: 700;
   margin-top: 8px;
   padding: 10px 14px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
   border-radius: 12px;
   border: 1px solid rgba(217, 83, 79, 0.2);
   
@@ -1000,7 +1017,7 @@ const Success = styled.p`
   font-weight: 700;
   margin-top: 8px;
   padding: 10px 14px;
-  background: ${({ theme }) => theme.colors.palette.surfCrest};
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
   border-radius: 12px;
   border: 1px solid rgba(24, 121, 78, 0.2);
   
@@ -1015,7 +1032,7 @@ const Muted = styled.p`
   font-weight: 600;
   margin: 6px 0 0;
   padding: 20px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   text-align: center;
@@ -1043,7 +1060,7 @@ const Grid = styled.div`
 `;
 
 const Item = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #f7f9fc 0%, #e9ecef 100%);
   border-radius: 12px;
   padding: 16px 18px;
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -1057,7 +1074,7 @@ const Item = styled.div`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    background: ${({ theme }) => theme.colors.backgroundAlt};
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
     border-color: rgba(30, 144, 255, 0.2);
   }
   
@@ -1097,21 +1114,20 @@ const Input = styled.input`
   padding: 10px 12px;
   font-size: 1rem;
   border-radius: 8px;
-  border: 2px solid ${({ theme }) => theme.colors.glass.border};
+  border: 2px solid #e1e5e9;
   outline: none;
-  background-color: ${({ theme }) => theme.colors.glass.light};
+  background-color: #fafbfc;
   transition: all 0.3s ease;
   width: 100%;
-  color: ${({ theme }) => theme.colors.text.primary};
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #1e90ff;
     background-color: #fff;
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover};
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
   }
   
   &::placeholder {
-    color: ${({ theme }) => theme.colors.text.secondary};
+    color: #9ca3af;
   }
   
   @media (max-width: 480px) {
@@ -1123,9 +1139,9 @@ const Input = styled.input`
 const EditButton = styled.button`
   padding: 12px 20px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   border-radius: 10px;
-  border: 2px solid ${({ theme }) => theme.colors.primary};
+  border: 2px solid #1e90ff;
   cursor: pointer;
   background: #fff;
   transition: all 0.3s ease;
@@ -1137,10 +1153,10 @@ const EditButton = styled.button`
   width: 100%;
   
   &:hover {
-    background: ${({ theme }) => theme.colors.glass.light};
+    background: linear-gradient(135deg, #e7f0ff 0%, #d6ebff 100%);
     transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    border-color: ${({ theme }) => theme.colors.secondary};
+    box-shadow: 0 6px 20px rgba(30, 144, 255, 0.3);
+    border-color: #0066cc;
   }
   
   &:active {
@@ -1161,22 +1177,22 @@ const ButtonIcon = styled.span`
 const SaveButton = styled.button`
   padding: 10px 12px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.text.inverse};
+  color: #fff;
   border-radius: 8px;
   border: none;
-  background: ${({ theme }) => theme.colors.primary};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   cursor: pointer;
   transition: all 0.3s ease;
   min-height: 44px;
   
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.secondary};
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.md};
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
   }
   
   &:disabled {
-    background: ${({ theme }) => theme.colors.glass.border};
+    background: #a0c4ff;
     cursor: not-allowed;
     transform: none;
   }
@@ -1200,7 +1216,7 @@ const CancelButton = styled.button`
   min-height: 44px;
   
   &:hover {
-    background: ${({ theme }) => theme.colors.backgroundAlt};
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(217, 83, 79, 0.2);
   }
@@ -1229,15 +1245,15 @@ const HistoryGrid = styled.div`
 `;
 
 const HistoryCard = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 14px;
-  box-shadow: ${({ theme }) => theme.shadows.sm};
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
-  border-left: 4px solid ${({ theme }) => theme.colors.section.dark};
+  border: 1px solid rgba(30, 144, 255, 0.1);
+  border-left: 4px solid #1e90ff;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -1250,14 +1266,14 @@ const HistoryCard = styled.div`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: transparent;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.6s ease;
   }
   
   &:hover {
     transform: translateY(-4px) scale(1.02);
-    box-shadow: ${({ theme }) => theme.shadows.md};
-    border-left-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    border-left-color: #0066cc;
   }
   
   &:hover::before {
@@ -1321,7 +1337,7 @@ const Meta = styled.div`
 
 const Done = styled.span`
   align-self: flex-start;
-  background: ${({ theme }) => theme.colors.palette.surfCrest};
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
   color: #18794e;
   border: 1px solid #bfe3cf;
   border-radius: 999px;
@@ -1352,13 +1368,13 @@ const FeatureItem = styled.li`
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
-  background: ${({ theme }) => theme.colors.glass.light};
+  background: linear-gradient(135deg, #f7f9fc 0%, #e9ecef 100%);
   border-radius: 10px;
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: #333;
   font-weight: 600;
   line-height: 1.6;
   transition: all 0.3s ease;
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border: 1px solid rgba(0, 0, 0, 0.05);
   animation: ${fadeIn} 0.5s ease-out;
   animation-fill-mode: both;
   
@@ -1371,9 +1387,9 @@ const FeatureItem = styled.li`
   
   &:hover {
     transform: translateX(8px);
-    background: ${({ theme }) => theme.colors.backgroundAlt};
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    border-color: ${({ theme }) => theme.colors.secondary};
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.1);
+    border-color: rgba(30, 144, 255, 0.2);
   }
   
   @media (max-width: 480px) {
@@ -1394,13 +1410,13 @@ const SOSGrid = styled.div`
   margin: 16px 0;
   
   @media (max-width: 768px) {
-    gap: 10px;
+  gap: 10px;
     margin: 14px 0;
   }
   
   @media (max-width: 480px) {
     gap: 8px;
-    margin: 12px 0;
+  margin: 12px 0;
   }
 `;
 
@@ -1409,18 +1425,18 @@ const SOSItem = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   padding: 12px;
-  background: ${({ theme }) => theme.colors.glass.light};
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 10px;
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
   
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.sm};
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
   
   @media (max-width: 768px) {
-    gap: 10px;
+  gap: 10px;
     padding: 10px;
   }
   
@@ -1435,22 +1451,21 @@ const SOSInput = styled.input`
   padding: 12px 14px;
   font-size: 0.95rem;
   border-radius: 8px;
-  border: 2px solid ${({ theme }) => theme.colors.glass.border};
+  border: 2px solid #e1e5e9;
   outline: none;
-  background-color: ${({ theme }) => theme.colors.glass.light};
+  background-color: #ffffff;
   transition: all 0.3s ease;
   font-weight: 500;
-  color: ${({ theme }) => theme.colors.text.primary};
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #1e90ff;
     background-color: #fff;
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover};
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
     transform: translateY(-1px);
   }
   
   &::placeholder {
-    color: ${({ theme }) => theme.colors.text.secondary};
+    color: #9ca3af;
     font-weight: 400;
   }
   
@@ -1485,24 +1500,24 @@ const AddButton = styled.button`
   flex: 1;
   padding: 10px 14px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
-  background: ${({ theme }) => theme.colors.glass.light};
-  border: 1px solid ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
+  background: linear-gradient(135deg, #e7f0ff 0%, #d6ebff 100%);
+  border: 1px solid #1e90ff;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
   min-height: 44px;
   
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.backgroundAlt};
+    background: linear-gradient(135deg, #dbe9ff 0%, #c6dfff 100%);
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.sm};
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
   }
   
   &:disabled {
-    background: ${({ theme }) => theme.colors.glass.border};
+    background: #f0f4ff;
     cursor: not-allowed;
-    color: ${({ theme }) => theme.colors.text.secondary};
+    color: #9bb7dd;
     transform: none;
   }
   
@@ -1514,13 +1529,13 @@ const AddButton = styled.button`
 `;
 
 const RemoveButton = styled(AddButton)`
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid ${({ theme }) => theme.colors.error || "#ff6b6b"};
-  color: ${({ theme }) => theme.colors.error || "#ff6b6b"};
+  background: linear-gradient(135deg, #ffe7e7 0%, #ffd7d7 100%);
+  border: 1px solid #d9534f;
+  color: #d9534f;
   
   &:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.2);
-    box-shadow: ${({ theme }) => theme.shadows.sm};
+    background: linear-gradient(135deg, #ffd7d7 0%, #ffc7c7 100%);
+    box-shadow: 0 4px 15px rgba(217, 83, 79, 0.2);
   }
 `;
 
@@ -1541,23 +1556,22 @@ const SOSMessage = styled.textarea`
   padding: 10px 12px;
   font-size: 0.95rem;
   border-radius: 8px;
-  border: 2px solid ${({ theme }) => theme.colors.glass.border};
+  border: 2px solid #e1e5e9;
   outline: none;
   resize: none;
-  background-color: ${({ theme }) => theme.colors.glass.light};
+  background-color: #fafbfc;
   transition: all 0.3s ease;
   font-family: inherit;
   min-height: 80px;
-  color: ${({ theme }) => theme.colors.text.primary};
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #1e90ff;
     background-color: #fff;
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover};
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
   }
   
   &::placeholder {
-    color: ${({ theme }) => theme.colors.text.secondary};
+    color: #9ca3af;
   }
   
   margin-bottom: 12px;

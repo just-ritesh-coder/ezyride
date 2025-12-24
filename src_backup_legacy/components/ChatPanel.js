@@ -182,7 +182,8 @@ const pulse = keyframes`
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6); /* Solid slightly transparent black, no blur */
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
@@ -209,7 +210,7 @@ const Popup = styled.div`
 `;
 
 const Header = styled.div`
-  background: ${({ theme }) => theme.colors.primaryGradient};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: #fff;
   padding: 18px 22px;
   display: flex;
@@ -288,7 +289,7 @@ const Msg = styled.div`
   align-self: ${(p) => (p.mine ? "flex-end" : "flex-start")};
   background: ${(p) =>
     p.mine
-      ? p.theme.colors.primaryGradient
+      ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)"
       : "linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%)"};
   color: ${(p) => (p.mine ? "#fff" : "#333")};
   padding: 12px 16px;
@@ -299,10 +300,10 @@ const Msg = styled.div`
   line-height: 1.5;
   box-shadow: ${(p) =>
     p.mine
-      ? p.theme.shadows.md
+      ? "0 4px 12px rgba(30, 144, 255, 0.3)"
       : "0 2px 8px rgba(0, 0, 0, 0.1)"};
   animation: ${fadeIn} 0.3s ease-out;
-  border: ${(p) => p.mine ? "none" : `1px solid ${p.theme.colors.glass.border}`};
+  border: ${(p) => p.mine ? "none" : "1px solid rgba(30, 144, 255, 0.1)"};
 `;
 
 const Typing = styled.div`
@@ -325,7 +326,7 @@ const TypingDots = styled.div`
   span {
     width: 6px;
     height: 6px;
-    background: ${({ theme }) => theme.colors.primary};
+    background: #1e90ff;
     border-radius: 50%;
     animation: ${pulse} 1.4s ease-in-out infinite;
     
@@ -363,10 +364,10 @@ const Input = styled.input`
   transition: all 0.3s ease;
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #1e90ff;
     background-color: #fff;
     outline: none;
-    box-shadow: 0 0 0 4px ${({ theme }) => theme.colors.surfaceHover};
+    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
     transform: translateY(-1px);
   }
   
@@ -376,7 +377,7 @@ const Input = styled.input`
 `;
 
 const Send = styled.button`
-  background: ${({ theme }) => theme.colors.primaryGradient};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -395,9 +396,9 @@ const Send = styled.button`
   }
   
   &:hover {
-    background: ${({ theme }) => theme.colors.secondaryGradient};
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
     transform: translateY(-2px);
-    box-shadow: ${({ theme }) => theme.shadows.md};
+    box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4);
   }
   
   &:active {

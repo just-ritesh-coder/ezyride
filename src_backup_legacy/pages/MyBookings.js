@@ -87,27 +87,30 @@ const MyBookings = () => {
 const Container = styled.div`
   max-width: 650px;
   margin: 40px auto;
-  background: ${({ theme }) => theme.colors.background};
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   padding: 30px 35px;
-  border-radius: ${({ theme }) => theme.borders.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadows.glass};
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid rgba(30, 144, 255, 0.1);
   
   @media (max-width: 768px) {
     margin: 20px auto;
     padding: 25px 20px;
+    border-radius: 12px;
   }
   
   @media (max-width: 480px) {
     margin: 15px auto;
     padding: 20px 15px;
+    border-radius: 10px;
   }
 `;
 
 const Title = styled.h1`
   font-weight: 800;
   font-size: 2.6rem;
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: #1e90ff;
   margin-bottom: 30px;
   text-align: center;
   line-height: 1.2;
@@ -126,12 +129,12 @@ const Title = styled.h1`
 const EmptyMessage = styled.p`
   font-size: 1.3rem;
   text-align: center;
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: #777;
   font-weight: 600;
   padding: 30px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.borders.radius.md};
-  border: 1px dashed ${({ theme }) => theme.colors.glass.border};
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
@@ -160,36 +163,49 @@ const List = styled.div`
 
 const BookingCard = styled.div`
   padding: 22px 25px;
-  border-radius: ${({ theme }) => theme.borders.radius.lg};
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #f3f9ff 0%, #e8f4ff 100%);
+  border: 1px solid rgba(30, 144, 255, 0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-
-  /* Accent line */
-  border-left: 4px solid ${({ theme }) => theme.colors.section.dark};
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
   
   &:hover {
     transform: translateY(-3px);
-    box-shadow: ${({ theme }) => theme.shadows.md};
-    background: white;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:hover::before {
+    left: 100%;
   }
   
   @media (max-width: 768px) {
     padding: 18px 20px;
+    border-radius: 12px;
   }
   
   @media (max-width: 480px) {
     padding: 15px 18px;
+    border-radius: 10px;
   }
 `;
 
 const RouteInfo = styled.div`
   font-weight: 700;
   font-size: 1.5rem;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #005bbb;
   margin-bottom: 14px;
   line-height: 1.3;
   
@@ -209,7 +225,7 @@ const BookingDetails = styled.div`
   flex-wrap: wrap;
   gap: 14px;
   font-size: 1rem;
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: #444;
   
   @media (max-width: 768px) {
     gap: 12px;
@@ -228,7 +244,7 @@ const Detail = styled.div`
   padding: 4px 0;
   
   b {
-    color: ${({ theme }) => theme.colors.text.primary};
+    color: #333;
     font-weight: 600;
   }
   
@@ -241,13 +257,12 @@ const Detail = styled.div`
 const LoadingMessage = styled.p`
   text-align: center;
   font-size: 1.3rem;
-  color: ${({ theme }) => theme.colors.text.secondary};
+  color: #555;
   font-weight: 600;
   padding: 30px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: ${({ theme }) => theme.borders.radius.md};
-  margin: 40px auto;
-  max-width: 600px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
@@ -263,15 +278,13 @@ const LoadingMessage = styled.p`
 const ErrorMessage = styled.p`
   text-align: center;
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.error || "#d9534f"};
+  color: #d9534f;
   font-size: 1.2rem;
   margin-top: 30px;
   padding: 20px;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: ${({ theme }) => theme.borders.radius.md};
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border-radius: 12px;
   border: 1px solid rgba(220, 53, 69, 0.2);
-  margin: 40px auto;
-  max-width: 600px;
   
   @media (max-width: 768px) {
     font-size: 1.1rem;

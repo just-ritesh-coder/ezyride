@@ -111,7 +111,7 @@ const ModalHeader = styled.div`
 
 const ModalTitle = styled.h3`
   margin: 0;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-weight: 900;
   font-size: 1.4rem;
   display: flex;
@@ -415,7 +415,7 @@ const PassengerCenter = () => {
           name: authUser?.fullName || "",
           email: authUser?.email || ""
         },
-        theme: { color: "#2b492c" },
+        theme: { color: "#1e90ff" },
         handler: async function (response) {
           try {
             const verifyRes = await fetch(`${API_BASE_URL}/api/payments/razorpay/verify`, {
@@ -1091,7 +1091,7 @@ const Section = styled.section`
 `;
 
 const H3 = styled.h3`
-  color: ${({ theme }) => theme.colors.primary}; 
+  color: #1e90ff; 
   font-weight: 900; 
   margin: 0 0 12px; 
   font-size: 1.4rem;
@@ -1100,13 +1100,14 @@ const H3 = styled.h3`
   @media (max-width: 480px) { font-size: 1.2rem; }
 `;
 
-
-/* Replaced Header Styles with Theme Tokens */
 const Title = styled.h1`
-  color: ${({ theme }) => theme.colors.text.primary};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: 900; 
   font-size: 2.4rem; 
-  margin: 0 0 10px; 
+  margin: 0; 
   line-height: 1.2;
   
   @media (max-width: 768px) { font-size: 2rem; }
@@ -1114,10 +1115,13 @@ const Title = styled.h1`
 `;
 
 const Sub = styled.p`
-  color: ${({ theme }) => theme.colors.palette.tomThumb}; 
-  font-weight: 600; font-size: 1.05rem; margin: 0;
-  @media (max-width: 768px) { font-size: 1rem; }
-  @media (max-width: 480px) { font-size: 0.95rem; }
+  color: #666; 
+  font-weight: 500; 
+  margin: 10px 0 0;
+  font-size: 1.05rem;
+  
+  @media (max-width: 768px) { font-size: 0.95rem; }
+  @media (max-width: 480px) { font-size: 0.9rem; }
 `;
 
 const Tabs = styled.div`
@@ -1132,20 +1136,37 @@ const Tabs = styled.div`
 `;
 
 const Tab = styled.button`
-  background: ${({ $active, theme }) => $active ? theme.colors.primary : "transparent"};
-  color: ${({ $active, theme }) => $active ? theme.colors.text.inverse : theme.colors.text.secondary};
-  border: none; padding: 12px 24px; border-radius: 999px;
-  font-weight: 700; font-size: 0.95rem; cursor: pointer;
-  transition: all 0.25s ease; white-space: nowrap;
-  display: flex; align-items: center; gap: 8px;
-  box-shadow: ${({ $active }) => $active ? "0 4px 12px rgba(43, 73, 44, 0.2)" : "none"};
+  padding: 12px 18px; 
+  border: none; 
+  border-radius: 999px; 
+  font-weight: 800;
+  color: ${({ $active }) => $active ? "#fff" : "#1e90ff"};
+  background: ${({ $active }) =>
+    $active ? "linear-gradient(135deg, #1e90ff 0%, #0066cc 100%)" : "#e7f0ff"
+  };
+  cursor: pointer; 
+  white-space: nowrap; 
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: ${({ $active }) =>
+    $active ? "0 4px 15px rgba(30, 144, 255, 0.3)" : "none"
+  };
 
-  &:hover {
-    color: ${({ $active, theme }) => $active ? theme.colors.text.inverse : theme.colors.primary};
-    background: ${({ $active, theme }) => $active ? theme.colors.primary : theme.colors.surfaceHover};
+  svg {
+    font-size: 0.9rem;
   }
 
-  svg { font-size: 1rem; }
+  &:hover { 
+    background: ${({ $active }) =>
+    $active ? "linear-gradient(135deg, #0066cc 0%, #004499 100%)" : "#dbe9ff"
+  }; 
+    transform: translateY(-2px); 
+    box-shadow: ${({ $active }) =>
+    $active ? "0 6px 20px rgba(30, 144, 255, 0.4)" : "0 2px 8px rgba(30, 144, 255, 0.2)"
+  };
+  }
   
   @media (max-width: 768px) { 
     padding: 10px 14px; 
@@ -1180,20 +1201,33 @@ const List = styled.div`
 `;
 
 const Card = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: 14px; 
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  padding: 24px; display: flex; flex-direction: column; gap: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; position: relative; overflow: hidden;
-  border-left: 4px solid ${({ theme }) => theme.colors.section.dark}; /* Dark Green Accent */
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px; 
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  padding: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px;
+  border: 1px solid rgba(30, 144, 255, 0.1); 
+  transition: all 0.3s ease;
+  position: relative; 
+  overflow: hidden;
 
-  &:hover{ 
-    background: white;
-    transform: translateY(-3px); 
-    box-shadow: ${({ theme }) => theme.shadows.md}; 
+  &::before {
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: -100%; 
+    width: 100%; 
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
   }
-
-  @media (max-width: 768px) { padding: 18px; }
+  &:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12); 
+  }
+  &:hover::before { left: 100%; }
 
   @media (max-width: 768px) { padding: 14px; border-radius: 10px; }
   @media (max-width: 480px) { padding: 12px; border-radius: 8px; }
@@ -1221,15 +1255,18 @@ const RouteInfo = styled.div`
 `;
 
 const RouteIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1.3rem;
   flex-shrink: 0;
   
-  svg { width: 100%; height: 100%; }
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 const ArrowIcon = styled.span`
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   margin: 0 6px;
   font-size: 0.85rem;
   display: inline-flex;
@@ -1237,14 +1274,18 @@ const ArrowIcon = styled.span`
 `;
 
 const RouteTxt = styled.div`
-  color: ${({ theme }) => theme.colors.text.primary}; 
-  font-weight: 800; font-size: 1.1rem; line-height: 1.4;
-  flex: 1; min-width: 0;
+  color: #222; 
+  font-weight: 800; 
+  font-size: 1.1rem; 
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
   
-  b { color: ${({ theme }) => theme.colors.primary}; }
+  b {
+    color: #1e90ff;
+  }
   
   @media (max-width: 768px) { font-size: 1rem; }
-  
   @media (max-width: 480px) { font-size: 0.95rem; }
 `;
 
@@ -1285,13 +1326,13 @@ const MetaItem = styled.span`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
   padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid rgba(30, 144, 255, 0.1);
   
   svg {
-    color: ${({ theme }) => theme.colors.primary};
+    color: #1e90ff;
     font-size: 0.85rem;
     flex-shrink: 0;
   }
@@ -1300,7 +1341,7 @@ const MetaItem = styled.span`
 const MetaIcon = styled.span`
   display: flex;
   align-items: center;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 0.85rem;
 `;
 
@@ -1319,7 +1360,7 @@ const Button = styled.button`
   font-weight: 800; 
   font-size: 0.95rem; 
   cursor: pointer;
-  background: ${({ theme }) => theme.colors.backgroundAlt}; 
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); 
   color: #005bbb; 
   border: 1px solid #cfe1ff;
   transition: all 0.3s ease; 
@@ -1335,7 +1376,7 @@ const Button = styled.button`
   }
 
   &:hover:not(:disabled) { 
-    background: ${({ theme }) => theme.colors.backgroundAlt}; 
+    background: linear-gradient(135deg, #e6f0ff 0%, #d6ebff 100%); 
     transform: translateY(-2px); 
     box-shadow: 0 4px 15px rgba(0, 91, 187, 0.25); 
   }
@@ -1364,20 +1405,20 @@ const Button = styled.button`
 `;
 
 const Primary = styled(Button)`
-  background: ${({ theme }) => theme.colors.primaryGradient}; 
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); 
   color: #fff; 
   border: none;
   box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
   
   &:hover:not(:disabled) { 
-    background: ${({ theme }) => theme.colors.palette.tomThumb}; 
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%); 
     box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4); 
   }
 `;
 
 const Err = styled.div`
   color: #b01212; 
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
   padding: 10px 14px; 
   border-radius: 12px; 
   margin: 10px 0; 
@@ -1426,7 +1467,7 @@ const InputWrapper = styled.div`
 const InputIcon = styled.div`
   position: absolute;
   left: 14px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1rem;
   z-index: 1;
   pointer-events: none;
@@ -1447,7 +1488,7 @@ const SmallInput = styled.input`
   font-size: 15px;
   
   &:focus { 
-    border-color: ${({ theme }) => theme.colors.primary}; 
+    border-color: #1e90ff; 
     background-color: #fff; 
     box-shadow: 0 0 0 3px rgba(30,144,255,.1); 
     outline: none;
@@ -1467,7 +1508,7 @@ const SettingsGrid = styled.div`
 `;
 
 const ToggleRow = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt}; 
+  background: linear-gradient(135deg, #f7f9fc 0%, #e9ecef 100%); 
   border: 1px solid rgba(0,0,0,.05);
   border-radius: 10px; 
   padding: 12px; 
@@ -1493,7 +1534,7 @@ const SuccessBanner = styled.div`
   padding: 10px 14px; 
   border-radius: 10px; 
   color: #18794e;
-  background: ${({ theme }) => theme.colors.palette.surfCrest}; 
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%); 
   border: 1px solid #bfe3cf; 
   font-weight: 700; 
   text-align: center;
@@ -1506,7 +1547,7 @@ const OTPRow = styled.div`
   flex-wrap: wrap; 
   margin-top: 8px;
   padding: 12px 16px; 
-  background: ${({ theme }) => theme.colors.backgroundAlt}; 
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); 
   border-radius: 10px;
   border: 1px solid rgba(30, 144, 255, 0.15);
   
@@ -1530,7 +1571,7 @@ const Code = styled.span`
   border: 1px solid rgba(30, 144, 255, 0.2); 
   border-radius: 8px; 
   padding: 6px 12px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1.1rem;
   letter-spacing: 2px;
   
@@ -1543,7 +1584,7 @@ const CopyBtn = styled.button`
   padding: 6px 14px; 
   border: none; 
   border-radius: 8px; 
-  background: ${({ theme }) => theme.colors.primaryGradient};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
   color: white; 
   border: 1px solid transparent; 
   font-weight: 800; 
@@ -1560,7 +1601,7 @@ const CopyBtn = styled.button`
   }
   
   &:hover { 
-    background: ${({ theme }) => theme.colors.palette.tomThumb}; 
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%); 
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(30, 144, 255, 0.4);
   }
@@ -1573,7 +1614,7 @@ const CopyBtn = styled.button`
 
 const Used = styled.span`
   color: #18794e; 
-  background: ${({ theme }) => theme.colors.palette.surfCrest};
+  background: linear-gradient(135deg, #e6f4ea 0%, #d4edda 100%);
   border: 1px solid #bfe3cf; 
   font-weight: 800; 
   padding: 6px 12px; 
@@ -1607,7 +1648,7 @@ const Modal = styled.div`
 `;
 
 const ModalCard = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt}; 
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); 
   border-radius: 20px; 
   padding: 28px; 
   min-width: 300px;
@@ -1640,7 +1681,7 @@ const Btn = styled.button`
   padding: 8px 12px; 
   border-radius: 10px; 
   border: 1px solid #ddd; 
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #f7f9fc 0%, #e9ecef 100%);
   transition: all 0.2s ease; 
   cursor: pointer;
   font-weight: 600;
@@ -1649,7 +1690,7 @@ const Btn = styled.button`
   gap: 6px;
   
   &:hover { 
-    background: ${({ theme }) => theme.colors.backgroundAlt}; 
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%); 
     transform: translateY(-1px); 
   }
   
@@ -1671,9 +1712,9 @@ const Input = styled.input`
   transition: all 0.3s ease;
   
   &:focus { 
-    border-color: ${({ theme }) => theme.colors.primary}; 
+    border-color: #1e90ff; 
     background-color: #fff; 
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover}; 
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1); 
     outline: none; 
   }
   
@@ -1698,7 +1739,7 @@ const ReviewRoute = styled.div`
   align-items: center;
   gap: 10px;
   padding: 12px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
   border-radius: 12px;
   border: 1px solid rgba(30, 144, 255, 0.15);
   font-size: 0.95rem;
@@ -1706,12 +1747,12 @@ const ReviewRoute = styled.div`
   color: #333;
   
   svg {
-    color: ${({ theme }) => theme.colors.primary};
+    color: #1e90ff;
     font-size: 1rem;
   }
   
   b {
-    color: ${({ theme }) => theme.colors.primary};
+    color: #1e90ff;
   }
 `;
 
@@ -1760,12 +1801,12 @@ const StarButton = styled.button`
 
 const RatingText = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-weight: 700;
   font-size: 0.95rem;
   text-align: center;
   padding: 8px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #e8f4ff 0%, #d6ebff 100%);
   border-radius: 8px;
 `;
 
@@ -1793,7 +1834,7 @@ const CommentTextArea = styled.textarea`
   min-height: 100px;
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #1e90ff;
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
     outline: none;

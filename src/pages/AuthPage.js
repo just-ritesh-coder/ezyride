@@ -14,8 +14,22 @@ import {
   FaSpinner
 } from "react-icons/fa";
 import { API_BASE_URL } from "../utils/config";
-
 import csmtImage from "../assets/csmt_img.png";
+
+/* Keyframes */
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const typeWriter = keyframes`
+  from { width: 0; }
+  to { width: 100%; }
+`;
+
+const blink = keyframes`
+  50% { border-color: transparent; }
+`;
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -58,208 +72,213 @@ const AuthPage = () => {
     setError("");
     setLoading(true);
 
-    if (isLogin) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        });
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+    const body = isLogin
+      ? { email: formData.email, password: formData.password }
+      : formData;
 
-        const data = await response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-        if (!response.ok) {
-          setError(data.message || "Login failed");
-          setLoading(false);
-          return;
-        }
+      const data = await response.json();
 
-        login(data.token);
-        navigate("/home");
-      } catch (err) {
-        setError("Login failed: " + err.message);
-        setLoading(false);
-      }
-    } else {
-      if (!formData.fullName || !formData.phone) {
-        setError("Please fill in all required fields.");
+      if (!response.ok) {
+        setError(data.message || (isLogin ? "Login failed" : "Signup failed"));
         setLoading(false);
         return;
       }
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setError(data.message || "Signup failed");
-          setLoading(false);
-          return;
-        }
-
-        login(data.token);
-        navigate("/home");
-      } catch (err) {
-        setError("Signup failed: " + err.message);
-        setLoading(false);
-      }
+      login(data.token);
+      navigate("/home");
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+      setLoading(false);
     }
   };
 
   return (
-    <Container>
-      <LeftPane>
-        <Title>Share Your Ride</Title>
-        <Tagline>
-          Connecting riders and drivers, saving money & the environment together.
-        </Tagline>
-        <Image
-          src={csmtImage}
-          alt="Chhatrapati Shivaji Maharaj Terminus (CSMT)"
-        />
-      </LeftPane>
+    <PageContainer>
+      <BackgroundImage />
+      <ContentWrapper>
+        <GlassCard>
+          <SplitLayout>
+            <InfoSide>
+              <CSMTBackground src={csmtImage} alt="CSMT" />
+              <Logo>EzyRide</Logo>
+              <HeroTitle>
+                <GradientText>Daily</GradientText> Commuting Made Simple.
+              </HeroTitle>
+              <HeroText>
+                "Better for your wallet. Better for the planet. Better for you." The premier carpooling network designed specifically for the modern workforce.
+              </HeroText>
+              <FeatureList>
+                <FeatureItem>
+                  <FeatureIcon><FaCar /></FeatureIcon>
+                  <FeatureText>Premium Rides</FeatureText>
+                </FeatureItem>
+                <FeatureItem>
+                  <FeatureIcon><FaHeart /></FeatureIcon>
+                  <FeatureText>Smart Travel</FeatureText>
+                </FeatureItem>
+              </FeatureList>
+            </InfoSide>
 
-      <RightPane>
-        <FormTitle>{isLogin ? "Welcome Back" : "Create Account"}</FormTitle>
-        <FormSubtitle>{isLogin ? "Login to continue your journey" : "Join EzyRide today"}</FormSubtitle>
-        {error && <ErrorMessage><FaExclamationTriangle /> {error}</ErrorMessage>}
-        <Form onSubmit={handleSubmit}>
-          {!isLogin && (
-            <>
-              <InputWrapper>
-                <InputIcon><FaUser /></InputIcon>
-                <Input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="Full Name"
-                  required={!isLogin}
-                />
-              </InputWrapper>
+            <FormSide>
+              <FormHeader>
+                <FormTitle>{isLogin ? "Welcome Back" : "Join Exclusive"}</FormTitle>
+                <FormSubtitle>{isLogin ? "Enter your credentials to access" : "Create your premium account"}</FormSubtitle>
+              </FormHeader>
 
-              <InputWrapper>
-                <InputIcon><FaPhone /></InputIcon>
-                <Input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Phone Number"
-                  required={!isLogin}
-                />
-              </InputWrapper>
-            </>
-          )}
+              {error && (
+                <ErrorBanner>
+                  <FaExclamationTriangle /> {error}
+                </ErrorBanner>
+              )}
 
-          <InputWrapper>
-            <InputIcon><FaEnvelope /></InputIcon>
-            <Input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email Address"
-              required
-            />
-          </InputWrapper>
+              <StyledForm onSubmit={handleSubmit}>
+                {!isLogin && (
+                  <>
+                    <InputGroup>
+                      <Input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        placeholder="Full Name"
+                        required={!isLogin}
+                      />
+                      <InputIcon><FaUser /></InputIcon>
+                    </InputGroup>
+                    <InputGroup>
+                      <Input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        placeholder="Phone Number"
+                        required={!isLogin}
+                      />
+                      <InputIcon><FaPhone /></InputIcon>
+                    </InputGroup>
+                  </>
+                )}
 
-          <InputWrapper>
-            <InputIcon><FaLock /></InputIcon>
-            <Input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Password"
-              required
-            />
-          </InputWrapper>
+                <InputGroup>
+                  <Input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email Address"
+                    required
+                  />
+                  <InputIcon><FaEnvelope /></InputIcon>
+                </InputGroup>
 
-          {isLogin && (
-            <ForgotPasswordLink>
-              <Link to="/forgot-password">Forgot password?</Link>
-            </ForgotPasswordLink>
-          )}
+                <InputGroup>
+                  <Input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Password"
+                    required
+                  />
+                  <InputIcon><FaLock /></InputIcon>
+                </InputGroup>
 
-          {!isLogin && (
-            <>
-              <InputWrapper>
-                <InputIcon><FaCar /></InputIcon>
-                <Input
-                  type="text"
-                  name="vehicle"
-                  value={formData.vehicle}
-                  onChange={handleChange}
-                  placeholder="Vehicle Info (optional)"
-                />
-              </InputWrapper>
+                {isLogin && (
+                  <ForgotPasswordLink to="/forgot-password">
+                    Forgot Password?
+                  </ForgotPasswordLink>
+                )}
 
-              <InputWrapper>
-                <InputIcon><FaHeart /></InputIcon>
-                <Input
-                  type="text"
-                  name="preferences"
-                  value={formData.preferences}
-                  onChange={handleChange}
-                  placeholder="Preferences (optional)"
-                />
-              </InputWrapper>
-            </>
-          )}
+                {!isLogin && (
+                  <>
+                    <InputGroup>
+                      <Input
+                        type="text"
+                        name="vehicle"
+                        value={formData.vehicle}
+                        onChange={handleChange}
+                        placeholder="Vehicle Details (Optional)"
+                      />
+                      <InputIcon><FaCar /></InputIcon>
+                    </InputGroup>
+                  </>
+                )}
 
-          <SubmitButton type="submit" disabled={loading}>
-            {loading ? (
-              <>
-                <Spinner /> {isLogin ? "Logging in..." : "Signing up..."}
-              </>
-            ) : (
-              <>
-                {isLogin ? "Login" : "Sign Up"} <FaArrowRight />
-              </>
-            )}
-          </SubmitButton>
-        </Form>
+                <SubmitButton type="submit" disabled={loading}>
+                  {loading ? <FaSpinner className="spin" /> : <FaArrowRight />}
+                  {isLogin ? "Sign In" : "Get Started"}
+                </SubmitButton>
+              </StyledForm>
 
-        <ToggleText>
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <ToggleButton onClick={toggleForm}>
-            {isLogin ? "Sign up here" : "Log in here"}
-          </ToggleButton>
-        </ToggleText>
-      </RightPane>
-    </Container>
+              <ToggleContainer>
+                {isLogin ? "New to EzyRide?" : "Already a member?"}{" "}
+                <ToggleBtn onClick={toggleForm}>
+                  {isLogin ? "Apply for access" : "Sign In"}
+                </ToggleBtn>
+              </ToggleContainer>
+            </FormSide>
+          </SplitLayout>
+        </GlassCard>
+      </ContentWrapper>
+    </PageContainer>
   );
 };
 
 /* Styled Components */
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+const PageContainer = styled.div`
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-color: ${({ theme }) => theme.colors.background};
+`;
+
+const BackgroundImage = styled.div`
+  display: none; /* Remove background artifacts for clean white look */
+`;
+
+const ContentWrapper = styled.div`
+  width: 100%;
+  max-width: 1100px;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  
+  @media (max-width: 768px) {
+    padding: 0;
+    min-height: 100vh;
   }
 `;
 
+const GlassCard = styled.div`
+  background: ${({ theme }) => theme.colors.section.dark}; /* Dark Green Block */
+  border-radius: ${({ theme }) => theme.borders.radius.lg};
+  box-shadow: ${({ theme }) => theme.shadows.glass};
+  overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  
+  @media (max-width: 768px) {
+    border-radius: 0;
+    min-height: 100vh;
+    border: none;
+  }
+`;
 
-
-const Container = styled.div`
+const SplitLayout = styled.div`
   display: flex;
-  min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  min-height: 650px;
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -267,301 +286,242 @@ const Container = styled.div`
   }
 `;
 
-const LeftPane = styled.div`
+const InfoSide = styled.div`
   flex: 1;
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
-  color: white;
-  padding: 60px 40px;
+  padding: 60px;
+  /* Keep dark green base */
+  background: ${({ theme }) => theme.colors.section.dark};
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
-  gap: 20px;
   position: relative;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const FormSide = styled.div`
+  flex: 1;
+  padding: 60px;
+  /* Slightly lighter dark green or just dark green */
+  background: ${({ theme }) => theme.colors.section.dark};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid rgba(255,255,255,0.05);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const CSMTBackground = styled.img`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70%; /* Increased height coverage */
+  object-fit: cover;
+  opacity: 0.5; /* Increased visibility per user request */
+  mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+  z-index: 0;
+`;
+
+const Logo = styled.div`
+  font-size: 2rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.primary}; /* Mint Green */
+  margin-bottom: 40px;
+  letter-spacing: -0.02em;
+`;
+
+const HeroTitle = styled.h1`
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  color: ${({ theme }) => theme.colors.text.inverse}; /* White Text */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Added contrast */
+  
+  /* Animation Effect */
+  animation: ${fadeInUp} 0.8s ease-out forwards;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const GradientText = styled.span`
+  background: linear-gradient(135deg, #ffffff 0%, #d2e9d5 100%); /* White to Surf Crest */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Glow effect */
+  display: inline-block;
+  
+  /* Typewriterish reveal */
   overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    pointer-events: none;
-  }
-  
-  @media (max-width: 768px) {
-    padding: 40px 20px;
-    text-align: center;
-    align-items: center;
-    min-height: 40vh;
-    gap: 15px;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 30px 15px;
-    min-height: 35vh;
-    gap: 12px;
-  }
+  white-space: nowrap;
+  border-right: 3px solid #ffffff; /* White cursor */
+  width: 0;
+  animation: 
+    ${typeWriter} 1s steps(20, end) 0.5s forwards,
+    ${blink} 0.75s step-end infinite;
 `;
 
-const Title = styled.h1`
-  font-weight: 700;
-  font-size: 3rem;
-  margin: 0;
-  line-height: 1.2;
-  position: relative;
-  z-index: 1;
-  
-  @media (max-width: 768px) {
-    font-size: 2.2rem;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 1.8rem;
-  }
-`;
-
-const Tagline = styled.p`
-  font-size: 1.2rem;
+const HeroText = styled.p`
+  color: ${({ theme }) => theme.colors.text.inverse}; /* Pure white for better contrast */
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 40px;
   max-width: 400px;
-  margin: 0;
-  line-height: 1.5;
-  opacity: 0.95;
-  position: relative;
-  z-index: 1;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5); /* Added contrast */
+  font-weight: 500;
+  opacity: 0;
+  
+  /* Staggered Fade In */
+  animation: ${fadeInUp} 0.8s ease-out 1.5s forwards;
   
   @media (max-width: 768px) {
-    font-size: 1rem;
-    max-width: 100%;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
+    margin: 0 auto;
   }
 `;
 
-const Image = styled.img`
-  margin-top: 20px;
-  border-radius: 12px;
-  max-width: 100%;
-  max-height: 320px;
-  width: auto;
-  height: auto;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  display: block;
-  position: relative;
-  z-index: 1;
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-  
-  @media (max-width: 768px) {
-    max-height: 200px;
-    margin-top: 15px;
-    border-radius: 8px;
-  }
-  
-  @media (max-width: 480px) {
-    max-height: 150px;
-    margin-top: 10px;
-  }
-`;
-
-const RightPane = styled.div`
-  flex: 1;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  padding: 60px 40px;
+const FeatureList = styled.div`
   display: flex;
-  flex-direction: column;
+  gap: 30px;
+`;
+
+const FeatureItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const FeatureIcon = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff; /* White background for max contrast */
+  display: flex;
+  align-items: center;
   justify-content: center;
-  max-width: 480px;
-  margin: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-  border-radius: 20px;
-  position: relative;
-  animation: ${fadeIn} 0.6s ease-out;
-  
-  @media (max-width: 768px) {
-    padding: 40px 24px;
-    max-width: 100%;
-    margin: 0;
-    border-radius: 0;
-    box-shadow: none;
-    flex: 1;
-    min-height: 60vh;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 30px 20px;
-    min-height: 65vh;
-  }
+  color: ${({ theme }) => theme.colors.primary}; /* Dark Green Icon */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-size: 1.1rem;
+`;
+
+const FeatureText = styled.span`
+  color: #ffffff;
+  font-weight: 700; /* Bolder */
+  font-size: 1.05rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Shadow for legibility */
+`;
+
+const FormHeader = styled.div`
+  margin-bottom: 40px;
+  text-align: left;
 `;
 
 const FormTitle = styled.h2`
+  font-size: 2rem;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 2.4rem;
-  font-weight: 900;
-  text-align: center;
-  
-  @media (max-width: 768px) {
-    font-size: 2rem;
-    margin-bottom: 6px;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 1.8rem;
-    margin-bottom: 5px;
-  }
+  color: ${({ theme }) => theme.colors.text.inverse};
 `;
 
 const FormSubtitle = styled.p`
-  margin-bottom: 32px;
-  color: #666;
-  font-size: 1rem;
-  text-align: center;
-  font-weight: 500;
-  
-  @media (max-width: 480px) {
-    font-size: 0.9rem;
-    margin-bottom: 24px;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
-  color: #d9534f;
-  padding: 14px 18px;
-  border-radius: 12px;
-  margin-bottom: 24px;
+  color: ${({ theme }) => theme.colors.text.inverseSecondary};
   font-size: 0.95rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid rgba(217, 83, 79, 0.2);
-  animation: ${fadeIn} 0.3s ease-out;
-  
-  svg {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 12px 16px;
-    font-size: 0.9rem;
-  }
 `;
 
-const Form = styled.form`
+const StyledForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 20px;
 `;
 
-
-
-const InputWrapper = styled.div`
+const InputGroup = styled.div`
   position: relative;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 16px 20px 16px 50px;
+  background: rgba(255, 255, 255, 0.15); /* Increased visibility */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  color: #ffffff; /* Explicit white for safety */
+  font-weight: 600; /* Bolder text */
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.text.inverse}; /* Full White */
+    opacity: 0.9; /* High opacity */
+  }
+  
+  &:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(197, 237, 203, 0.1);
+  }
 `;
 
 const InputIcon = styled.div`
   position: absolute;
-  left: 16px;
-  color: #1e90ff;
-  font-size: 1.1rem;
-  z-index: 1;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${({ theme }) => theme.colors.text.secondary};
+  pointer-events: none;
+`;
+
+const ForgotPasswordLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.text.inverseSecondary}; /* Light Green */
+  font-size: 0.9rem;
+  text-align: right;
+  margin-top: -10px;
+  opacity: 0.8;
+  
+  &:hover {
+    color: #ffffff;
+    opacity: 1;
+    text-decoration: underline;
+  }
+`;
+
+const SubmitButton = styled.button`
+  background: ${({ theme }) => theme.colors.accentBright}; /* Surf Crest (Light) */
+  color: ${({ theme }) => theme.colors.primary}; /* Tom Thumb (Dark Text) */
+  padding: 16px;
+  border: none;
+  border-radius: ${({ theme }) => theme.borders.radius.full};
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  pointer-events: none;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(197, 237, 203, 0.2);
   
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const Input = styled.input`
-  padding: 14px 16px 14px 48px;
-  width: 100%;
-  border-radius: 12px;
-  border: 2px solid #e1e5e9;
-  font-size: 16px;
-  outline: none;
-  transition: all 0.3s ease;
-  background-color: #fafbfc;
-  min-height: 52px;
-  font-family: 'Poppins', sans-serif;
-  
-  &:focus {
-    border-color: #1e90ff;
-    background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
-    transform: translateY(-1px);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(197, 237, 203, 0.3);
   }
   
-  &:hover:not(:focus) {
-    border-color: #b8c5d1;
-    background-color: #fff;
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
   }
   
-  &::placeholder {
-    color: #9ca3af;
+  .spin {
+    animation: spin 1s linear infinite;
   }
-  
-  @media (max-width: 480px) {
-    padding: 12px 14px 12px 44px;
-    margin-bottom: 16px;
-    font-size: 16px;
-    min-height: 48px;
-    border-radius: 10px;
-  }
-`;
-
-const ForgotPasswordLink = styled.div`
-  margin-bottom: 16px;
-  text-align: right;
-  
-  a {
-    color: #1e90ff;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      text-decoration: underline;
-      background-color: rgba(30, 144, 255, 0.1);
-    }
-    
-    &:active {
-      transform: translateY(1px);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    margin-bottom: 12px;
-    
-    a {
-      font-size: 13px;
-    }
-  }
-`;
-
-const Spinner = styled(FaSpinner)`
-  animation: spin 1s linear infinite;
   
   @keyframes spin {
     from { transform: rotate(0deg); }
@@ -569,106 +529,38 @@ const Spinner = styled(FaSpinner)`
   }
 `;
 
-const SubmitButton = styled.button`
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 16px;
-  border-radius: 12px;
-  border: none;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  transition: all 0.3s ease;
-  min-height: 52px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.6s;
-  }
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(30, 144, 255, 0.4);
-  }
-  
-  &:hover:not(:disabled)::before {
-    left: 100%;
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
-  }
-  
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-  
-  svg {
-    font-size: 0.9rem;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 14px 20px;
-    font-size: 15px;
-    min-height: 48px;
-    border-radius: 10px;
-  }
-`;
-
-const ToggleText = styled.p`
-  margin-top: 24px;
-  font-size: 14px;
-  color: #555;
+const ToggleContainer = styled.div`
+  margin-top: 30px;
   text-align: center;
-  line-height: 1.5;
-  
-  @media (max-width: 480px) {
-    margin-top: 20px;
-    font-size: 13px;
-  }
+  color: ${({ theme }) => theme.colors.text.inverseSecondary}; /* Light text */
+  font-size: 0.95rem;
 `;
 
-const ToggleButton = styled.button`
+const ToggleBtn = styled.button`
   background: none;
   border: none;
-  color: #1e90ff;
-  cursor: pointer;
+  color: #ffffff; /* White emphasis */
   font-weight: 600;
-  font-size: 14px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  margin-left: 4px;
+  cursor: pointer;
+  padding: 0 5px;
   
   &:hover {
-    background-color: rgba(30, 144, 255, 0.1);
+    color: ${({ theme }) => theme.colors.primary};
     text-decoration: underline;
   }
-  
-  &:active {
-    transform: translateY(1px);
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 13px;
-    padding: 3px 6px;
-  }
+`;
+
+const ErrorBanner = styled.div`
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  padding: 12px;
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
 `;
 
 export default AuthPage;

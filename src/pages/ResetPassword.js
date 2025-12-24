@@ -130,18 +130,19 @@ const Wrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+  background: ${({ theme }) => theme.colors.background};
   padding: 20px;
 `;
 
 const Card = styled.div`
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: ${({ theme }) => theme.colors.section.dark}; /* Dark Section Card */
   padding: 48px 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-radius: ${({ theme }) => theme.borders.radius.lg};
+  box-shadow: ${({ theme }) => theme.shadows.glass};
   width: 100%;
   max-width: 450px;
   animation: ${fadeIn} 0.6s ease-out;
+  border: 1px solid ${({ theme }) => theme.colors.glass.border};
   
   @media (max-width: 480px) {
     padding: 36px 24px;
@@ -153,7 +154,7 @@ const BackLink = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #1e90ff;
+  color: ${({ theme }) => theme.colors.text.accentBright};
   text-decoration: none;
   font-weight: 600;
   font-size: 0.9rem;
@@ -161,7 +162,7 @@ const BackLink = styled(Link)`
   transition: all 0.3s ease;
   
   &:hover {
-    color: #0066cc;
+    color: ${({ theme }) => theme.colors.primary};
     transform: translateX(-4px);
   }
   
@@ -173,15 +174,15 @@ const BackLink = styled(Link)`
 const IconWrapper = styled.div`
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  background: ${({ theme }) => theme.colors.primary};
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 24px;
-  color: white;
+  color: ${({ theme }) => theme.colors.text.inverse};
   font-size: 2rem;
-  box-shadow: 0 8px 24px rgba(30, 144, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(43, 73, 44, 0.3);
   
   @media (max-width: 480px) {
     width: 70px;
@@ -193,10 +194,7 @@ const IconWrapper = styled.div`
 
 const Title = styled.h2`
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: ${({ theme }) => theme.colors.text.inverse};
   font-weight: 900;
   text-align: center;
   font-size: 2rem;
@@ -207,7 +205,7 @@ const Title = styled.h2`
 `;
 
 const Subtitle = styled.p`
-  color: #666;
+  color: ${({ theme }) => theme.colors.text.inverseSecondary};
   text-align: center;
   margin-bottom: 32px;
   font-size: 0.95rem;
@@ -219,8 +217,6 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
-
-
 const InputWrapper = styled.div`
   position: relative;
   margin-bottom: 20px;
@@ -231,7 +227,7 @@ const InputIcon = styled.div`
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #1e90ff;
+  color: ${({ theme }) => theme.colors.accentBright};
   font-size: 1.1rem;
   z-index: 1;
 `;
@@ -239,22 +235,24 @@ const InputIcon = styled.div`
 const Input = styled.input`
   padding: 14px 16px 14px 48px;
   width: 100%;
-  border-radius: 12px;
-  border: 2px solid #e1e5e9;
+  border-radius: ${({ theme }) => theme.borders.radius.sm};
+  border: 1px solid ${({ theme }) => theme.colors.glass.border};
   font-size: 16px;
   outline: none;
   transition: all 0.3s ease;
-  background-color: #fafbfc;
+  background-color: rgba(255, 255, 255, 0.05); /* Glass input */
+  color: ${({ theme }) => theme.colors.text.inverse};
   min-height: 52px;
   
   &:focus {
-    border-color: #1e90ff;
-    background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
+    border-color: ${({ theme }) => theme.colors.primary};
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 4px ${({ theme }) => theme.colors.surfaceHover};
   }
   
   &::placeholder {
-    color: #9ca3af;
+    color: ${({ theme }) => theme.colors.text.inverseSecondary};
+    opacity: 0.5;
   }
 `;
 
@@ -265,25 +263,25 @@ const Spinner = styled(FaSpinner)`
 const Button = styled.button`
   padding: 16px 24px;
   width: 100%;
-  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
-  color: #fff;
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.text.inverse};
   border: none;
-  border-radius: 12px;
+  border-radius: ${({ theme }) => theme.borders.radius.lg};
   font-weight: 700;
   font-size: 16px;
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   transition: all 0.3s ease;
   min-height: 52px;
-  box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
+  box-shadow: ${({ theme }) => theme.shadows.glass};
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    background: ${({ theme }) => theme.colors.secondary};
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(30, 144, 255, 0.4);
+    box-shadow: ${({ theme }) => theme.shadows.neon};
   }
   
   &:active:not(:disabled) {
@@ -292,6 +290,7 @@ const Button = styled.button`
   
   &:disabled {
     opacity: 0.7;
+    background: ${({ theme }) => theme.colors.glass.border};
   }
   
   svg {
@@ -307,34 +306,34 @@ const Success = styled.div`
 const SuccessIcon = styled.div`
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: ${({ theme }) => theme.colors.primary};
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  color: white;
+  color: ${({ theme }) => theme.colors.text.inverse};
   font-size: 2.5rem;
-  box-shadow: 0 8px 24px rgba(40, 167, 69, 0.3);
+  box-shadow: ${({ theme }) => theme.shadows.glass};
   animation: ${fadeIn} 0.5s ease-out;
 `;
 
 const SuccessTitle = styled.h3`
-  color: #28a745;
+  color: ${({ theme }) => theme.colors.text.inverse};
   font-weight: 800;
   font-size: 1.5rem;
   margin-bottom: 12px;
 `;
 
 const SuccessText = styled.p`
-  color: #666;
+  color: ${({ theme }) => theme.colors.text.inverseSecondary};
   font-size: 1rem;
   line-height: 1.6;
 `;
 
 const ErrorMsg = styled.div`
-  color: #d9534f;
-  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
+  color: ${({ theme }) => theme.colors.error || "#ff6b6b"};
+  background: rgba(239, 68, 68, 0.1);
   padding: 14px 18px;
   border-radius: 12px;
   margin-bottom: 20px;
@@ -343,7 +342,7 @@ const ErrorMsg = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(217, 83, 79, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   
   svg {
     font-size: 1.1rem;

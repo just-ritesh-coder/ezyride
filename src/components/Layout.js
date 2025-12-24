@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Outlet, useNavigate, Link } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import {
   FaHome,
   FaCar,
@@ -32,30 +32,62 @@ const Layout = () => {
     setIsMobileMenuOpen(false);
   };
 
+  /* Scroll Detection Logic */
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scroll Down -> Hide
+        setVisible(false);
+      } else {
+        // Scroll Up -> Show
+        setVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   return (
     <>
-      <NavBar>
+      <NavBar $visible={visible}>
         <Logo to="/home">EzyRide</Logo>
 
         {/* Desktop Navigation */}
         <NavLinks>
-          <StyledNavLink to="" end onClick={closeMobileMenu}>
-            Home
+          <StyledNavLink to="/home" end onClick={closeMobileMenu}>
+            <FaHome /> Home
           </StyledNavLink>
-          <StyledNavLink to="post-ride" onClick={closeMobileMenu}>Post Ride</StyledNavLink>
-          <StyledNavLink to="search-rides" onClick={closeMobileMenu}>Search Ride</StyledNavLink>
-          <StyledNavLink to="profile" onClick={closeMobileMenu}>Profile</StyledNavLink>
-          <StyledNavLink to="my-posted-rides" onClick={closeMobileMenu}>My Posted Rides</StyledNavLink>
-          <StyledNavLink to="/home/passenger-center" onClick={closeMobileMenu}>Passenger Center</StyledNavLink>
-          <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
+          <StyledNavLink to="post-ride" onClick={closeMobileMenu}>
+            <FaCar /> Post Ride
+          </StyledNavLink>
+          <StyledNavLink to="search-rides" onClick={closeMobileMenu}>
+            <FaSearch /> Search
+          </StyledNavLink>
+          <StyledNavLink to="passenger-center" onClick={closeMobileMenu}>
+            <FaTicketAlt /> Bookings
+          </StyledNavLink>
+          <StyledNavLink to="my-posted-rides" onClick={closeMobileMenu}>
+            <FaListAlt /> My Rides
+          </StyledNavLink>
+          <ProfileLink to="profile" onClick={closeMobileMenu}>
+            <FaUser />
+          </ProfileLink>
+          <LogoutButton onClick={handleLogout} title="Logout">
+            <FaSignOutAlt />
+          </LogoutButton>
         </NavLinks>
 
         {/* Mobile Menu Button */}
         <MobileMenuButton
           onClick={toggleMobileMenu}
           isOpen={isMobileMenuOpen}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isMobileMenuOpen}
         >
           <span></span>
           <span></span>
@@ -68,8 +100,6 @@ const Layout = () => {
         <MobileMenu
           isOpen={isMobileMenuOpen}
           onClick={(e) => e.stopPropagation()}
-          role="navigation"
-          aria-label="Mobile navigation menu"
         >
           <MobileMenuHeader>
             <MobileLogo>EzyRide</MobileLogo>
@@ -77,7 +107,7 @@ const Layout = () => {
           </MobileMenuHeader>
 
           <MobileNavLinks>
-            <MobileNavLink to="" end onClick={closeMobileMenu}>
+            <MobileNavLink to="/home" end onClick={closeMobileMenu}>
               <MobileNavIcon><FaHome /></MobileNavIcon> Home
             </MobileNavLink>
             <MobileNavLink to="post-ride" onClick={closeMobileMenu}>
@@ -86,14 +116,14 @@ const Layout = () => {
             <MobileNavLink to="search-rides" onClick={closeMobileMenu}>
               <MobileNavIcon><FaSearch /></MobileNavIcon> Search Ride
             </MobileNavLink>
-            <MobileNavLink to="profile" onClick={closeMobileMenu}>
-              <MobileNavIcon><FaUser /></MobileNavIcon> Profile
+            <MobileNavLink to="passenger-center" onClick={closeMobileMenu}>
+              <MobileNavIcon><FaTicketAlt /></MobileNavIcon> Passenger Center
             </MobileNavLink>
             <MobileNavLink to="my-posted-rides" onClick={closeMobileMenu}>
               <MobileNavIcon><FaListAlt /></MobileNavIcon> My Posted Rides
             </MobileNavLink>
-            <MobileNavLink to="/home/passenger-center" onClick={closeMobileMenu}>
-              <MobileNavIcon><FaTicketAlt /></MobileNavIcon> Passenger Center
+            <MobileNavLink to="profile" onClick={closeMobileMenu}>
+              <MobileNavIcon><FaUser /></MobileNavIcon> Profile
             </MobileNavLink>
             <MobileLogoutButton onClick={handleLogout}>
               <MobileNavIcon><FaSignOutAlt /></MobileNavIcon> Logout
@@ -106,7 +136,9 @@ const Layout = () => {
         <Outlet />
       </MainContent>
 
-      <Footer>© 2025 Share Your Ride. All rights reserved.</Footer>
+      <Footer>
+        <p>© 2025 EzyRide. Connected Mobility.</p>
+      </Footer>
 
       {/* Floating SOS button */}
       <SOSFloating />
@@ -147,163 +179,62 @@ const SOSFloating = () => {
   };
 
   return (
-    <SOSButton
-      onClick={trigger}
-      disabled={sending}
-      title="Send SOS to emergency contacts"
-    >
+    <SOSButton onClick={trigger} disabled={sending}>
       <SOSIcon>
         {sending ? <FaSpinner /> : <FaExclamationTriangle />}
       </SOSIcon>
-      <SOSText>{sending ? "Sending..." : "SOS"}</SOSText>
+      <SOSText>{sending ? "SENDING" : "SOS"}</SOSText>
     </SOSButton>
   );
 };
 
-const SOSButton = styled.button`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  background: linear-gradient(135deg, #ff3b30 0%, #e84118 100%);
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  padding: 12px 20px;
-  box-shadow: 0 8px 24px rgba(255, 59, 48, 0.4);
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  min-width: 80px;
-  justify-content: center;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(255, 59, 48, 0.5);
-    background: linear-gradient(135deg, #e84118 0%, #c23616 100%);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-  
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-  }
-  
-  @media (max-width: 768px) {
-    bottom: 15px;
-    right: 15px;
-    padding: 10px 16px;
-    min-width: 70px;
-    font-size: 14px;
-  }
-  
-  @media (max-width: 480px) {
-    bottom: 12px;
-    right: 12px;
-    padding: 8px 14px;
-    min-width: 60px;
-    font-size: 13px;
-    gap: 6px;
-  }
-`;
-
-const SOSIcon = styled.span`
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  svg {
-    width: 100%;
-    height: 100%;
-    ${props => props.sending ? 'animation: spin 1s linear infinite;' : ''}
-  }
-  
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 1rem;
-  }
-`;
-
-const SOSText = styled.span`
-  font-size: 0.9rem;
-  
-  @media (max-width: 480px) {
-    font-size: 0.8rem;
-  }
-`;
-
-const gradientAnim = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
+/* Styled Components */
 
 const NavBar = styled.nav`
-  background: linear-gradient(270deg, #1e90ff, #005bbb, #3a8dff, #1e90ff);
-  background-size: 600% 600%;
-  animation: ${gradientAnim} 15s ease infinite;
-  padding: 12px 25px;
+  position: sticky;
+  top: 10px;
+  margin: 0 20px;
+  padding: 15px 30px;
+  background: ${({ theme }) => theme.colors.section.dark}; /* Dark pill for visibility */
+  border: 1px solid ${({ theme }) => theme.colors.glass.border};
+  border-radius: ${({ theme }) => theme.borders.radius.full};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  position: sticky;
-  top: 0;
   z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+  transform: ${({ $visible }) => $visible ? 'translateY(0)' : 'translateY(-150%)'};
   
   @media (max-width: 768px) {
-    padding: 10px 20px;
-  }
-  
-  @media (max-width: 480px) {
-    padding: 8px 15px;
+    margin: 0;
+    top: 0;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.glass.border};
+    padding: 15px 20px;
   }
 `;
 
 const Logo = styled(Link)`
-  color: white;
-  font-weight: 900;
-  font-size: 1.8rem;
-  letter-spacing: 2px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.text.inverse};
   text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  
-  &:hover { 
-    transform: scale(1.05); 
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 1.6rem;
-    letter-spacing: 1px;
-  }
-  
-  @media (max-width: 480px) {
-    font-size: 1.4rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.text.inverseSecondary};
   }
 `;
 
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 10px;
   
   @media (max-width: 768px) {
     display: none;
@@ -311,85 +242,85 @@ const NavLinks = styled.div`
 `;
 
 const StyledNavLink = styled(NavLink)`
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-  padding: 8px 14px;
-  border-radius: 20px;
+  color: ${({ theme }) => theme.colors.text.inverseSecondary}; /* Light text on dark navbar */
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 10px 18px;
+  border-radius: ${({ theme }) => theme.borders.radius.full};
   text-decoration: none;
   transition: all 0.3s ease;
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   
-  &.active { 
-    background-color: rgba(255, 255, 255, 0.3); 
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6); 
-  }
-  
-  &:hover:not(.active) { 
-    background-color: rgba(255, 255, 255, 0.15); 
+  &:hover {
+    color: ${({ theme }) => theme.colors.text.dark};
+    background: ${({ theme }) => theme.colors.primary};
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(197, 237, 203, 0.4);
   }
   
-  @media (max-width: 768px) {
-    font-size: 0.9rem;
-    padding: 6px 12px;
+  &.active {
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.text.dark};
+    box-shadow: ${({ theme }) => theme.shadows.neon};
+    font-weight: 700;
   }
+`;
+
+const ProfileLink = styled(StyledNavLink)`
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
 `;
 
 const LogoutButton = styled.button`
-  padding: 8px 18px;
-  background-color: #ff4757;
-  color: white;
-  border: none;
-  font-weight: 700;
-  border-radius: 25px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: ${({ theme }) => theme.colors.error};
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-left: 10px;
   
-  &:hover { 
-    background-color: #e84118; 
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
-  }
-  
-  @media (max-width: 768px) {
-    padding: 6px 14px;
-    font-size: 0.9rem;
+  &:hover {
+    background: ${({ theme }) => theme.colors.error};
+    color: white;
+    transform: rotate(90deg);
   }
 `;
 
-// Mobile Menu Components
 const MobileMenuButton = styled.button`
   display: none;
   flex-direction: column;
   justify-content: space-around;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   background: transparent;
   border: none;
-  cursor: pointer;
   padding: 0;
   z-index: 1001;
   
   span {
     width: 100%;
-    height: 3px;
-    background: white;
+    height: 2px;
+    background: ${({ theme }) => theme.colors.text.inverse};
     border-radius: 2px;
     transition: all 0.3s ease;
-    transform-origin: center;
   }
   
   ${props => props.isOpen && `
-    span:nth-child(1) {
-      transform: rotate(45deg) translate(6px, 6px);
-    }
-    span:nth-child(2) {
-      opacity: 0;
-    }
-    span:nth-child(3) {
-      transform: rotate(-45deg) translate(6px, -6px);
-    }
+    span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    span:nth-child(2) { opacity: 0; }
+    span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
   `}
   
   @media (max-width: 768px) {
@@ -404,9 +335,8 @@ const MobileMenuOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.9); /* Strengthened solid overlay */
   z-index: 999;
-  animation: ${props => props.isOpen ? fadeIn : 'none'} 0.3s ease;
   
   @media (max-width: 768px) {
     display: ${props => props.isOpen ? 'block' : 'none'};
@@ -419,167 +349,146 @@ const MobileMenu = styled.div`
   right: 0;
   width: 280px;
   height: 100%;
-  background: linear-gradient(135deg, #1e90ff 0%, #005bbb 100%);
-  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+  background: ${({ theme }) => theme.colors.background};
+  border-left: 1px solid ${({ theme }) => theme.colors.glass.border};
   transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(100%)'};
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
-  overflow-y: auto;
-  
-  @media (max-width: 480px) {
-    width: 100%;
-  }
+  display: flex;
+  flex-direction: column;
 `;
 
 const MobileMenuHeader = styled.div`
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
 const MobileLogo = styled.div`
+  font-weight: 800;
+  font-size: 1.2rem;
   color: white;
-  font-weight: 900;
-  font-size: 1.5rem;
-  letter-spacing: 1px;
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
   color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
-  }
+  font-size: 1.2rem;
 `;
 
 const MobileNavLinks = styled.div`
   padding: 20px 0;
-`;
-
-const MobileNavIcon = styled.span`
-  font-size: 1.2rem;
-  width: 24px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  
-  svg {
-    width: 100%;
-    height: 100%;
-  }
+  flex-direction: column;
+  gap: 5px;
 `;
 
 const MobileNavLink = styled(NavLink)`
+  padding: 15px 25px;
   display: flex;
   align-items: center;
   gap: 15px;
-  color: white;
-  font-weight: 600;
-  font-size: 1.1rem;
-  padding: 15px 20px;
+  color: ${({ theme }) => theme.colors.palette.tomThumb};
   text-decoration: none;
-  transition: all 0.3s ease;
+  font-weight: 600;
   border-left: 3px solid transparent;
   
   &.active {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-left-color: white;
-  }
-  
-  &:hover:not(.active) {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding-left: 25px;
-    
-    ${MobileNavIcon} {
-      transform: scale(1.1);
-    }
+    background: rgba(255, 255, 255, 0.05);
+    color: ${({ theme }) => theme.colors.primary};
+    border-left-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
+const MobileNavIcon = styled.span`
+  width: 20px;
+  display: flex;
+  justify-content: center;
+`;
+
 const MobileLogoutButton = styled.button`
+  margin-top: auto;
+  padding: 15px 25px;
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.error};
   display: flex;
   align-items: center;
   gap: 15px;
+  font-weight: 600;
   width: 100%;
-  background: #ff4757;
-  color: white;
-  border: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  padding: 15px 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  
-  ${MobileNavIcon} {
-    font-size: 1.2rem;
-    width: 24px;
-  }
-  
-  &:hover {
-    background-color: #e84118;
-    padding-left: 25px;
-    
-    ${MobileNavIcon} {
-      transform: scale(1.1);
-    }
-  }
+  text-align: left;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 `;
 
 const MainContent = styled.main`
   padding: 30px 20px;
-  min-height: calc(100vh - 110px);
-  background-color: #f7f9fc;
-  
-  @media (max-width: 768px) {
-    padding: 20px 15px;
-    min-height: calc(100vh - 100px);
-  }
-  
-  @media (max-width: 480px) {
-    padding: 15px 12px;
-    min-height: calc(100vh - 90px);
-  }
+  min-height: calc(100vh - 80px);
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
 const Footer = styled.footer`
   text-align: center;
-  padding: 15px 10px;
-  background: linear-gradient(135deg, #e3eaf3 0%, #d1d9e6 100%);
-  color: #555;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 30px;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: 0.85rem;
+  margin-top: auto;
+`;
+
+const SOSButton = styled.button`
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 100;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+  font-weight: 700;
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
   
   @media (max-width: 768px) {
-    padding: 12px 8px;
-    font-size: 13px;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+  }
+`;
+
+const SOSIcon = styled.span`
+  display: flex;
+  align-items: center;
+  
+  svg {
+    animation: ${props => props.sending ? 'spin 1s linear infinite' : 'none'};
   }
   
-  @media (max-width: 480px) {
-    padding: 10px 6px;
-    font-size: 12px;
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
+`;
+
+const SOSText = styled.span`
+  letter-spacing: 1px;
 `;
 
 export default Layout;

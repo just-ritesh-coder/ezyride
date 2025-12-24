@@ -46,9 +46,7 @@ const DrawerTitle = styled.div`
   font-weight:900; color:#0b1b2b; display:flex; gap:10px; align-items:center;
 `;
 const RouteBadge = styled.span`
-  background: ${({ theme }) => theme.colors.glass.light}; 
-  color: ${({ theme }) => theme.colors.primary};
-  border: 1px solid ${({ theme }) => theme.colors.primary};
+  background:#e7f0ff; color:#0b74ff; border:1px solid #cfe1ff;
   font-weight:800; padding:2px 8px; border-radius:999px; font-size:.8rem;
 `;
 const CloseX = styled.button`
@@ -420,7 +418,10 @@ const spin = keyframes`
 `;
 
 const Title = styled.h1`
-  color: ${({ theme }) => theme.colors.text.primary};
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: 900; 
   font-size: 2.4rem; 
   margin: 0 0 10px; 
@@ -436,8 +437,8 @@ const Title = styled.h1`
 `;
 
 const Subtitle = styled.p`
-  color: ${({ theme }) => theme.colors.palette.tomThumb}; 
-  font-weight: 600; 
+  color: #666; 
+  font-weight: 500; 
   font-size: 1.05rem; 
   margin: 0;
   
@@ -452,7 +453,7 @@ const Subtitle = styled.p`
 
 const Info = styled.p`
   text-align: center; 
-  color: ${({ theme }) => theme.colors.primary}; 
+  color: #1e90ff; 
   font-weight: 700; 
   padding: 20px;
   background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); 
@@ -501,12 +502,12 @@ const Error = styled.p`
 
 const Empty = styled.p`
   text-align: center; 
-  color: ${({ theme }) => theme.colors.palette.tomThumb}; 
+  color: #666; 
   font-weight: 600; 
   padding: 60px 30px;
-  background: ${({ theme }) => theme.colors.backgroundAlt}; 
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
   border-radius: 16px; 
-  border: 2px dashed ${({ theme }) => theme.colors.glass.border};
+  border: 2px dashed rgba(30, 144, 255, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -515,8 +516,8 @@ const Empty = styled.p`
   
   svg {
     font-size: 3rem;
-    color: ${({ theme }) => theme.colors.palette.tomThumb};
-    opacity: 1;
+    color: #1e90ff;
+    opacity: 0.6;
   }
   
   @media (max-width: 480px) { 
@@ -533,18 +534,18 @@ const List = styled.div`
 `;
 
 const Card = styled.div`
-  background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: 14px; 
-  box-shadow: ${({ theme }) => theme.shadows.sm};
-  padding: 24px; display: flex; flex-direction: column; gap: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; position: relative; overflow: hidden;
-  border-left: 4px solid ${({ theme }) => theme.colors.section.dark}; /* Dark Green Accent */
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 14px; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  padding: 18px; display: flex; flex-direction: column; gap: 12px;
+  border: 1px solid rgba(30, 144, 255, 0.1); transition: all 0.3s ease; position: relative; overflow: hidden;
 
-  &:hover{ 
-    background: white;
-    transform: translateY(-3px); 
-    box-shadow: ${({ theme }) => theme.shadows.md}; 
+  &::before{
+    content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    transition:left .5s;
   }
+  &:hover{ transform: translateY(-3px); box-shadow: 0 16px 35px rgba(0,0,0,.12); }
+  &:hover::before{ left:100%; }
 
   @media (max-width: 768px) { padding: 15px; border-radius: 12px; }
   @media (max-width: 480px) { padding: 12px; border-radius: 10px; }
@@ -572,7 +573,7 @@ const RouteInfo = styled.div`
 `;
 
 const RouteIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1.3rem;
   flex-shrink: 0;
   
@@ -583,7 +584,7 @@ const RouteIcon = styled.div`
 `;
 
 const ArrowIcon = styled.span`
-  color: ${({ theme }) => theme.colors.palette.tomThumb};
+  color: #1e90ff;
   margin: 0 6px;
   font-size: 0.85rem;
   display: inline-flex;
@@ -599,7 +600,7 @@ const RouteText = styled.div`
   min-width: 0;
   
   b {
-    color: ${({ theme }) => theme.colors.primary};
+    color: #1e90ff;
   }
   
   @media (max-width: 768px) { 
@@ -620,9 +621,9 @@ const Chip = styled.span`
   display: flex;
   align-items: center;
   gap: 6px;
-  color: ${({ status, theme }) => status === "posted" ? theme.colors.primary : status === "ongoing" ? "#b76e00" : "#18794e"};
-  background: ${({ status, theme }) => status === "posted" ? theme.colors.backgroundAlt : status === "ongoing" ? "#fff3cd" : "#e6f4ea"};
-  border: 1px solid ${({ status, theme }) => status === "posted" ? theme.colors.glass.border : status === "ongoing" ? "#ffe69c" : "#bfe3cf"};
+  color: ${({ status }) => status === "posted" ? "#0b74ff" : status === "ongoing" ? "#b76e00" : "#18794e"};
+  background: ${({ status }) => status === "posted" ? "#e7f0ff" : status === "ongoing" ? "#fff3cd" : "#e6f4ea"};
+  border: 1px solid ${({ status }) => status === "posted" ? "#cfe1ff" : status === "ongoing" ? "#ffe69c" : "#bfe3cf"};
   
   svg {
     font-size: 0.75rem;
@@ -663,7 +664,7 @@ const MetaItem = styled.span`
   border: 1px solid rgba(30, 144, 255, 0.1);
   
   svg {
-    color: ${({ theme }) => theme.colors.primary};
+    color: #1e90ff;
     font-size: 0.85rem;
     flex-shrink: 0;
   }
@@ -672,7 +673,7 @@ const MetaItem = styled.span`
 const MetaIcon = styled.span`
   display: flex;
   align-items: center;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 0.85rem;
 `;
 
@@ -728,25 +729,25 @@ const Btn = styled.button`
 `;
 
 const Primary = styled(Btn)`
-  background: ${({ theme }) => theme.colors.primary}; 
-  color: ${({ theme }) => theme.colors.text.inverse};
-  box-shadow: 0 4px 15px rgba(43, 73, 44, 0.3);
+  background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); 
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(30,144,255,.3);
   
   &:hover:not(:disabled) { 
-    background: ${({ theme }) => theme.colors.secondary}; 
-    box-shadow: 0 6px 20px rgba(43, 73, 44, 0.4); 
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%); 
+    box-shadow: 0 6px 20px rgba(30,144,255,.4); 
   }
 `;
 
 const Secondary = styled(Btn)`
-  background: ${({ theme }) => theme.colors.glass.medium}; 
-  color: ${({ theme }) => theme.colors.primary}; 
-  border: 1px solid ${({ theme }) => theme.colors.glass.border};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%); 
+  color: #005bbb; 
+  border: 1px solid #cfe1ff;
+  box-shadow: 0 2px 8px rgba(30, 144, 255, 0.15);
   
   &:hover:not(:disabled) { 
-    background: ${({ theme }) => theme.colors.glass.heavy}; 
-    box-shadow: 0 4px 15px rgba(0,0,0, .1); 
+    background: linear-gradient(135deg, #e6f0ff 0%, #d6ebff 100%); 
+    box-shadow: 0 4px 15px rgba(0,91,187,.25); 
   }
 `;
 
@@ -792,7 +793,7 @@ const ModalHeader = styled.div`
 
 const ModalTitle = styled.h3`
   margin: 0; 
-  color: ${({ theme }) => theme.colors.primary}; 
+  color: #1e90ff; 
   font-weight: 900; 
   font-size: 1.4rem;
   display: flex;
@@ -842,7 +843,7 @@ const ActionsRow = styled.div`
 const Input = styled.input`
   padding: 10px 12px; border-radius: 10px; border: 2px solid #e1e5e9; width: 100%; font-weight: 600; letter-spacing: 1px; margin-top: 8px;
   background-color: #fafbfc; transition: all 0.3s ease;
-  &:focus { border-color: ${({ theme }) => theme.colors.primary}; background-color: #fff; box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover}; outline: none; }
+  &:focus { border-color: #1e90ff; background-color: #fff; box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1); outline: none; }
   &::placeholder { color: #9ca3af; }
   @media (max-width: 480px) { padding: 8px 10px; font-size: 16px; } /* Prevents iOS zoom */
 `;
@@ -850,7 +851,7 @@ const Input = styled.input`
 const TextArea = styled.textarea`
   padding: 10px 12px; border-radius: 10px; border: 2px solid #e1e5e9; width: 100%; min-height: 90px; background-color: #fafbfc;
   transition: all 0.3s ease; font-family: inherit; resize: vertical;
-  &:focus { border-color: ${({ theme }) => theme.colors.primary}; background-color: #fff; box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover}; outline: none; }
+  &:focus { border-color: #1e90ff; background-color: #fff; box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1); outline: none; }
   &::placeholder { color: #9ca3af; }
   @media (max-width: 480px) { padding: 8px 10px; min-height: 80px; }
 `;

@@ -126,7 +126,7 @@ const Container = styled.div`
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 16px;
   border: 1px solid rgba(30, 144, 255, 0.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
@@ -165,7 +165,7 @@ const StatusBadge = styled.span`
 
 const ErrorMessage = styled.div`
   color: #d9534f;
-  background: ${({ theme }) => theme.colors.backgroundAlt};
+  background: linear-gradient(135deg, #ffe5e5 0%, #ffd6d6 100%);
   padding: 12px 16px;
   border-radius: 10px;
   font-size: 0.9rem;
@@ -208,24 +208,24 @@ const ActionButton = styled.button`
   }
   
   ${props => props.$variant === 'primary' && `
-    background: ${({ theme }) => theme.colors.primaryGradient};
+    background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
     
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.palette.tomThumb};
+      background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4);
     }
   `}
   
   ${props => props.$variant === 'success' && `
-    background: ${({ theme }) => theme.colors.palette.envy};
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     
     &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.colors.palette.summerGreen};
+      background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
     }

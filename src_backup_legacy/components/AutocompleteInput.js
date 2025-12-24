@@ -214,7 +214,7 @@ const InputWrapper = styled.div`
 const InputIcon = styled.div`
   position: absolute;
   left: 16px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1.1rem;
   z-index: 1;
   pointer-events: none;
@@ -228,7 +228,7 @@ const InputIcon = styled.div`
 const LoadingIcon = styled.div`
   position: absolute;
   right: 16px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1rem;
   z-index: 1;
   pointer-events: none;
@@ -262,7 +262,7 @@ const StyledInput = styled.input`
   }
   
   &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
+    border-color: #1e90ff;
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(30, 144, 255, 0.1);
     transform: translateY(-1px);
@@ -310,7 +310,7 @@ const SuggestionsList = styled.div`
 
 const LoadingState = styled.div`
   padding: 16px 20px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 14px;
   font-weight: 600;
   display: flex;
@@ -344,8 +344,8 @@ const EmptyState = styled.div`
 const SuggestionItem = styled.div`
   padding: 12px 16px;
   cursor: pointer;
-  background: ${props => props.$active
-    ? 'linear-gradient(135deg, #e8f4ff 0%, #d6ebff 100%)'
+  background: ${props => props.$active 
+    ? 'linear-gradient(135deg, #e8f4ff 0%, #d6ebff 100%)' 
     : '#fff'};
   border-bottom: 1px solid rgba(30, 144, 255, 0.1);
   color: #333;
@@ -366,7 +366,7 @@ const SuggestionItem = styled.div`
 `;
 
 const SuggestionIcon = styled.div`
-  color: ${({ theme }) => theme.colors.primary};
+  color: #1e90ff;
   font-size: 1rem;
   flex-shrink: 0;
   
