@@ -1,21 +1,38 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import { AuthContext } from "./context/AuthContext";
 import { theme } from "./styles/theme";
 import { GlobalStyles } from "./styles/GlobalStyles";
 
-import AuthPage from "./pages/AuthPage";
-import Layout from "./components/Layout";
+// Lazy Load Pages for Performance
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const Layout = lazy(() => import("./components/Layout"));
+const Home = lazy(() => import("./pages/Home"));
+const PostRide = lazy(() => import("./pages/PostRide"));
+const SearchRides = lazy(() => import("./pages/SearchRides"));
+const PassengerCenter = lazy(() => import("./pages/PassengerCenter"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const MyPostedRides = lazy(() => import("./pages/MyPostedRides"));
 
-import Home from "./pages/Home";
-import PostRide from "./pages/PostRide";
-import SearchRides from "./pages/SearchRides";
-import PassengerCenter from "./pages/PassengerCenter";
-import Profile from "./pages/Profile";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import MyPostedRides from "./pages/MyPostedRides";
+// Loading Spinner Component
+const LoadingFallback = () => (
+  <div style={{
+    height: '100vh',
+    width: '100vw',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: '#ffffff',
+    color: '#2b492c',
+    fontSize: '1.5rem',
+    fontWeight: 'bold'
+  }}>
+    Loading...
+  </div>
+);
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -31,32 +48,34 @@ function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyles />
       <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<AuthPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<AuthPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Home />} />
-            <Route path="post-ride" element={<PostRide />} />
-            <Route path="search-rides" element={<SearchRides />} />
-            <Route path="passenger-center" element={<PassengerCenter />} />
-            <Route path="my-posted-rides" element={<MyPostedRides />} />
-            <Route path="profile" element={<Profile />} />
-          </Route>
+            {/* Protected routes */}
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Home />} />
+              <Route path="post-ride" element={<PostRide />} />
+              <Route path="search-rides" element={<SearchRides />} />
+              <Route path="passenger-center" element={<PassengerCenter />} />
+              <Route path="my-posted-rides" element={<MyPostedRides />} />
+              <Route path="profile" element={<Profile />} />
+            </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </Router>
     </ThemeProvider>
   );

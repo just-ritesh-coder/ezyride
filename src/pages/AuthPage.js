@@ -297,7 +297,10 @@ const InfoSide = styled.div`
   position: relative;
   
   @media (max-width: 768px) {
-    display: none;
+    padding: 40px 20px 20px;
+    flex: 0 0 auto;
+    text-align: center;
+    display: flex; /* Ensure visible */
   }
 `;
 
@@ -312,7 +315,10 @@ const FormSide = styled.div`
   border-left: 1px solid rgba(255,255,255,0.05);
 
   @media (max-width: 768px) {
-    display: none;
+    padding: 20px 20px 40px;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex; /* Ensure visible */
   }
 `;
 
