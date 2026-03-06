@@ -168,6 +168,7 @@ const PostRide = () => {
       }
     };
     fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getSeatOptions = () => {
