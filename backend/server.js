@@ -67,6 +67,8 @@ app.use("/api/sos", sosRoutes); // NEW
 app.use("/api/reviews", reviewsRoutes); // NEW
 // NEW: Razorpay
 app.use('/api/payments/razorpay', razorpayRoutes);
+const kycRoutes = require('./routes/kyc'); // NEW
+app.use('/api/kyc', kycRoutes); // NEW
 // Optional: serve SPA in production (adjust path to your frontend build)
 if (process.env.NODE_ENV === 'production') {
   const clientBuild = path.join(__dirname, '..', 'build');

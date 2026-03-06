@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { API_BASE_URL } from "../utils/config";
 
 const TABS = ["Account Details", "Ride History", "SOS", "Features"];
@@ -26,6 +27,7 @@ const shimmer = keyframes`
 `;
 
 const Profile = () => {
+  const navigate = useNavigate(); // Hook
   const [active, setActive] = useState("Account Details");
   const [user, setUser] = useState(null);
   const [completed, setCompleted] = useState([]);
@@ -51,10 +53,11 @@ const Profile = () => {
       if (!res.ok) throw new Error(data.message || "Failed to load profile");
       setUser(data.user || data);
       setEditData({
-        fullName: data.fullName || data.name || "",
-        phone: data.phone || "",
-        vehicle: data.vehicle || "",
-        preferences: data.preferences || "",
+        fullName: data.user?.fullName || data.fullName || data.name || "",
+        phone: data.user?.phone || data.phone || "",
+        vehicle: data.user?.vehicle || data.vehicle || "",
+        vehicleType: data.user?.vehicleType || data.vehicleType || "None",
+        preferences: data.user?.preferences || data.preferences || "",
       });
     } catch (e) {
       setErr(e.message);
@@ -365,7 +368,15 @@ const Profile = () => {
                   <Grid>
                     <Item><Label>Full Name</Label><Input name="fullName" value={editData.fullName} onChange={handleChange} /></Item>
                     <Item><Label>Phone</Label><Input name="phone" value={editData.phone} onChange={handleChange} /></Item>
-                    <Item><Label>Vehicle</Label><Input name="vehicle" value={editData.vehicle} onChange={handleChange} /></Item>
+                    <Item>
+                      <Label>Vehicle Type</Label>
+                      <Select name="vehicleType" value={editData.vehicleType} onChange={handleChange}>
+                        <option value="None">None (Passenger)</option>
+                        <option value="Two-Wheeler">Two-Wheeler (Max 1 Seat)</option>
+                        <option value="Four-Wheeler">Four-Wheeler (Max 3 Seats)</option>
+                      </Select>
+                    </Item>
+                    <Item><Label>Vehicle Details</Label><Input name="vehicle" value={editData.vehicle} onChange={handleChange} placeholder="Model, Registration etc." /></Item>
                     <Item><Label>Preferences</Label><Input name="preferences" value={editData.preferences} onChange={handleChange} /></Item>
                     <Item><SaveButton onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</SaveButton></Item>
                     <Item><CancelButton onClick={() => setEditMode(false)}>Cancel</CancelButton></Item>
@@ -389,7 +400,12 @@ const Profile = () => {
                     </Item>
                     <Item>
                       <FieldIcon>🚗</FieldIcon>
-                      <Label>Vehicle</Label>
+                      <Label>Vehicle Type</Label>
+                      <Value>{user.vehicleType || "None"}</Value>
+                    </Item>
+                    <Item>
+                      <FieldIcon>📝</FieldIcon>
+                      <Label>Vehicle Details</Label>
                       <Value>{user.vehicle || "—"}</Value>
                     </Item>
                     <Item>
@@ -402,6 +418,17 @@ const Profile = () => {
                       <Label>Member Since</Label>
                       <Value>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</Value>
                     </Item>
+
+                    <Item fullWidth>
+                      <VerifyButton
+                        verified={user.kyc?.status === 'verified'}
+                        onClick={() => user.kyc?.status !== 'verified' && navigate("/kyc")}
+                        style={{ cursor: user.kyc?.status === 'verified' ? 'default' : 'pointer' }}
+                      >
+                        {user.kyc?.status === 'verified' ? "✅ Identity Verified" : "🛡️ Verify Identity (KYC)"}
+                      </VerifyButton>
+                    </Item>
+
                     <Item fullWidth>
                       <EditButton onClick={() => setEditMode(true)}>
                         <ButtonIcon>✏️</ButtonIcon>
@@ -588,6 +615,26 @@ const Profile = () => {
 };
 
 export default Profile;
+
+/* Additional Styles */
+const VerifyButton = styled.button`
+  width: 100%;
+  padding: 12px;
+  background: ${({ verified, theme }) => verified ? theme.colors.background : "#fff3cd"};
+  color: ${({ verified, theme }) => verified ? theme.colors.primary : "#856404"};
+  border: 1px solid ${({ verified, theme }) => verified ? theme.colors.primary : "#ffeeba"};
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 10px;
+  text-align: center;
+  transition: all 0.2s;
+  
+  &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+`;
 
 /* ===== Styles ===== */
 const Wrap = styled.div`
@@ -1093,7 +1140,7 @@ const Value = styled.div`
   }
 `;
 
-const Input = styled.input`
+const Select = styled.select`
   padding: 10px 12px;
   font-size: 1rem;
   border-radius: 8px;
@@ -1110,9 +1157,13 @@ const Input = styled.input`
     box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.surfaceHover};
   }
   
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.text.secondary};
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
+`;
+
+const Input = styled.input`
   
   @media (max-width: 480px) {
     padding: 8px 10px;

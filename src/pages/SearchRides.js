@@ -240,7 +240,12 @@ const SearchRides = () => {
                   <DetailIcon><FaUser /></DetailIcon>
                   <DetailContent>
                     <DetailLabel>Driver</DetailLabel>
-                    <DetailValue>{driverName}</DetailValue>
+                    <DetailValue>
+                      {driverName}
+                      {ride.postedBy?.kyc?.status === 'verified' && (
+                        <FaCheckCircle style={{ marginLeft: '6px', color: '#10b981', fontSize: '0.9em' }} title="Verified Driver" />
+                      )}
+                    </DetailValue>
                   </DetailContent>
                 </DetailItem>
               </RideDetails>

@@ -1,10 +1,12 @@
 {
-  "servers": {
-    "TestSprite": {
-      "command": "npx",
-      "args": ["@testsprite/testsprite-mcp@latest"],
+  "mcpServers": {
+    "testsprite": {
+      "command": "testsprite-mcp-plugin",
+      "args": [],
       "env": {
-        "API_KEY": "sk-user-rysvSalXi6nyXBVMArSOTzPtXYqAIyKHLyCfJrf4f6wkQA9rmpOhJNUc6KoGeQyWfMxA9m8hSPX8t3Nkofu-tMDKSEFvYh-hYQnz8Ivx4WF1VOF4QcjhGSBbUoTRV6FPM6Y"     }
+        "PATH": "C:\\Users\\Ritesh\\AppData\\Roaming\\npm;%PATH%",
+        "API_KEY": "sk-user-LvZW8aWmAS6O7o-nc-PjPlioF8Nbe0CBOhFxuO0YPvptPgL9MiGNXW7hKPYfPNVz1g2bpAVDxUp6xf6M18aZfcjrWjXBqIuvmxvjLwmDONoYGEAX-Bc6gZyA1DMZ_o_oDFA"
+      }
     }
   }
 }

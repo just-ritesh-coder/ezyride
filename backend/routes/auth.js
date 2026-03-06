@@ -14,7 +14,7 @@ const generateToken = (user) => {
 
 // Register new user
 router.post("/register", async (req, res) => {
-  const { fullName, phone, email, password, vehicle, preferences } = req.body;
+  const { fullName, phone, email, password, vehicle, vehicleType, preferences } = req.body;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -27,6 +27,7 @@ router.post("/register", async (req, res) => {
       email,
       password,
       vehicle,
+      vehicleType: vehicleType || 'None',
       preferences,
     });
 
@@ -34,6 +35,7 @@ router.post("/register", async (req, res) => {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
+      kyc: user.kyc,
       token: generateToken(user),
     });
   } catch (error) {
@@ -59,6 +61,7 @@ router.post("/login", async (req, res) => {
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
+      kyc: user.kyc,
       token: generateToken(user),
     });
   } catch (error) {

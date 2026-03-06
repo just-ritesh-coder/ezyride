@@ -1,0 +1,10 @@
+{
+  "user": "68b34a69b377d7f78973e33d",
+  "time": "2026-02-13T07:42:17.346Z",
+  "result": {
+    "match": true,
+    "score": 95,
+    "distance": 0.1,
+    "note": "Face detected (Verification simulated)"
+  }
+}

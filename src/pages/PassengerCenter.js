@@ -504,14 +504,22 @@ const PassengerCenter = () => {
                 return (
                   <Card key={b._id}>
                     <Top>
-                      <RouteInfo>
-                        <RouteIcon><FaMapMarkerAlt /></RouteIcon>
-                        <RouteTxt>
-                          <b>{ride.from}</b>
-                          <ArrowIcon><FaArrowRight /></ArrowIcon>
-                          <b>{ride.to}</b>
-                        </RouteTxt>
-                      </RouteInfo>
+                      <div style={{ width: '100%' }}>
+                        <RouteInfo>
+                          <RouteIcon><FaMapMarkerAlt /></RouteIcon>
+                          <RouteTxt>
+                            <b>{ride.from}</b>
+                            <ArrowIcon><FaArrowRight /></ArrowIcon>
+                            <b>{ride.to}</b>
+                          </RouteTxt>
+                        </RouteInfo>
+                        <div style={{ marginLeft: '30px', marginTop: '4px', fontSize: '0.9rem', color: '#666' }}>
+                          Driver: {ride.postedBy?.fullName || "Unknown"}
+                          {ride.postedBy?.kyc?.status === 'verified' && (
+                            <FaCheckCircle style={{ marginLeft: '6px', color: '#10b981', verticalAlign: 'middle' }} title="Verified Driver" />
+                          )}
+                        </div>
+                      </div>
                       <Chip>{ride.status || "posted"}</Chip>
                     </Top>
 

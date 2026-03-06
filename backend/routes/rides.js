@@ -15,6 +15,11 @@ router.post('/', protect, async (req, res) => {
     const userId = req.user?._id?.toString() || req.userId;
     if (!userId) return res.status(401).json({ message: 'Not authorized' });
 
+    // Fetch user profile to get vehicleType
+    const User = require('../models/User');
+    const dbUser = await User.findById(userId);
+    if (!dbUser) return res.status(404).json({ message: 'User not found' });
+
     const { from, to, seatsAvailable, pricePerSeat, notes = '', date } = req.body;
 
     if (!from || !to) return res.status(400).json({ message: 'from and to are required' });
@@ -25,6 +30,18 @@ router.post('/', protect, async (req, res) => {
     if (!Number.isInteger(seats) || seats < 1) {
       return res.status(400).json({ message: 'seatsAvailable must be a positive integer' });
     }
+
+    // Server-Side Security: Enforce seat limits based on vehicle type
+    if (dbUser.vehicleType === 'Two-Wheeler' && seats > 1) {
+      return res.status(400).json({ message: 'Two-wheelers can only offer 1 seat.' });
+    }
+    if (dbUser.vehicleType === 'Four-Wheeler' && seats > 3) {
+      return res.status(400).json({ message: 'Four-wheelers can offer a maximum of 3 seats.' });
+    }
+    if (!dbUser.vehicleType || dbUser.vehicleType === 'None') {
+      return res.status(400).json({ message: 'Please update your vehicle type in your profile.' });
+    }
+
     if (!Number.isFinite(price) || price < 0) {
       return res.status(400).json({ message: 'pricePerSeat must be >= 0' });
     }
@@ -46,7 +63,7 @@ router.post('/', protect, async (req, res) => {
       createdAt: new Date(),
     });
 
-    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName');
+    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName kyc');
     return res.status(201).json({ message: 'Ride created', ride: populated });
   } catch (e) {
     console.error('Create ride error:', e);
@@ -82,7 +99,7 @@ router.get('/search', async (req, res) => {
       }
     }
 
-    const rides = await Ride.find(filter).sort({ date: 1 }).populate('postedBy', 'fullName');
+    const rides = await Ride.find(filter).sort({ date: 1 }).populate('postedBy', 'fullName kyc');
     return res.json({ rides });
   } catch (e) {
     console.error('Search rides error:', e);
@@ -200,6 +217,19 @@ router.patch('/:rideId', protect, async (req, res) => {
       if (!Number.isInteger(newCapacity) || newCapacity < 1) {
         return res.status(400).json({ message: 'seatsAvailable must be a positive integer' });
       }
+
+      // Server-Side Security: Enforce seat limits based on vehicle type
+      const User = require('../models/User');
+      const dbUser = await User.findById(userId);
+      if (dbUser) {
+        if (dbUser.vehicleType === 'Two-Wheeler' && newCapacity > 1) {
+          return res.status(400).json({ message: 'Two-wheelers can only offer 1 seat.' });
+        }
+        if (dbUser.vehicleType === 'Four-Wheeler' && newCapacity > 3) {
+          return res.status(400).json({ message: 'Four-wheelers can offer a maximum of 3 seats.' });
+        }
+      }
+
       const confirmed = await Booking.aggregate([
         { $match: { ride: ride._id, status: 'confirmed' } },
         { $group: { _id: '$ride', total: { $sum: '$seatsBooked' } } }
@@ -233,7 +263,7 @@ router.patch('/:rideId', protect, async (req, res) => {
     if (notes !== undefined) ride.notes = String(notes);
 
     await ride.save();
-    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName');
+    const populated = await Ride.findById(ride._id).populate('postedBy', 'fullName kyc');
     return res.json({ message: 'Ride updated', ride: populated });
   } catch (e) {
     console.error('Modify ride error:', e);

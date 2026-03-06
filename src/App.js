@@ -16,6 +16,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const MyPostedRides = lazy(() => import("./pages/MyPostedRides"));
+const KYCPage = lazy(() => import("./pages/KYCPage"));
 
 // Loading Spinner Component
 const LoadingFallback = () => (
@@ -37,7 +38,9 @@ const LoadingFallback = () => (
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
   const { token } = React.useContext(AuthContext);
-  if (!token) {
+  const storedToken = localStorage.getItem("authToken");
+
+  if (!token && !storedToken) {
     return <Navigate to="/" replace />;
   }
   return children;
@@ -71,6 +74,15 @@ function App() {
               <Route path="my-posted-rides" element={<MyPostedRides />} />
               <Route path="profile" element={<Profile />} />
             </Route>
+
+            <Route
+              path="/kyc"
+              element={
+                <ProtectedRoute>
+                  <KYCPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

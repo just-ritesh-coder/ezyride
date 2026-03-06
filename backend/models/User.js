@@ -7,8 +7,13 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   vehicle: { type: String },
+  vehicleType: {
+    type: String,
+    enum: ['None', 'Two-Wheeler', 'Four-Wheeler'],
+    default: 'None'
+  },
   preferences: { type: String },
-  
+
 
   // Client features persisted to backend
   savedSearches: [
@@ -27,9 +32,25 @@ const userSchema = new mongoose.Schema({
   // Add these for password reset
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
-  
+
   // Profile picture (base64 encoded or URL)
   profilePicture: { type: String },
+
+  // KYC / Identity Verification
+  kyc: {
+    status: {
+      type: String,
+      enum: ['none', 'pending', 'verified', 'rejected'],
+      default: 'none'
+    },
+    documents: {
+      aadhaarFront: { type: String }, // Path or URL
+      aadhaarBack: { type: String },
+      selfie: { type: String }
+    },
+    matchScore: { type: Number },
+    submittedAt: { type: Date }
+  },
 }, { timestamps: true });
 
 // Hash password before saving
@@ -42,7 +63,7 @@ userSchema.pre("save", async function (next) {
 });
 
 // Method to compare password during login
-userSchema.methods.matchPassword = function(password) {
+userSchema.methods.matchPassword = function (password) {
   return bcrypt.compare(password, this.password);
 };
 

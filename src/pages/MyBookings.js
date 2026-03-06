@@ -59,6 +59,14 @@ const MyBookings = () => {
                 <RouteInfo>
                   {ride.from} &rarr; {ride.to}
                 </RouteInfo>
+                <div style={{ marginBottom: '10px', color: '#555', fontWeight: '500' }}>
+                  Driver: {ride.postedBy?.fullName || "Unknown"}
+                  {ride.postedBy?.kyc?.status === 'verified' && (
+                    <span style={{ marginLeft: '6px', color: '#10b981', fontWeight: 'bold' }} title="Verified Driver">
+                      ✓ Verified
+                    </span>
+                  )}
+                </div>
                 <BookingDetails>
                   <Detail>
                     <b>Date:</b> {dateObj.toLocaleDateString()}

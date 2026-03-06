@@ -39,6 +39,7 @@ const AuthPage = () => {
     email: "",
     password: "",
     vehicle: "",
+    vehicleType: "None",
     preferences: "",
   });
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,7 @@ const AuthPage = () => {
       email: "",
       password: "",
       vehicle: "",
+      vehicleType: "None",
       preferences: "",
     });
   };
@@ -93,7 +95,13 @@ const AuthPage = () => {
       }
 
       login(data.token);
-      navigate("/home");
+      if (!isLogin) {
+        // New user -> KYC
+        navigate("/kyc");
+      } else {
+        // Returning user -> check if KYC needed? For now Home.
+        navigate("/home");
+      }
     } catch (err) {
       setError(err.message || "Something went wrong");
       setLoading(false);
@@ -200,12 +208,24 @@ const AuthPage = () => {
                 {!isLogin && (
                   <>
                     <InputGroup>
+                      <Select
+                        name="vehicleType"
+                        value={formData.vehicleType || "None"}
+                        onChange={handleChange}
+                        required={!isLogin}
+                      >
+                        <option value="None">No Vehicle (Passenger Only)</option>
+                        <option value="Two-Wheeler">Two-Wheeler (Max 1 Seat)</option>
+                        <option value="Four-Wheeler">Four-Wheeler (Max 3 Seats)</option>
+                      </Select>
+                    </InputGroup>
+                    <InputGroup>
                       <Input
                         type="text"
                         name="vehicle"
                         value={formData.vehicle}
                         onChange={handleChange}
-                        placeholder="Vehicle Details (Optional)"
+                        placeholder="Vehicle Details / Registration (Optional)"
                       />
                       <InputIcon><FaCar /></InputIcon>
                     </InputGroup>
@@ -567,6 +587,33 @@ const ErrorBanner = styled.div`
   align-items: center;
   gap: 10px;
   font-size: 0.9rem;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: ${({ theme }) => theme.borders.radius.md};
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  
+  option {
+    color: #333;
+    background: white;
+  }
+  
+  &:focus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(197, 237, 203, 0.1);
+    outline: none;
+  }
 `;
 
 export default AuthPage;

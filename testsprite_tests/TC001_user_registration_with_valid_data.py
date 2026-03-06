@@ -7,8 +7,9 @@ def test_user_registration_with_valid_data():
     headers = {
         "Content-Type": "application/json"
     }
+    import time
     payload = {
-        "email": "testuser@example.com",
+        "email": f"testuser_{int(time.time())}@example.com",
         "password": "StrongPassw0rd!",
         "fullName": "Test User",
         "phone": "+12345678901"
@@ -17,8 +18,9 @@ def test_user_registration_with_valid_data():
         response = requests.post(url, json=payload, headers=headers, timeout=30)
         assert response.status_code == 201 or response.status_code == 200, f"Unexpected status code: {response.status_code}"
         data = response.json()
-        # Check for user ID in 'id', 'userId' or inside 'user' object
-        user_id_exists = ('id' in data) or ('userId' in data) or ('user' in data and ('id' in data['user'] or 'userId' in data['user']))
+        print(f"DEBUG RESPONSE: {data}")
+        # Check for user ID in 'id', 'userId', '_id' or inside 'user' object
+        user_id_exists = ('id' in data) or ('userId' in data) or ('_id' in data) or ('user' in data and ('id' in data['user'] or 'userId' in data['user'] or '_id' in data['user']))
         assert user_id_exists, "Response JSON does not contain user ID"
         # Verify email if present
         returned_email = ""

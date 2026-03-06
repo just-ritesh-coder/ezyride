@@ -10,7 +10,7 @@ router.post("/me/profile-picture", protect, async (req, res) => {
   try {
     console.log("📸 Profile picture upload request received");
     const { profilePicture } = req.body;
-    
+
     // Allow null to remove profile picture
     if (profilePicture === null || profilePicture === undefined) {
       const updatedUser = await User.findByIdAndUpdate(
@@ -23,7 +23,7 @@ router.post("/me/profile-picture", protect, async (req, res) => {
 
       return res.json({ user: updatedUser, message: "Profile picture removed successfully" });
     }
-    
+
     // Validate base64 image format
     if (!profilePicture.startsWith('data:image/')) {
       return res.status(400).json({ message: "Invalid image format" });
@@ -52,7 +52,7 @@ router.get("/me", protect, async (req, res) => {
   try {
     if (!req.user) return res.status(404).json({ message: "User not found" });
 
-    const user = await User.findById(req.user._id).select("_id fullName email phone vehicle preferences profilePicture createdAt");
+    const user = await User.findById(req.user._id).select("_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc");
     res.json({ user });
   } catch (error) {
     console.error("GET /me error:", error);
@@ -65,19 +65,20 @@ router.get("/me", protect, async (req, res) => {
 // @access  Private
 router.patch("/me", protect, async (req, res) => {
   try {
-    const { fullName, phone, vehicle, preferences, profilePicture } = req.body;
+    const { fullName, phone, vehicle, vehicleType, preferences, profilePicture } = req.body;
 
     const updatedFields = {};
     if (fullName !== undefined) updatedFields.fullName = fullName;
     if (phone !== undefined) updatedFields.phone = phone;
     if (vehicle !== undefined) updatedFields.vehicle = vehicle;
+    if (vehicleType !== undefined) updatedFields.vehicleType = vehicleType;
     if (preferences !== undefined) updatedFields.preferences = preferences;
     if (profilePicture !== undefined) updatedFields.profilePicture = profilePicture;
 
     const updatedUser = await User.findByIdAndUpdate(
       req.userId,
       { $set: updatedFields },
-      { new: true, runValidators: true, select: "_id fullName email phone vehicle preferences profilePicture createdAt" }
+      { new: true, runValidators: true, select: "_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc" }
     );
 
     if (!updatedUser) return res.status(404).json({ message: "User not found" });

@@ -121,6 +121,9 @@ const MyPostedRides = () => {
 
   // Start via OTP
   const verifyAndStart = async (rideId) => {
+    console.log("Verify and Start called with ID:", rideId);
+    console.log("Current input Code:", code);
+
     setErr("");
     try {
       const token = localStorage.getItem("authToken");
@@ -273,7 +276,10 @@ const MyPostedRides = () => {
               </Meta>
 
               <Actions>
-                <Primary disabled={!canStart} onClick={() => setOpenFor(ride._id)}>
+                <Primary disabled={!canStart} onClick={() => {
+                  console.log("Opening OTP modal for Ride ID:", ride._id);
+                  setOpenFor(ride._id);
+                }}>
                   <FaPlay /> Start Ride
                 </Primary>
                 <Secondary disabled={!canComplete} onClick={() => completeRide(ride._id)}>

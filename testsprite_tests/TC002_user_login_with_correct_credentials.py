@@ -5,11 +5,25 @@ def test_user_login_with_correct_credentials():
     login_endpoint = "/api/auth/login"
     url = base_url + login_endpoint
 
+    import time
+    timestamp = int(time.time())
+    email = f"testuser_{timestamp}@example.com"
+    password = "TestPassword123!"
+    
+    # Register user first
+    register_payload = {
+        "email": email,
+        "password": password,
+        "fullName": "Test User",
+        "phone": "+12345678901"
+    }
+    requests.post(f"{base_url}/api/auth/register", json=register_payload)
+
     # Use a valid test email and password to login
     # These must exist in the system or be seeded data for testing
     payload = {
-        "email": "testuser@example.com",
-        "password": "TestPassword123!"
+        "email": email,
+        "password": password
     }
     headers = {
         "Content-Type": "application/json"

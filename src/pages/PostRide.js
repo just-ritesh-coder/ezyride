@@ -22,6 +22,7 @@ const PostRide = () => {
   const [destCoord, setDestCoord] = useState(null);
   const [perKm, setPerKm] = useState(12);
   const [suggested, setSuggested] = useState(null);
+  const [vehicleType, setVehicleType] = useState('None');
   const [formData, setFormData] = useState({
     date: "", // yyyy-mm-dd
     time: "", // HH:mm
@@ -138,6 +139,61 @@ const PostRide = () => {
     }
   }, [originCoord, destCoord, perKm]);
 
+  React.useEffect(() => {
+    // Fetch user profile to get vehicleType
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) return;
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache" // Ensure we don't get a stale profile
+          }
+        });
+        const data = await response.json();
+        if (response.ok && data.user) {
+          const type = data.user.vehicleType || 'None';
+          setVehicleType(type);
+
+          // Ensure formData.seats respects the new limits initially
+          if (type === 'Two-Wheeler' && formData.seats > 1) {
+            setFormData(prev => ({ ...prev, seats: 1 }));
+          } else if (type === 'Four-Wheeler' && formData.seats > 3) {
+            setFormData(prev => ({ ...prev, seats: 3 }));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
+  const getSeatOptions = () => {
+    if (vehicleType === 'Two-Wheeler') return [1];
+    if (vehicleType === 'Four-Wheeler') return [1, 2, 3];
+    return []; // For "None", we'll hide the form
+  };
+
+  const isPassengerOnly = !vehicleType || vehicleType === 'None';
+
+  if (isPassengerOnly) {
+    return (
+      <Container>
+        <Header>
+          <Title>Post a New Ride</Title>
+        </Header>
+        <ErrorMessage style={{ flexDirection: 'column', padding: '30px' }}>
+          <FaExclamationTriangle style={{ fontSize: '3rem', marginBottom: '15px' }} />
+          <h3>Vehicle Required</h3>
+          <p style={{ marginTop: '10px' }}>You are currently registered as a passenger.</p>
+          <p>Please update your <b>Vehicle Type</b> in your Profile settings before posting a ride.</p>
+        </ErrorMessage>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <Header>
@@ -206,7 +262,7 @@ const PostRide = () => {
           <InputGroup>
             <Label><FaUsers /> Available Seats</Label>
             <Select name="seats" value={formData.seats} onChange={handleChange}>
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              {getSeatOptions().map((n) => (
                 <option key={n} value={n}>
                   {n} {n === 1 ? 'seat' : 'seats'}
                 </option>

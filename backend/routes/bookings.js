@@ -83,7 +83,10 @@ router.get("/mybookings", protect, async (req, res) => {
 
     const bookings = await Booking.find({ user: userId })
       .sort({ createdAt: -1 })
-      .populate("ride")
+      .populate({
+        path: 'ride',
+        populate: { path: 'postedBy', select: 'fullName kyc' }
+      })
       .populate("user", "fullName email");
 
     // Explicit shape so frontend can read b.ride_start_code

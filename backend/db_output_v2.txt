@@ -1,0 +1,7 @@
+﻿[dotenv@17.2.1] injecting env (10) from .env -- tip: ≡ƒ¢á∩╕Å  run anywhere with `dotenvx run -- yourcommand`
+BOOKING_ID: 6989a236bda0bd7d6641cd38
+RIDE_ID: 69899dbb19e6bf95d0e4e2b6
+BOOKING_STATUS: confirmed
+CODE_USED: false
+RIDE_STATUS: posted
+DRIVER_ID: 69899d3619e6bf95d0e4e2ab

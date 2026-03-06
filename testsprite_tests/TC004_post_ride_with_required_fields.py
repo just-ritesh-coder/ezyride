@@ -3,7 +3,22 @@ import datetime
 
 def test_post_ride_with_required_fields():
     base_url = "http://localhost:5000"
-    token = "b6b347741b87b53be66d0263b691738515836a8128f26c58be50c9f86a4008a21dfce004959dfd99f97fc0e6a0956406822bd9f96aabf5343688ade678f940ed"
+    import time
+    timestamp = int(time.time())
+    email = f"testuser_{timestamp}@example.com"
+    password = "TestPassword123!"
+    
+    # Register
+    requests.post(f"{base_url}/api/auth/register", json={
+        "email": email, "password": password, "fullName": "Test User", "phone": "1234567890"
+    })
+    
+    # Login
+    auth_resp = requests.post(f"{base_url}/api/auth/login", json={
+        "email": email, "password": password
+    })
+    token = auth_resp.json().get("token")
+    
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
@@ -24,6 +39,7 @@ def test_post_ride_with_required_fields():
         response = requests.post(post_ride_url, json=payload, headers=headers, timeout=30)
         assert response.status_code == 201, f"Expected status code 201, got {response.status_code}"
         data = response.json()
+        print(f"DEBUG RIDE RESPONSE: {data}")
         # Validate presence of ride ID and correct data in response
         assert "id" in data or "_id" in data, "Response missing ride ID"
         ride_id = data.get("id") or data.get("_id")
