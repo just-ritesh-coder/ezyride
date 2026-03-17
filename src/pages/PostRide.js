@@ -517,7 +517,7 @@ const Select = styled.select`
   outline: none;
   font-size: 1rem;
   background-color: ${({ theme }) => theme.colors.glass.heavy}; /* Dark green background for dropdown */
-  color: ${({ theme }) => theme.colors.text.primary};
+  color: #ffffff; /* White text so it's visible on dark background */
   transition: all 0.3s ease;
   min-height: 48px;
   cursor: pointer;
@@ -525,6 +525,11 @@ const Select = styled.select`
   
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
+  }
+
+  option {
+    background-color: #2b492c;
+    color: #ffffff;
   }
 `;
 
