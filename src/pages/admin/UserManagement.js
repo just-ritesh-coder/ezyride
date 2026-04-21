@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaSearch, FaFilter, FaEllipsisV } from "react-icons/fa";
+import { FaSearch, FaEllipsisV } from "react-icons/fa";
 import { format } from "date-fns";
 import axios from "axios";
 import { API_BASE_URL } from "../../utils/config";
@@ -186,24 +186,7 @@ const FilterSelect = styled.select`
   cursor: pointer;
 `;
 
-const FilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: #475569;
-  font-weight: 500;
-  font-size: 0.85rem;
-  font-family: inherit;
-  cursor: pointer;
-  
-  &:hover {
-    background: #f8fafc;
-  }
-`;
+
 
 const TableContainer = styled.div`
   background: white;
@@ -313,23 +296,7 @@ const KycBadge = styled.span`
   };
 `;
 
-const StatusBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: ${({ $status }) => ($status === 'active' ? '#1e293b' : '#94a3b8')};
-  font-weight: 500;
-  
-  &::before {
-    content: '';
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: ${({ $status }) => ($status === 'active' ? '#10b981' : '#ef4444')};
-  }
-`;
+
 
 const ActionMenu = styled.button`
   background: transparent;

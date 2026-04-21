@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaSearch, FaFilter, FaArrowRight, FaMapMarkerAlt, FaCarSide, FaEye, FaTimesCircle } from "react-icons/fa";
+import { FaSearch, FaArrowRight, FaMapMarkerAlt, FaCarSide, FaEye, FaTimesCircle } from "react-icons/fa";
 import { format } from "date-fns";
 import axios from "axios";
 import { API_BASE_URL } from "../../utils/config";
@@ -203,22 +203,7 @@ const FilterSelect = styled.select`
   cursor: pointer;
 `;
 
-const FilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 8px 16px;
-  color: #475569;
-  font-weight: 500;
-  font-size: 0.85rem;
-  font-family: inherit;
-  cursor: pointer;
-  
-  &:hover { background: #f8fafc; }
-`;
+
 
 const TableContainer = styled.div`
   background: white;
