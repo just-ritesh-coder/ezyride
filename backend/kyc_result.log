@@ -1,10 +1,10 @@
 {
-  "user": "68b34a69b377d7f78973e33d",
-  "time": "2026-02-13T07:42:17.346Z",
+  "user": "69e7532eda4ee4d0f2344f2d",
+  "time": "2026-04-21T10:38:10.662Z",
   "result": {
-    "match": true,
-    "score": 95,
-    "distance": 0.1,
-    "note": "Face detected (Verification simulated)"
+    "match": false,
+    "score": 29.1,
+    "distance": 0.7093,
+    "note": "Real face comparison using facial embeddings"
   }
 }

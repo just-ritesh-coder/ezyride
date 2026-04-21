@@ -12,6 +12,4 @@ const SOSSchema = new mongoose.Schema({
   message: { type: String, default: "I need help. This is my live location." },
 }, { timestamps: true });
 
-SOSSchema.index({ user: 1 }, { unique: true });
-
 module.exports = mongoose.model('SOS', SOSSchema);

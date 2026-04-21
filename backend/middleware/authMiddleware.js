@@ -22,7 +22,7 @@ const protect = async (req, res, next) => {
     req.userId = decoded.id;
 
     const user = await User.findById(decoded.id).select(
-      "_id fullName email phone vehicle preferences profilePicture createdAt"
+      "_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc role"
     );
     if (!user) {
       return res.status(401).json({ message: "Not authorized, user not found" });
@@ -36,4 +36,12 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+const adminProtect = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as an admin' });
+  }
+};
+
+module.exports = { protect, adminProtect };

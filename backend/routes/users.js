@@ -52,7 +52,7 @@ router.get("/me", protect, async (req, res) => {
   try {
     if (!req.user) return res.status(404).json({ message: "User not found" });
 
-    const user = await User.findById(req.user._id).select("_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc");
+    const user = await User.findById(req.user._id).select("_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc role");
     res.json({ user });
   } catch (error) {
     console.error("GET /me error:", error);
@@ -78,7 +78,7 @@ router.patch("/me", protect, async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.userId,
       { $set: updatedFields },
-      { new: true, runValidators: true, select: "_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc" }
+      { new: true, runValidators: true, select: "_id fullName email phone vehicle vehicleType preferences profilePicture createdAt kyc role" }
     );
 
     if (!updatedUser) return res.status(404).json({ message: "User not found" });

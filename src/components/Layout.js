@@ -14,10 +14,31 @@ import {
   FaSpinner
 } from "react-icons/fa";
 import { API_BASE_URL } from "../utils/config";
+import axios from "axios";
 
 const Layout = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState("user");
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (token) {
+          const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data?.user?.role) {
+            setUserRole(res.data.user.role);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch user role", err);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -76,6 +97,11 @@ const Layout = () => {
           <StyledNavLink to="my-posted-rides" onClick={closeMobileMenu}>
             <FaListAlt /> My Rides
           </StyledNavLink>
+          {userRole === 'admin' && (
+             <StyledNavLink to="/admin" onClick={closeMobileMenu}>
+               <FaListAlt /> Admin Config
+             </StyledNavLink>
+          )}
           <ProfileLink to="profile" onClick={closeMobileMenu}>
             <FaUser />
           </ProfileLink>
@@ -122,6 +148,11 @@ const Layout = () => {
             <MobileNavLink to="my-posted-rides" onClick={closeMobileMenu}>
               <MobileNavIcon><FaListAlt /></MobileNavIcon> My Posted Rides
             </MobileNavLink>
+            {userRole === 'admin' && (
+              <MobileNavLink to="/admin" onClick={closeMobileMenu}>
+                <MobileNavIcon><FaListAlt /></MobileNavIcon> Admin Config
+              </MobileNavLink>
+            )}
             <MobileNavLink to="profile" onClick={closeMobileMenu}>
               <MobileNavIcon><FaUser /></MobileNavIcon> Profile
             </MobileNavLink>

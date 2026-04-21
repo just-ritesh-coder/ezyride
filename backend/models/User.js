@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
     default: 'None'
   },
   preferences: { type: String },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+
 
 
   // Client features persisted to backend

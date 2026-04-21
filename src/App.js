@@ -18,6 +18,13 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const MyPostedRides = lazy(() => import("./pages/MyPostedRides"));
 const KYCPage = lazy(() => import("./pages/KYCPage"));
 
+// Admin Pages
+const AdminLayout = lazy(() => import("./components/AdminLayout"));
+const DashboardOverview = lazy(() => import("./pages/admin/DashboardOverview"));
+const AdminKYC = lazy(() => import("./pages/admin/AdminKYC"));
+const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+const RideManagement = lazy(() => import("./pages/admin/RideManagement"));
+
 // Loading Spinner Component
 const LoadingFallback = () => (
   <div style={{
@@ -83,6 +90,22 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Admin Back-Office Routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardOverview />} />
+              <Route path="kyc" element={<AdminKYC />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="rides" element={<RideManagement />} />
+            </Route>
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

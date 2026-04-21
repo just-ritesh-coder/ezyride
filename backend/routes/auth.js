@@ -36,6 +36,7 @@ router.post("/register", async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       kyc: user.kyc,
+      role: user.role,
       token: generateToken(user),
     });
   } catch (error) {
@@ -62,6 +63,7 @@ router.post("/login", async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       kyc: user.kyc,
+      role: user.role,
       token: generateToken(user),
     });
   } catch (error) {
@@ -93,6 +95,7 @@ router.post("/forgot-password", async (req, res) => {
     const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
     const resetUrl = `${clientUrl}/reset-password?token=${token}&email=${email}`;
     await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset",
       text: `Reset your password here: ${resetUrl}`,
@@ -101,7 +104,7 @@ router.post("/forgot-password", async (req, res) => {
     res.json({ message: "Password reset link sent" });
   } catch (error) {
     console.error("Forgot password error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
